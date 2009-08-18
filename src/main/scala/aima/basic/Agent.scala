@@ -484,3 +484,17 @@ class TableDrivenVacuumAgent extends Agent {
   override def program(p:Map[Any, Any]):String = 
     tableDrivenAgent.program(p)
 }
+
+//Reflex Vacuum Agent
+class ReflexVacuumAgent extends Agent {
+  override def program(p:Map[Any, Any]):String = {
+    if(p("status") == "Dirty")
+      "Suck"
+    else if(p("location") == "A")
+      "Right"
+    else if(p("location") == "B")
+      "Left"
+    else Agent.NoOp
+  }
+}
+
