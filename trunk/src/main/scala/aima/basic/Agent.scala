@@ -498,3 +498,33 @@ class ReflexVacuumAgent extends Agent {
   }
 }
 
+//Simple Reflex Agent
+import aima.basic.simplerule._
+class SimpleReflexAgent(rules:List[Rule]) extends Agent {
+
+  override def program(p:Map[Any, Any]):String = {
+    val state = interpretInput(p)
+    val rule = ruleMatch(state,rules)
+    ruleAction(rule)
+  }
+
+  private def interpretInput(p:Map[Any,Any]):Map[Any,Any] = p
+
+  private def ruleMatch(state:Map[Any,Any], rules:List[Rule]) =
+    (rules.find(_.execute(state))).getOrElse(Agent.NoOp)
+
+  private def ruleAction(rule:Rule) = rule.action
+}
+//Simple Reflex Vacuum Agent
+class SimpleReflexVacuumAgent extends Agent {
+  private var proxy:SimpleReflexAgent = null
+
+  //primary constructor code
+  private var rules:List[Rule] = List()
+  rules += new Rule(new EqualCondition("status", "Dirty"), "Suck")
+  rules += new Rule(new EqualCondition("location", "A"), "Right")
+  rules += new Rule(new EqualCondition("location", "B"), "Left")
+  proxy = new SimpleReflexAgent(rules)
+
+  override def program(p:Map[Any,Any]):String = proxy.program(p)
+}
