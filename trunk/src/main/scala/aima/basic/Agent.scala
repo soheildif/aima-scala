@@ -1,11 +1,25 @@
+package aima.basic
+
 //I'm using immutable Map for Percept.
+
+//Any object that can be placed in the Environment
+class Object {
+  import scala.collection.mutable.Map
+  private val attributes:Map[Any,Any] = Map()
+  
+  def setAttribute(key:Any, value:Any) {
+    attributes += (key -> value)
+  }
+
+  def getAttribute(key:Any) = attributes(key)
+}
 
 //Agent
 object Agent {
   val NoOp = "NoOp" 
 }
 
-abstract class Agent {
+abstract class Agent extends Object{
 
   //the agent program
   def program(p:Map[Any, Any]):String
@@ -40,7 +54,7 @@ class TableDrivenAgent(table:Map[List[Map[Any,Any]], String]) extends Agent {
 object TableDrivenVacuumAgent {
   //percept sequence table for
   //this agent
-  private val table = init
+   val table = init
 
   private def init() ={
     var tmpTable:Map[List[Map[Any,Any]],String] = Map()
@@ -469,24 +483,4 @@ class TableDrivenVacuumAgent extends Agent {
 
   override def program(p:Map[Any, Any]):String = 
     tableDrivenAgent.program(p)
-}
-//Tests
-import org.scalatest.Suite
-
-//TableDrivenAgent test
-class TableDriveAgentTest extends Suite{
-  def test() {
-    val ps1:List[Map[Any,Any]] = List(Map("key1" -> "val1"))
-    val ps2:List[Map[Any,Any]] = List(Map("key1" -> "val1"),
-                   Map("key1" -> "val2"))
-    val ps3:List[Map[Any,Any]] = List(Map("key1" -> "val1"),
-                   Map("key1" -> "val2"),
-                   Map("key1" -> "val3"))
-    val table = Map(ps1 -> "action1", ps2 -> "action2", ps3 -> "action3")
-    val agent = new TableDrivenAgent(table)
-    assert("action1" == agent.execute(Map[Any,Any]("key1" -> "val1")))
-    assert("action2" == agent.execute(Map[Any,Any]("key1" -> "val2")))
-    assert("action3" == agent.execute(Map[Any,Any]("key1" -> "val3")))
-    assert("NoOp" == agent.execute(Map[Any,Any]("key1" -> "val4")))
-  }
 }
