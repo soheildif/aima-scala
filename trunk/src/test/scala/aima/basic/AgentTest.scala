@@ -23,12 +23,37 @@ class TableDriveAgentTest extends Suite{
 
 //TableDrivenVacuumAgent test
 class TableDrivenVacuumAgentTest extends Suite {
+
+  private var agent:TableDrivenVacuumAgent = null
+  private var result:String = ""
+
+  def setUp() {
+    agent = new TableDrivenVacuumAgent()
+    result = "";
+  }
+
   def testCleanClean() {
-    var result = ""
-    val tve:TrivialVacuumEnvironment = new TrivialVacuumEnvironment("Clean", "Clean")
-    tve.addAgent(new TableDrivenVacuumAgent(), "A")
+    template("Clean", "Clean","RightLeftRightNoOp")
+  }
+
+  def testCleanDirty() {
+    template("Clean", "Dirty", "RightSuckLeftNoOp")
+  }
+
+  def testDirtyClean() {
+    template("Dirty", "Clean","SuckRightLeftNoOp")
+  }
+
+  def testDirtyDirty() {
+    template("Dirty", "Dirty", "SuckRightSuckNoOp")
+  }
+
+  private def template(statusA:String, statusB:String, expectedResult:String) {
+    setUp()
+    val tve:TrivialVacuumEnvironment = new TrivialVacuumEnvironment(statusA, statusB)
+    tve.addAgent(agent, "A")
     tve.registerView((cmd:String) => result += cmd)
     tve.stepUntilNoOp()
-    assert("RightLeftRightNoOp" == result)
+    assert(expectedResult == result)
   }
 }
