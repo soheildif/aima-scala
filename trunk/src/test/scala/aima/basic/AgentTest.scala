@@ -57,3 +57,41 @@ class TableDrivenVacuumAgentTest extends Suite {
     assert(expectedResult == result)
   }
 }
+
+//ReflexVacuumAgent test
+class ReflexVacuumAgentTest extends Suite {
+
+  private var agent:ReflexVacuumAgent = null
+  private var result:String = ""
+
+  def setUp() {
+    agent = new ReflexVacuumAgent()
+    result = "";
+  }
+
+  def testCleanClean() {
+    template("Clean", "Clean","RightLeftRightLeftRightLeftRightLeft", 8)
+  }
+
+  def testCleanDirty() {
+    template("Clean", "Dirty", "RightSuckLeftRightLeftRightLeftRight", 8)
+  }
+
+  def testDirtyClean() {
+    template("Dirty", "Clean","SuckRightLeftRightLeftRightLeftRight", 8)
+  }
+
+  def testDirtyDirty() {
+    template("Dirty", "Dirty", "SuckRightSuckLeftRightLeftRightLeft", 8)
+  }
+
+  private def template(statusA:String, statusB:String, expectedResult:String, steps:Int) {
+    setUp()
+    val tve:TrivialVacuumEnvironment = new TrivialVacuumEnvironment(statusA, statusB)
+    tve.addAgent(agent, "A")
+    tve.registerView((cmd:String) => result += cmd)
+    tve.step(8)
+    assert(expectedResult == result)
+  }
+}
+
