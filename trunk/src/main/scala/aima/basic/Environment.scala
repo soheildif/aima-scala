@@ -3,7 +3,7 @@ package aima.basic
 abstract class Environment {
   
   import scala.collection.immutable.Map
-  //var objects:List[EnvironmentObject] = List()
+  var objects:List[Object] = List()
   var agents:List[Agent] = List()
   private var views:List[(String)=>Unit] = List()
   
@@ -13,15 +13,14 @@ abstract class Environment {
   def addAgent(a:Agent):Unit
   
   def registerView(view: (String)=>Unit) {
-    objects = view :: objects
+    views = view :: views
   }
 
   def updateViews(cmd:String) {
-    views.foreach(view =>
-      view.envChanged(cmd))
+    views.foreach(view => view(cmd))
   }
 
-  def isDone = !agents.exists(a => a.isAlive())
+  def isDone() = !agents.exists(a => a.isAlive())
 
   def createExogenousChange() {}
 
@@ -83,43 +82,47 @@ abstract class Environment {
 }
 
 
-import scala.collections.mutable.Map
+import scala.collection.mutable.Map
 import scala.util.Random
 class TrivialVacuumEnvironment() extends Environment {
   private val locationA = "A"
   private val locationB = "B"
-  private val status:Map[String,String]
+  private val status:Map[String,String] = Map()
 
   //code for primary constructor, generate random status for both locations
   private val rand = new Random()
   private val tmp1 = if(rand.nextBoolean) "Clean" else "Dirty"
   private val tmp2 = if(rand.nextBoolean) "Clean" else "Dirty"
-  status = Map(locationA -> tmp1, locationB -> tmp2)
+  status += (locationA -> tmp1)
+  status += (locationB -> tmp2)
 
   //auxiliary constructor
   def this(statusA:String,statusB:String) {
     this()
-    status.addEntry("A" -> statusA, "B" -> statusB)
+    status += (locationA -> statusA)
+    status += (locationB -> statusB)
   }
 
   override def executeAction(agent:Agent, action:String) {
+    val performance:Int = agent.getAttribute("performance").asInstanceOf[Int]
     if(action == "Right") {
       agent.setAttribute("location", locationB)
-      agent.setAttribute("performance", agent.getAttribute("performance") - 1)
+      agent.setAttribute("performance", performance - 1)
     }else if(action == "Left") {
       agent.setAttribute("location", locationA)
-      agent.setAttribute("performance", agent.getAttribute("performance") - 1)
+      agent.setAttribute("performance", performance - 1)
     }else if(action == "Suck") {
-      if(this.status(agent.location) == "Dirty") {
-        this.status(agent.location) = "Clean"
-        agent.setAttribute("performance", agent.getAttribute("performance") + 10)
+      val location:String = agent.getAttribute("location").asInstanceOf[String]
+      if(this.status(location) == "Dirty") {
+        this.status += (location -> "Clean")
+        agent.setAttribute("performance", performance + 10)
       }
     }else if(action == Agent.NoOp) agent.die()
   }
 
   override def getPerceptSeenBy(a:Agent) = {
     scala.collection.immutable.Map("location" -> a.getAttribute("location"),
-                                   "status" -> this.status(a.getAttribute("location")))
+                                   "status" -> this.status(a.getAttribute("location").asInstanceOf[String]))
   }
  
   override def addAgent(a:Agent) { addAgent(a, "A") }
