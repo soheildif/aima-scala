@@ -25,9 +25,10 @@ class TableDriveAgentTest extends Suite{
 class TableDrivenVacuumAgentTest extends Suite {
   def testCleanClean() {
     var result = ""
-    TrivialVacuumEnvironment tve = new TrivialVacuumEnviroenment("Clean", "Clean")
+    val tve:TrivialVacuumEnvironment = new TrivialVacuumEnvironment("Clean", "Clean")
     tve.addAgent(new TableDrivenVacuumAgent(), "A")
-    tve.registerView(_ => result += _)
+    tve.registerView((cmd:String) => result += cmd)
     tve.stepUntilNoOp()
     assert("RightLeftRightNoOp" == result)
+  }
 }

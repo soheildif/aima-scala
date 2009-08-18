@@ -33,7 +33,7 @@ abstract class Agent extends Object{
   def live() {alive = true}
   def die() {alive = false}
 
-  def isAlive = alive
+  def isAlive() = alive
 }
 
 
@@ -60,13 +60,13 @@ object TableDrivenVacuumAgent {
     var tmpTable:Map[List[Map[Any,Any]],String] = Map()
 
     //Level1: 4 states
-    var ps:List[Map[Any,Any]] = List(Map("location" -> "A", "state" -> "Clean"))
+    var ps:List[Map[Any,Any]] = List(Map("location" -> "A", "status" -> "Clean"))
     tmpTable += (ps -> "Right")
-    ps = List(Map("location" -> "A", "state" -> "Dirty"))
+    ps = List(Map("location" -> "A", "status" -> "Dirty"))
     tmpTable += (ps -> "Suck")
-    ps = List(Map("location" -> "B", "state" -> "Clean"))
+    ps = List(Map("location" -> "B", "status" -> "Clean"))
     tmpTable += (ps -> "Left")
-    ps = List(Map("location" -> "A", "state" -> "Dirty"))
+    ps = List(Map("location" -> "A", "status" -> "Dirty"))
     tmpTable += (ps -> "Suck")
 
     //Level2: 4x4 states
