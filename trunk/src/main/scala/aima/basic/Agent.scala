@@ -511,9 +511,11 @@ class SimpleReflexAgent(rules:List[Rule]) extends Agent {
   private def interpretInput(p:Map[Any,Any]):Map[Any,Any] = p
 
   private def ruleMatch(state:Map[Any,Any], rules:List[Rule]) =
-    (rules.find(_.execute(state))).getOrElse(Agent.NoOp)
+    (rules.find(_.execute(state))).getOrElse(null)
 
-  private def ruleAction(rule:Rule) = rule.action
+  private def ruleAction(rule:Rule):String = {
+    if(rule != null) rule.action else Agent.NoOp
+  }
 }
 //Simple Reflex Vacuum Agent
 class SimpleReflexVacuumAgent extends Agent {
@@ -525,6 +527,52 @@ class SimpleReflexVacuumAgent extends Agent {
   rules += new Rule(new EqualCondition("location", "A"), "Right")
   rules += new Rule(new EqualCondition("location", "B"), "Left")
   proxy = new SimpleReflexAgent(rules)
+
+  override def program(p:Map[Any,Any]):String = proxy.program(p)
+}
+
+
+//Reflex Agent With State
+class ReflexAgentWithState(var state:Map[Any,Any],rules:List[Rule],
+    updateState:(Map[Any,Any], String, Map[Any,Any]) => Map[Any,Any]) extends Agent {
+
+  private var action:String = null //the most recent action
+
+  override def program(percept:Map[Any, Any]):String = {
+    state = updateState(state, action, percept)
+    val rule = ruleMatch(state,rules)
+    ruleAction(rule)
+  }
+
+  private def ruleMatch(state:Map[Any,Any], rules:List[Rule]) =
+    (rules.find(_.execute(state))).getOrElse(null)
+
+  private def ruleAction(rule:Rule):String = {
+    if(rule != null) rule.action else Agent.NoOp
+  }
+}
+//Reflex Vacuum Agent with State
+class ReflexVacuumAgentWithState extends Agent {
+  private var proxy:ReflexAgentWithState = null
+
+  //primary constructor code
+  private var rules:List[Rule] = List()
+  rules += new Rule(new AndCondition(new EqualCondition("statusLocationA", "Clean"),
+                                     new EqualCondition("statusLocationB", "Clean")),
+                    Agent.NoOp)
+  rules += new Rule(new EqualCondition("currentStatus", "Dirty"), "Suck")
+  rules += new Rule(new EqualCondition("currentLocation", "A"), "Right")
+  rules += new Rule(new EqualCondition("currentLocation", "B"), "Left")
+  
+  private val updateState = (state:Map[Any,Any], action:String, percept:Map[Any,Any]) =>
+    {
+      var resultState = state
+      resultState += ("currentLocation" -> percept("location"))
+      resultState += ("currentStatus" -> percept("status"))
+      resultState += ("statusLocation" + percept("location") -> percept("status"))
+      resultState
+    }
+  proxy = new ReflexAgentWithState(Map(),rules, updateState) 
 
   override def program(p:Map[Any,Any]):String = proxy.program(p)
 }

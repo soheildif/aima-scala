@@ -132,3 +132,41 @@ class SimpleReflexVacuumAgentTest extends Suite {
   }
 }
 
+//ReflexVacuumAgentWithState test
+class ReflexVacuumAgentWithStateTest extends Suite {
+
+  private var agent:ReflexVacuumAgentWithState = null
+  private var result:String = ""
+
+  def setUp() {
+    agent = new ReflexVacuumAgentWithState()
+    result = "";
+  }
+
+  def testCleanClean() {
+    template("Clean", "Clean","RightNoOp")
+  }
+
+  def testCleanDirty() {
+    template("Clean", "Dirty", "RightSuckNoOp")
+  }
+
+  def testDirtyClean() {
+    template("Dirty", "Clean","SuckRightNoOp")
+  }
+
+  def testDirtyDirty() {
+    template("Dirty", "Dirty", "SuckRightSuckNoOp")
+  }
+
+  private def template(statusA:String, statusB:String, expectedResult:String) {
+    setUp()
+    val tve:TrivialVacuumEnvironment = new TrivialVacuumEnvironment(statusA, statusB)
+    tve.addAgent(agent, "A")
+    tve.registerView((cmd:String) => result += cmd)
+    tve.stepUntilNoOp()
+    println("expected result=" + result)
+    assert(expectedResult == result, result)
+  }
+}
+
