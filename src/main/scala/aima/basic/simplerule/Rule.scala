@@ -15,7 +15,8 @@ abstract class Condition {
 
 class EqualCondition(key:Any, value:Any) extends Condition {
   override def execute(state:Map[Any,Any]):Boolean = {
-    if(state(key) == value) true else false
+    
+    if(state.contains(key) && state(key) == value) true else false
   }
 }
 
