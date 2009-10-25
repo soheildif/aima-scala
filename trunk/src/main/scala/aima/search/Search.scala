@@ -7,7 +7,7 @@ import java.lang.{String => Action}
 abstract class State
 
 //Problem
-class Problem(initState: State, goalState: State){
+abstract class Problem(initState: State, goalState: State){
   
   def initialState: State = initState
   def goalTest(s: State): Boolean
