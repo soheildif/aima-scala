@@ -39,7 +39,7 @@ class FifoFringe[A] extends Fringe[A] {
 
   import scala.collection.immutable.Queue
 
-  var fifoQ = Queue[A]()
+  var fifoQ: Queue[A] = Queue.Empty
 
   def isEmpty = fifoQ.isEmpty
 
