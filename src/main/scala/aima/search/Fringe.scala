@@ -7,11 +7,11 @@ abstract class Fringe[A] {
   def insert(elm: A): Fringe[A]
   def removeFirst: Option[A]
   
-  def insertAll(s: List[A]): Fringe[A] = {
-    def loop(s: List[A]) = 
+  def insertAll(s: List[A]) = {
+    def loop(s: List[A]): Fringe[A] = 
       s match {
         case Nil => this
-        case x :: rest => insert(x)
+        case x :: rest => insert(x); loop(rest)
       }
     loop(s)
   }
