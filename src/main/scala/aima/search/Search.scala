@@ -25,36 +25,31 @@ object Node {
 }
 
 
-sealed abstract class SearchResult
-case final class Success[A <: Action](actions: List[A]) extends SearchResult
-case final class Failure extends SearchResult
-case final class CutOff extends SearchResult
+//Possible Search Results
+sealed abstract class SearchResult[+A <: Action]
+final case class Success[A <: Action](actions: List[A]) extends SearchResult
+final case class Failure extends SearchResult[Nothing]
+final case class CutOff extends SearchResult[Nothing]
 
 //Uninformed search algorithms
-object Uninformed {
-
-  /**
-   * Search Result --
-   * Type: Either[Boolean,List[A <: Action]]
-   *   Left(true) = FAILURE
-   *   Left(false) = CUT-OFF
-   *   Right(x) = success, x is List of Actions to be executed
-   * */
-  
+object Uninformed {  
 
   //Tree Search
   private def TreeSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
 
-    def loop(fringe:Fringe[Node[S,A]]): Either[Boolean, List[A]] =
+    def loop(fringe:Fringe[Node[S,A]]): Option[Node[S,A]] =
       fringe.removeFirst match {
-        case None => Left(true)
+        case None => None
         case Some(node) if problem.goalTest(node.state) => 
           println(node.state.toString()) //print the state when goal is reached
-          Right(node.solution)
+          Some(node)
         case Some(node) => loop(fringe.insertAll(expand(node,problem)))
       }
     
-    loop(fringe.insert(Node(problem.initialState)))
+    loop(fringe.insert(Node(problem.initialState))) match {
+      case None => Failure()
+      case Some(node) => Success(node.solution)
+    }
   }
 
   //TODO: correct evaluation of path cost
@@ -68,45 +63,37 @@ object Uninformed {
   def DepthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new LifoFringe[Node[S,A]]())
 
   def DepthLimitedSearch[S <: State, A <: Action](problem: Problem[S,A], limit: Int) =
-    recursiveDLS(Node[S,A](problem.initialState),problem,limit) match {
-      case Left(x) => Left(x)
-      case Right(node) =>
-        println(node.state.toString()) //print the state when goal is reached
-        Right(node.solution)
-    }
+    recursiveDLS(Node[S,A](problem.initialState),problem,limit)
 
-  //TODO: does not seem to be correct
-  private def recursiveDLS[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A], limit: Int): Either[Boolean,Node[S,A]] = {
-    if (problem.goalTest(node.state)) Right(node) //success
+  private def recursiveDLS[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult[A] = {
+    if (problem.goalTest(node.state)) Success(node.solution) //success
     else {
-      if (node.depth == limit) Left(false) //cut-off limit reached
+      if (node.depth == limit) CutOff() //cut-off limit reached
       else {
-        def loop(nodes: List[Node[S,A]]): Either[Boolean, Node[S,A]] = 
+        def loop(nodes: List[Node[S,A]], cutoffOccured: Boolean): SearchResult[A] = 
           nodes match {
-            case Nil => Left(true) //failure
+            case Nil => if(cutoffOccured) CutOff() else Failure()
             case n :: rest => 
               recursiveDLS(n,problem,limit) match {
-                case Left(true) => Left(true)
-                case Left(false) => loop(rest)
-                case Right(n) => Right(n)
+                case Failure() => loop(rest,cutoffOccured)
+                case CutOff() => loop(rest,true)
+                case Success(n) => Success(n)
               }
           }
-        loop(expand(node,problem))
+        loop(expand(node,problem),false)
       }
     }
   }
 
-  //actually IterativeDeepeningSearch needs to differentiate for cutoff, or
-  //else it'll keep on trying indefinitely
-/*  def IterativeDeepeningSearch[A <: State](problem: Problem[A]) = {
-    def loop(depth: Int) =
-      DepthLimitedSearch(depth) match {
-        case None => loop(depth + 1) //cut-off
-        case FAILURE => None //failed
-        case Some(sol) => Some(sol) //solution found
+  def IterativeDeepeningSearch[S <: State, A <: Action](problem: Problem[S,A]) = {
+    def loop(depth: Int): SearchResult[A] =
+      DepthLimitedSearch(problem,depth) match {
+        case CutOff() => loop(depth + 1)
+        case Failure() => Failure()
+        case Success(actions) => Success(actions)
       }
     loop(0)
   }
-  */    
+
   //others to come
 }
