@@ -58,4 +58,22 @@ class SearchTest extends Suite {
     }
   }
 
+  def testBFGS() {
+    val problem = new NQueensProblem(8)
+    
+    Uninformed.BreadthFirstGraphSearch(problem) match {
+      case Success(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
+      case CutOff() | Failure() => assert(false) 
+    }
+  }
+
+  def testDFGS() {
+    val problem = new NQueensProblem(8)
+    
+    Uninformed.DepthFirstGraphSearch(problem) match {
+      case Success(x) => assert(x == List(Put(1), Put(5), Put(8), Put(6), Put(3), Put(7), Put(2), Put(4)))
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+
 }

@@ -95,5 +95,29 @@ object Uninformed {
     loop(0)
   }
 
+    private def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
+
+    def loop(fringe:Fringe[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
+      fringe.removeFirst match {
+        case None => None
+        case Some(node) if problem.goalTest(node.state) => 
+          println(node.state.toString()) //print the state when goal is reached
+          Some(node)
+        case Some(node) => 
+          if(closed.exists(_ == node)) 
+             loop(fringe,closed) //ignore successors if node is already visited
+          else
+            loop(fringe.insertAll(expand(node,problem)), node :: closed)
+      }
+    
+    loop(fringe.insert(Node(problem.initialState)),Nil) match {
+      case None => Failure()
+      case Some(node) => Success(node.solution)
+    }
+  }
+
+  def BreadthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) = GraphSearch(problem, new FifoFringe[Node[S,A]]())
+
+  def DepthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) = GraphSearch(problem, new LifoFringe[Node[S,A]]())
   //others to come
 }
