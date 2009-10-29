@@ -8,11 +8,10 @@ abstract class Action
 
 
 //Problem
-abstract class Problem[A <: State](initState: A){
-  type B <: Action
-  def initialState: A = initState
-  def goalTest(s: A): Boolean
-  def successorFn(s: A): List[(B,A)]
+abstract class Problem[S <: State, A <: Action](initState: S){
+  def initialState: S = initState
+  def goalTest(s: S): Boolean
+  def successorFn(s: S): List[(A,S)]
 }
 
 //******************************************************************
@@ -30,7 +29,10 @@ case class Put(y: Int) extends Action
  * co-ordinates x,y go from 1 to size, both start at bottom left corner of the board
  * 
  * queens: current state of queens on the board, queens = List(5,4,3) means
- * there are 3 queens on the board at positions (1,3), (2,4), (3,5) 
+ * 3 queens at following positions
+ * X: 3 2 1
+ * Y: 5 4 3
+ *  
  * */
 class NQueensState private (size: Int, queens: List[Int]) extends State {
 
@@ -66,6 +68,7 @@ class NQueensState private (size: Int, queens: List[Int]) extends State {
     loop(queens,len)
   }
 
+  //printable board representation
   override def toString() = {
     var result = ""
     val tmp = queens.reverse
@@ -87,15 +90,13 @@ object NQueensState {
   def apply(size: Int) = new NQueensState(size,List())
 }
 
-class NQueensProblem(size: Int) extends Problem[NQueensState](NQueensState(size)) {
-
-  type B = Put
+class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(size)) {
 
   override def goalTest(s: NQueensState) = (s.numQueens == size)
 
-  override def successorFn(s: NQueensState): List[(B,NQueensState)] = {
+  override def successorFn(s: NQueensState): List[(Put,NQueensState)] = {
 
-    def loop(i:Int, successors: List[(B,NQueensState)]): List[(B,NQueensState)] = {
+    def loop(i:Int, successors: List[(Put,NQueensState)]): List[(Put,NQueensState)] = {
       if (i > size) successors
       else {
         if (s.isSafe(Put(i)))
@@ -107,7 +108,7 @@ class NQueensProblem(size: Int) extends Problem[NQueensState](NQueensState(size)
   }
 }
 
-// ** Romania map problem **
+// ** Route finding Map based problem **
 /*case class In(val location: Symbol) extends State
 case class Go(val location: Symbol) extends Action
 

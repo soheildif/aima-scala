@@ -25,8 +25,8 @@ class SearchTest extends Suite {
     val problem = new NQueensProblem(8)
     
     Uninformed.BreadthFirstSearch(problem) match {
-      case None => assert(false)
-      case Some(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
+      case Left(_) => assert(false)
+      case Right(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
     }
   }
 
@@ -34,8 +34,15 @@ class SearchTest extends Suite {
     val problem = new NQueensProblem(8)
     
     Uninformed.DepthFirstSearch(problem) match {
-      case None => assert(false)
-      case Some(x) => assert(x == List(Put(1), Put(5), Put(8), Put(6), Put(3), Put(7), Put(2), Put(4)))
+      case Left(_) => assert(false)
+      case Right(x) => assert(x == List(Put(1), Put(5), Put(8), Put(6), Put(3), Put(7), Put(2), Put(4)))
+    }
+  }
+
+  def testDLS() {
+    Uninformed.DepthLimitedSearch(new NQueensProblem(8),7) match {
+      case Left(_) => assert(false)
+      case Right(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
     }
   }
 
