@@ -4,6 +4,38 @@ package aima.basic
 import org.scalatest.Suite
 import VacuumWorld._
 
+//TableDrivenVacuumAgent test
+class TableDrivenVacuumAgentTest extends Suite {
+
+  def testCleanClean() {
+    template("Clean", "Clean","RightLeft")
+  }
+
+  def testCleanDirty() {
+    template("Clean", "Dirty", "RightSuck")
+  }
+
+  def testDirtyClean() {
+    template("Dirty", "Clean","SuckRight")
+  }
+
+  def testDirtyDirty() {
+    template("Dirty", "Dirty", "SuckRight")
+  }
+
+  private def template(statusA:String, statusB:String, expectedResult:String) {
+    var result = ""
+    val tve = new TrivialVacuumEnvironment[TableDrivenVacuumAgent](statusA, statusB)
+    tve.addAgent(new TableDrivenVacuumAgent("A"))
+    tve.registerView((action:Option[String]) => 
+                        action match {
+                          case None => ; //nothing
+                          case Some(x) => result += x })
+    tve.stepUntilNoOp()
+    assert(expectedResult == result)
+  }
+}
+
 //ReflexVacuumAgent test
 class ReflexVacuumAgentTest extends Suite {
 

@@ -60,7 +60,33 @@ object VacuumWorld {
     override protected val table = {
       var tmpTable:Map[List[Percept],Action] = Map();
 
+      //Level1: 4 states
       tmpTable += List(("A","Clean")) -> "Right"
+      tmpTable += List(("A","Dirty")) -> "Suck"
+      tmpTable += List(("B","Clean")) -> "Left"
+      tmpTable += List(("B","Dirty")) -> "Suck"
+      
+      //Level2: 4 X 4 states
+      tmpTable += List(("A","Clean"),("A","Clean")) -> "Right"
+      tmpTable += List(("A","Clean"),("A","Dirty")) -> "Suck"
+      tmpTable += List(("A","Dirty"),("A","Clean")) -> "Right"
+      tmpTable += List(("A","Dirty"),("A","Dirty")) -> "Suck"
+
+      tmpTable += List(("B","Clean"),("B","Clean")) -> "Left"
+      tmpTable += List(("B","Clean"),("B","Dirty")) -> "Suck"
+      tmpTable += List(("B","Dirty"),("B","Clean")) -> "Left"
+      tmpTable += List(("B","Dirty"),("B","Dirty")) -> "Suck"
+
+      tmpTable += List(("A","Clean"),("B","Clean")) -> "Left"
+      tmpTable += List(("A","Dirty"),("B","Clean")) -> "Left"
+      tmpTable += List(("A","Clean"),("B","Dirty")) -> "Suck"
+      tmpTable += List(("A","Dirty"),("B","Dirty")) -> "Suck"
+
+      tmpTable += List(("B","Clean"),("A","Clean")) -> "Right"
+      tmpTable += List(("B","Dirty"),("A","Clean")) -> "Right"
+      tmpTable += List(("B","Clean"),("A","Dirty")) -> "Suck"
+      tmpTable += List(("B","Dirty"),("A","Dirty")) -> "Suck"
+
       tmpTable
     }
   }
