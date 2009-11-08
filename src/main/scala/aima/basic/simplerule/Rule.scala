@@ -1,34 +1,25 @@
 package aima.basic.simplerule
 
-class Rule(cond:Condition, act:String) {
-  require(cond != null)
-  require(act != null)
-  val condition = cond
-  val action = act
-
-  def execute(state:Map[Any,Any]):Boolean = cond.execute(state)
+class Rule[S,A](val condition: Condition[S], val action: A) {
+  def execute(state: S):Boolean = condition.execute(state)
 }
 
-abstract class Condition {
-  def execute(state:Map[Any,Any]):Boolean
+abstract class Condition[S] {
+  def execute(state: S):Boolean
 }
 
-class EqualCondition(key:Any, value:Any) extends Condition {
-  override def execute(state:Map[Any,Any]):Boolean = {
-    
-    if(state.contains(key) && state(key) == value) true else false
-  }
+class EqualCondition[S](p: (S) => Boolean) extends Condition[S] {
+  override def execute(state: S):Boolean = p(state) 
 }
 
-class NotCondition(cond:Condition) extends Condition {
-  override def execute(state:Map[Any,Any]):Boolean = !cond.execute(state)
+class NotCondition[S](cond:Condition[S]) extends Condition[S] {
+  override def execute(state: S):Boolean = !cond.execute(state)
 }
 
-class AndCondition(left:Condition, right:Condition) extends Condition {
-  override def execute(state:Map[Any,Any]):Boolean = left.execute(state) && right.execute(state)
+class AndCondition[S](left:Condition[S], right:Condition[S]) extends Condition[S] {
+  override def execute(state: S):Boolean = left.execute(state) && right.execute(state)
 }
 
-class OrCondition(left:Condition, right:Condition) extends Condition {
-  override def execute(state:Map[Any,Any]):Boolean = left.execute(state) || right.execute(state)
+class OrCondition[S](left:Condition[S], right:Condition[S]) extends Condition[S] {
+  override def execute(state: S):Boolean = left.execute(state) || right.execute(state)
 }
-
