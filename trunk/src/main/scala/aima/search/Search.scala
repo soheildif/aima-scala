@@ -95,7 +95,7 @@ object Uninformed {
     loop(0)
   }
 
-    private def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
+   private def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
 
     def loop(fringe:Fringe[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
       fringe.removeFirst match {
@@ -104,10 +104,11 @@ object Uninformed {
           println(node.state.toString()) //print the state when goal is reached
           Some(node)
         case Some(node) => 
-          if(closed.exists(_ == node)) 
+          if(closed.exists(_.state == node.state)) 
              loop(fringe,closed) //ignore successors if node is already visited
-          else
+          else {
             loop(fringe.insertAll(expand(node,problem)), node :: closed)
+          }
       }
     
     loop(fringe.insert(Node(problem.initialState)),Nil) match {

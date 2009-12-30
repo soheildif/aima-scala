@@ -109,64 +109,110 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 }
 
 // ** Route finding Map based problem **
-/*case class In(val location: Symbol) extends State
+class LocationMap {
+
+  import scala.collection.mutable.Map
+
+  private val map: Map[Symbol,Map[Symbol,Double]] = Map()
+  
+  def addLocation(location: Symbol) {
+    if(!map.contains(location))
+      map + Tuple(location, Map())
+  }
+  
+  def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean) {
+    if(map.contains(from) && map.contains(to)) {
+      map.getOrElse(from,null) + Tuple(to,cost)
+      if(bidirectional) map.getOrElse(to,null) + Tuple(from,cost)
+    }
+    else
+      throw new IllegalArgumentException(from + " and " + to + " must be added.")
+  }
+  
+  //Add bi-directional path -- will be removed once scala-2.8 is in 
+  //Scala-2.8 has concept of providing defaul value
+  //to arguments, then we will not need this overloaded method
+  //instead the above method signature will become
+  //def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean = true)
+  def addPath(from: Symbol, to: Symbol, cost: Double) { addPath(from,to,cost,true) }
+
+  def getLocationsReachableFrom(from: Symbol): List[Symbol] =
+    map.get(from) match {
+      case Some(x) => x.keys.toList
+      case None => throw new IllegalStateException(from + " is not in the map.")
+    }
+}
+
+
+case class In(val location: Symbol) extends State
 case class Go(val location: Symbol) extends Action
 
-class RomaniaMapProblem(initState: In, goalState: In) extends Problem(initState) {
+class MapProblem(locationMap: LocationMap, initState: In, goalState: In) extends Problem[In,Go](initState){
 
-  override def goalState(s: In): Boolean =
-    (s,goalState) match {
-      case (In(x),In(y)) if x==y  => true
-      case _ => false
-    }
+  override def goalTest(s: In): Boolean = s == goalState
 
   override def successorFn(s: In): List[(Go,In)] =
-    locationMap(s.location).map((x: (Symbol,Int)) => (Go(x._1),In(x._1)))
-
-
-  //adjacency list represenation of the map of romania
-  import scala.collection.immutable.Map
-  
-  private val oradea = 'Oradea
-  private val zerind = 'Zerind
-  private val arad = 'Arad
-  private val timisoara = 'Timisoara
-  private val lugoj = 'Lugoj
-  private val mehadia = 'Mehadia
-  private val dobreta = 'Dobreta
-  private val sibiu = 'Sibiu
-  private val rimnicuVilcea = 'RimnicuVilcea
-  private val craiova = 'Craiova
-  private val fagaras = 'Fagaras
-  private val pitesti = 'Pitesti
-  private val bucharest = 'Bucharest
-  private val giurgiu = 'Giurgiu
-  private val neamt = 'Neamt
-  private val iasi = 'Iasi
-  private val vaslui = 'Vaslui
-  private val urziceni = 'Urziceni
-  private val hirsova = 'Hirsova
-  private val eforie = 'Eforie
-
-  private val locationMap = Map(oradea -> List((zerind,71), (sibiu,151)),
-                              zerind -> List((oradea,71), (arad,75)),
-                              arad -> List((zerind,75), (sibiu,140), (timisoara,118)),
-                              timisoara -> List((arad,118), (lugoj,111)),
-                              lugoj -> List((timisoara,111), (mehadia,70)),
-                              mehadia -> List((lugoj,70), (dobreta,75)),
-                              dobreta -> List((mehadia,75), (craiova,120)),
-                              sibiu -> List((oradea,151),(arad,140),(fagaras,99),(rimnicuVilcea,80)),
-                              rimnicuVilcea -> List((sibiu,80),(pitesti,97),(craiova,146)),
-                              craiova -> List((dobreta,120),(rimnicuVilcea,146),(pitesti,138)),
-                              fagaras -> List((sibiu,99),(bucharest,211)),
-                              pitesti -> List((rimnicuVilcea,97),(craiova,138),(bucharest,101)),
-                              bucharest -> List((fagaras,211),(pitesti,101),(giurgiu,90),(urziceni,85)),
-                              giurgiu -> List((bucharest,90)),
-                              neamt -> List((iasi, 87)),
-                              iasi -> List((neamt,87), (vaslui,92)),
-                              vaslui -> List((iasi, 92), (urziceni, 142)),
-                              urziceni -> List((bucharest, 85), (vaslui, 142), (hirsova, 98)),
-                              hirsova -> List((urziceni, 98), (eforie, 86)),
-                              eforie -> List((hirsova, 86)))
+    s match {
+      case In(x) =>
+        locationMap.getLocationsReachableFrom(x).map(
+          (s:Symbol) => (Go(s),In(s)))
+    }
 }
-*/
+
+object ExampleMapFactory {
+  
+  def createRomaniaMap() = {
+    val result = new LocationMap()
+
+    //add all Romania cities
+    result.addLocation('Oradea);
+    result.addLocation('Zerind);
+    result.addLocation('Arad);
+    result.addLocation('Timisoara);
+    result.addLocation('Lugoj);
+    result.addLocation('Mehadia);
+    result.addLocation('Dobreta);
+    result.addLocation('Sibiu);
+    result.addLocation('Rimnicu_Vilcea);
+    result.addLocation('Craiova);
+    result.addLocation('Fagaras);
+    result.addLocation('Pitesti);
+    result.addLocation('Bucharest);
+    result.addLocation('Giurgiu);
+    result.addLocation('Neamt);
+    result.addLocation('Iasi);
+    result.addLocation('Vaslui);
+    result.addLocation('Urziceni);
+    result.addLocation('Hirsova);
+    result.addLocation('Eforie);
+    
+    //add various paths
+    result.addPath('Oradea, 'Zerind, 71);
+    result.addPath('Arad, 'Zerind, 75);
+    result.addPath('Arad, 'Timisoara, 118);
+    result.addPath('Timisoara, 'Lugoj, 111);
+    result.addPath('Lugoj, 'Mehadia, 70);
+    result.addPath('Mehadia, 'Dobreta, 75);
+    result.addPath('Oradea, 'Sibiu, 151);
+    result.addPath('Arad, 'Sibiu, 140);
+    result.addPath('Dobreta, 'Craiova, 120);
+    result.addPath('Sibiu, 'Fagaras, 99);
+    result.addPath('Sibiu, 'Rimnicu_Vilcea, 80);
+    result.addPath('Rimnicu_Vilcea, 'Craiova, 146);
+    result.addPath('Rimnicu_Vilcea, 'Pitesti, 97);
+    result.addPath('Craiova, 'Pitesti, 138);
+    result.addPath('Fagaras, 'Bucharest, 211);
+    result.addPath('Pitesti, 'Bucharest, 101);
+    result.addPath('Bucharest, 'Giurgiu, 90);
+    result.addPath('Bucharest, 'Urziceni, 85);
+    result.addPath('Neamt, 'Iasi, 87);
+    result.addPath('Iasi, 'Vaslui, 92);
+    result.addPath('Vaslui, 'Urziceni, 142);
+    result.addPath('Urziceni, 'Hirsova, 98);
+    result.addPath('Hirsova, 'Eforie, 86);
+
+    result
+  }
+}
+
+
