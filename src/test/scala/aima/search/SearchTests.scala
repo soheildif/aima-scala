@@ -77,3 +77,28 @@ class SearchTest extends Suite {
   }
 
 }
+
+// BreadthFirstGraphSearch Test
+class BFGStest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
+    Uninformed.BreadthFirstGraphSearch(p) match {
+      case Success(x) => assert(x == List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+}
+
+// DepthFirstGraphSearch Test
+class DFGStest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    Uninformed.DepthFirstGraphSearch(p) match {
+      case Success(x) => assert(x.last == Go('Bucharest)) //it'll find different path in different execution
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+}
