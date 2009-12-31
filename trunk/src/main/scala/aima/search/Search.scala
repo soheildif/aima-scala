@@ -55,7 +55,7 @@ object Uninformed {
   //TODO: correct evaluation of path cost
   private def expand[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A]) =
     problem.successorFn(node.state).map(
-      (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, 0))
+      (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, node.pathCost + problem.stepCost(node.state,t._2)))
 
 
   def BreadthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new FifoFringe[Node[S,A]]())
@@ -117,8 +117,20 @@ object Uninformed {
     }
   }
 
-  def BreadthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) = GraphSearch(problem, new FifoFringe[Node[S,A]]())
+  def BreadthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+    GraphSearch(problem, new FifoFringe[Node[S,A]]())
 
-  def DepthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) = GraphSearch(problem, new LifoFringe[Node[S,A]]())
-  //others to come
+  def DepthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+    GraphSearch(problem, new LifoFringe[Node[S,A]]())
+
+  def UniformCostSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+    GraphSearch(problem, new PriorityQueueFringe[Node[S,A]](
+      (node) => new Ordered[Node[S,A]] {
+                    def compare(that: Node[S,A]) = {
+                      val dif = that.pathCost - node.pathCost
+                      if(dif < 0.0) -1
+                      else if(dif > 0.0) 1
+                      else 0 }
+      }))
+    
 }

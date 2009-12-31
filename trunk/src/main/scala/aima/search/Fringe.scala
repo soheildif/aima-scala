@@ -18,7 +18,7 @@ abstract class Fringe[A] {
 }
 
 class LifoFringe[A] extends Fringe[A] {
-  var lifoQ = List[A]()
+  private var lifoQ = List[A]()
 
   def isEmpty = lifoQ.isEmpty
 
@@ -39,7 +39,7 @@ class FifoFringe[A] extends Fringe[A] {
 
   import scala.collection.immutable.Queue
 
-  var fifoQ: Queue[A] = Queue.Empty
+  private var fifoQ: Queue[A] = Queue.Empty
 
   def isEmpty = fifoQ.isEmpty
 
@@ -55,4 +55,21 @@ class FifoFringe[A] extends Fringe[A] {
         case (first,rest) => fifoQ = rest; Some(first)
       }
     }
+}
+
+class PriorityQueueFringe[A](orderer: (A)=>Ordered[A]) extends Fringe[A] {
+  
+  import scala.collection.mutable.PriorityQueue
+
+  private val pq = new PriorityQueue[A]()(orderer)
+
+  def isEmpty = pq.isEmpty
+
+  def insert(elm: A) = {
+    pq += elm
+    this
+  }
+
+  def removeFirst : Option[A] =
+    if (pq.isEmpty) None else Some(pq.dequeue)
 }
