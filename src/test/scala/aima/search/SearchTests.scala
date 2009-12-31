@@ -102,3 +102,16 @@ class DFGStest extends Suite {
     }
   }
 }
+
+// UniformCostSearch Test
+class UniformCostSearchTest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
+    Uninformed.UniformCostSearch(p) match {
+      case Success(x) => assert(x == List(Go('Sibiu), Go('Rimnicu_Vilcea), Go('Pitesti), Go('Bucharest)))
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+}

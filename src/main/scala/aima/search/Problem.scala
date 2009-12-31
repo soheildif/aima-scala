@@ -12,6 +12,10 @@ abstract class Problem[S <: State, A <: Action](initState: S){
   def initialState: S = initState
   def goalTest(s: S): Boolean
   def successorFn(s: S): List[(A,S)]
+  
+  //provided one can go from TO to in single step, what is the
+  //cost
+  def stepCost(from: S, to: S): Double
 }
 
 //******************************************************************
@@ -106,6 +110,9 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
     }
     loop(1,Nil)
   }
+
+  //to be implemented properly
+  override def stepCost(from: NQueensState, to: NQueensState): Double = 0.0
 }
 
 // ** Route finding Map based problem **
@@ -141,6 +148,16 @@ class LocationMap {
       case Some(x) => x.keys.toList
       case None => throw new IllegalStateException(from + " is not in the map.")
     }
+
+  //path distance from To to, provided they are adjacent
+  def distance(from: Symbol, to: Symbol): Double = {
+    map.get(from) match {
+      case Some(tmp) => tmp.get(to) match {
+                          case Some(x) => x
+                          case None => throw new IllegalStateException(from + " and " + to + " are not adjacent."); }
+      case None => throw new IllegalStateException(from + " is not a location.");
+    }
+  }
 }
 
 
@@ -157,6 +174,10 @@ class MapProblem(locationMap: LocationMap, initState: In, goalState: In) extends
         locationMap.getLocationsReachableFrom(x).map(
           (s:Symbol) => (Go(s),In(s)))
     }
+
+  override def stepCost(from: In, to: In): Double =
+    (from,to) match {
+      case (In(f),In(t)) => locationMap.distance(f,t) }
 }
 
 object ExampleMapFactory {
