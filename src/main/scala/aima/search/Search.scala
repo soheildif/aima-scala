@@ -2,7 +2,7 @@ package aima.search
 
 //Node :  a node in the search tree
 class Node[S <: State, A <: Action](val state: S, val parent: Option[Node[S,A]], 
-           val action: Option[A], val depth: Int, val pathCost: Double) {
+           val action: Option[A], val depth: Int, val pathCost: Double, val fValue: Double) {
   
   def solution: List[A] = {
     def loop(node: Node[S,A], a: List[A]): List[A] =
@@ -15,13 +15,13 @@ class Node[S <: State, A <: Action](val state: S, val parent: Option[Node[S,A]],
 }
 
 object Node {
-  def apply[S <: State,A <: Action](state:S) = new Node[S,A](state,None,None,0,0.0)
+  def apply[S <: State,A <: Action](state:S) = new Node[S,A](state,None,None,0,0.0,0.0)
 
   def apply[S <: State,A <: Action](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int) =
-    new Node[S,A](state,parent,action,depth,0.0)
+    new Node[S,A](state,parent,action,depth,0.0,0.0)
 
-  def apply[S <: State,A <: Action](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int, pathCost: Double) =
-    new Node[S,A](state,parent,action,depth,pathCost)
+  def apply[S <: State,A <: Action](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int, pathCost: Double, fValue: Double) =
+    new Node[S,A](state,parent,action,depth,pathCost,fValue)
 }
 
 
@@ -52,15 +52,23 @@ object Uninformed {
     }
   }
 
-  //TODO: correct evaluation of path cost
-  private def expand[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A]) =
+  def expand[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A]) =
     problem.successorFn(node.state).map(
-      (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, node.pathCost + problem.stepCost(node.state,t._2)))
+      (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, 
+                               node.pathCost + problem.stepCost(node.state,t._2),
+                               node.pathCost + problem.stepCost(node.state,t._2) + problem.estimatedCostToGoal(t._2)))
 
 
   def BreadthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new FifoFringe[Node[S,A]]())
 
   def DepthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new LifoFringe[Node[S,A]]())
+
+  def UniformCostSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+    TreeSearch(problem, new PriorityQueueFringe[Node[S,A]](
+      (node) => new Ordered[Node[S,A]] {
+                    def compare(that: Node[S,A]) =
+                      that.pathCost.compare(node.pathCost)
+      }))
 
   def DepthLimitedSearch[S <: State, A <: Action](problem: Problem[S,A], limit: Int) =
     recursiveDLS(Node[S,A](problem.initialState),problem,limit)
@@ -95,7 +103,7 @@ object Uninformed {
     loop(0)
   }
 
-   private def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
+   def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
 
     def loop(fringe:Fringe[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
       fringe.removeFirst match {
@@ -122,15 +130,34 @@ object Uninformed {
 
   def DepthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) =
     GraphSearch(problem, new LifoFringe[Node[S,A]]())
+}
 
-  def UniformCostSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+//Informed Search Algorithms
+object Informed {
+
+  import Uninformed._;
+
+  def GreedyBestFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) =
     GraphSearch(problem, new PriorityQueueFringe[Node[S,A]](
       (node) => new Ordered[Node[S,A]] {
-                    def compare(that: Node[S,A]) = {
-                      val dif = that.pathCost - node.pathCost
-                      if(dif < 0.0) -1
-                      else if(dif > 0.0) 1
-                      else 0 }
+                    def compare(that: Node[S,A]) =
+                      problem.estimatedCostToGoal(that.state).compare(problem.estimatedCostToGoal(node.state))
       }))
-    
+
+  def AStarSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+    GraphSearch(problem, new PriorityQueueFringe[Node[S,A]](
+      (node) => new Ordered[Node[S,A]] {
+                    def compare(that: Node[S,A]) =
+                      that.fValue.compare(node.fValue)
+      }))
+
+  //def RecursiveBestFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+
+  //returns success, failure AND a new f-cost limit
+  /*def RBFS(proble: Problem, node: Node, f_limit: Double) = {
+    if(problem.goalTest(node.state)) Success(node)
+    val successors = expand(node,problem)
+    if(successors.isEmpty) Failure(INFINITY)
+    else {
+      val fVals = PriorityQueueFringe*/
 }

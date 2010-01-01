@@ -82,7 +82,7 @@ class SearchTest extends Suite {
 class BFGStest extends Suite {
 
   def testRomaniaMap() {
-    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
     Uninformed.BreadthFirstGraphSearch(p) match {
       case Success(x) => assert(x == List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
@@ -95,7 +95,7 @@ class BFGStest extends Suite {
 class DFGStest extends Suite {
 
   def testRomaniaMap() {
-    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     Uninformed.DepthFirstGraphSearch(p) match {
       case Success(x) => assert(x.last == Go('Bucharest)) //it'll find different path in different execution
       case CutOff() | Failure() => assert(false)
@@ -107,7 +107,7 @@ class DFGStest extends Suite {
 class UniformCostSearchTest extends Suite {
 
   def testRomaniaMap() {
-    val p = new MapProblem(ExampleMapFactory.createRomaniaMap(), In('Arad), In('Bucharest))
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
     Uninformed.UniformCostSearch(p) match {
       case Success(x) => assert(x == List(Go('Sibiu), Go('Rimnicu_Vilcea), Go('Pitesti), Go('Bucharest)))
@@ -115,3 +115,29 @@ class UniformCostSearchTest extends Suite {
     }
   }
 }
+
+// GreedyBestFirstSearch Test
+class GreedyBestFirstSearchTest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
+    Informed.GreedyBestFirstSearch(p) match {
+      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.Fagaras), Go(RomaniaMapFactory.Bucharest)))
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+}
+
+// AStarSearch Test
+class AStarSearchTest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
+    Informed.AStarSearch(p) match {
+      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
+      case CutOff() | Failure() => assert(false)
+    }
+  }
+}
+
+// RecursiveBestFirstSearch Test
