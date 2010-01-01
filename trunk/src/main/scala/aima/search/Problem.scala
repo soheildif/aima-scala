@@ -16,6 +16,10 @@ abstract class Problem[S <: State, A <: Action](initState: S){
   //provided one can go from TO to in single step, what is the
   //cost
   def stepCost(from: S, to: S): Double
+
+  //estimated cost to reach goal from
+  //given state ( h(n) )
+  def estimatedCostToGoal(from: S): Double
 }
 
 //******************************************************************
@@ -113,6 +117,9 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 
   //to be implemented properly
   override def stepCost(from: NQueensState, to: NQueensState): Double = 0.0
+
+  //to be implemented properly
+  override def estimatedCostToGoal(from: NQueensState): Double = 0.0
 }
 
 // ** Route finding Map based problem **
@@ -121,19 +128,22 @@ class LocationMap {
   import scala.collection.mutable.Map
 
   private val map: Map[Symbol,Map[Symbol,Double]] = Map()
+
+  //straight line distance between various pair of locations
+  private val stDist : Map[(Symbol,Symbol),Double] = Map()
   
   def addLocation(location: Symbol) {
     if(!map.contains(location))
-      map + Tuple(location, Map())
+      map += Tuple(location, Map[Symbol,Double]())
   }
   
   def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean) {
-    if(map.contains(from) && map.contains(to)) {
-      map.getOrElse(from,null) + Tuple(to,cost)
-      if(bidirectional) map.getOrElse(to,null) + Tuple(from,cost)
-    }
-    else
-      throw new IllegalArgumentException(from + " and " + to + " must be added.")
+    //add locations if they are not there already
+    addLocation(from)
+    addLocation(to)
+    
+    map.getOrElse(from,null) += Tuple(to,cost)
+    if(bidirectional) map.getOrElse(to,null) += Tuple(from,cost)
   }
   
   //Add bi-directional path -- will be removed once scala-2.8 is in 
@@ -142,6 +152,17 @@ class LocationMap {
   //instead the above method signature will become
   //def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean = true)
   def addPath(from: Symbol, to: Symbol, cost: Double) { addPath(from,to,cost,true) }
+
+  def addStraightLineDistance(loc1: Symbol, loc2: Symbol, dist: Double) {
+    //add locations if not there already
+    addLocation(loc1)
+    addLocation(loc2)
+    
+    stDist.contains((loc1,loc2)) match {
+      case true => stDist += Tuple((loc1,loc2),dist)
+      case false => stDist += Tuple((loc2,loc1),dist)
+    }
+  }
 
   def getLocationsReachableFrom(from: Symbol): List[Symbol] =
     map.get(from) match {
@@ -158,6 +179,14 @@ class LocationMap {
       case None => throw new IllegalStateException(from + " is not a location.");
     }
   }
+
+  //straight line distance between from AND to
+  def straightLineDistance(from: Symbol, to: Symbol): Double =
+    stDist.contains((from,to)) match {
+      case true => stDist.getOrElse((from,to),0)
+      case false if stDist.contains((to,from)) => stDist.getOrElse((to,from),0)
+      case _ => throw new IllegalStateException("straight line distance between " + from + " and " + to + " is not available.")
+    } 
 }
 
 
@@ -178,60 +207,86 @@ class MapProblem(locationMap: LocationMap, initState: In, goalState: In) extends
   override def stepCost(from: In, to: In): Double =
     (from,to) match {
       case (In(f),In(t)) => locationMap.distance(f,t) }
+
+  override def estimatedCostToGoal(from: In): Double =
+    (from,goalState) match {
+      case (In(f),In(g)) => locationMap.straightLineDistance(f,g)}
 }
 
-object ExampleMapFactory {
+
+object RomaniaMapFactory {
+
+  val Oradea = 'Oradea
+  val Zerind = 'Zerind
+  val Arad = 'Arad
+  val Timisoara = 'Timisoara
+  val Lugoj = 'Lugoj
+  val Mehadia = 'Mehadia
+  val Dobreta = 'Dobreta
+  val Sibiu = 'Sibiu
+  val RimnicuVilcea = 'Rimnicu_Vilcea
+  val Craiova = 'Craiova
+  val Fagaras = 'Fagaras
+  val Pitesti = 'Pitesti
+  val Bucharest = 'Bucharest
+  val Giurgiu = 'Giurgiu
+  val Neamt = 'Neamt
+  val Iasi = 'Iasi
+  val Vaslui = 'Vaslui
+  val Urziceni = 'Urziceni
+  val Hirsova = 'Hirsova
+  val Eforie = 'Eforie
+  
   
   def createRomaniaMap() = {
     val result = new LocationMap()
 
-    //add all Romania cities
-    result.addLocation('Oradea);
-    result.addLocation('Zerind);
-    result.addLocation('Arad);
-    result.addLocation('Timisoara);
-    result.addLocation('Lugoj);
-    result.addLocation('Mehadia);
-    result.addLocation('Dobreta);
-    result.addLocation('Sibiu);
-    result.addLocation('Rimnicu_Vilcea);
-    result.addLocation('Craiova);
-    result.addLocation('Fagaras);
-    result.addLocation('Pitesti);
-    result.addLocation('Bucharest);
-    result.addLocation('Giurgiu);
-    result.addLocation('Neamt);
-    result.addLocation('Iasi);
-    result.addLocation('Vaslui);
-    result.addLocation('Urziceni);
-    result.addLocation('Hirsova);
-    result.addLocation('Eforie);
-    
     //add various paths
-    result.addPath('Oradea, 'Zerind, 71);
-    result.addPath('Arad, 'Zerind, 75);
-    result.addPath('Arad, 'Timisoara, 118);
-    result.addPath('Timisoara, 'Lugoj, 111);
-    result.addPath('Lugoj, 'Mehadia, 70);
-    result.addPath('Mehadia, 'Dobreta, 75);
-    result.addPath('Oradea, 'Sibiu, 151);
-    result.addPath('Arad, 'Sibiu, 140);
-    result.addPath('Dobreta, 'Craiova, 120);
-    result.addPath('Sibiu, 'Fagaras, 99);
-    result.addPath('Sibiu, 'Rimnicu_Vilcea, 80);
-    result.addPath('Rimnicu_Vilcea, 'Craiova, 146);
-    result.addPath('Rimnicu_Vilcea, 'Pitesti, 97);
-    result.addPath('Craiova, 'Pitesti, 138);
-    result.addPath('Fagaras, 'Bucharest, 211);
-    result.addPath('Pitesti, 'Bucharest, 101);
-    result.addPath('Bucharest, 'Giurgiu, 90);
-    result.addPath('Bucharest, 'Urziceni, 85);
-    result.addPath('Neamt, 'Iasi, 87);
-    result.addPath('Iasi, 'Vaslui, 92);
-    result.addPath('Vaslui, 'Urziceni, 142);
-    result.addPath('Urziceni, 'Hirsova, 98);
-    result.addPath('Hirsova, 'Eforie, 86);
+    result.addPath(Oradea, Zerind, 71);
+    result.addPath(Arad, Zerind, 75);
+    result.addPath(Arad, Timisoara, 118);
+    result.addPath(Timisoara, Lugoj, 111);
+    result.addPath(Lugoj, Mehadia, 70);
+    result.addPath(Mehadia, Dobreta, 75);
+    result.addPath(Oradea, Sibiu, 151);
+    result.addPath(Arad, Sibiu, 140);
+    result.addPath(Dobreta, Craiova, 120);
+    result.addPath(Sibiu, Fagaras, 99);
+    result.addPath(Sibiu,RimnicuVilcea, 80);
+    result.addPath(RimnicuVilcea, Craiova, 146);
+    result.addPath(RimnicuVilcea, Pitesti, 97);
+    result.addPath(Craiova, Pitesti, 138);
+    result.addPath(Fagaras, Bucharest, 211);
+    result.addPath(Pitesti, Bucharest, 101);
+    result.addPath(Bucharest, Giurgiu, 90);
+    result.addPath(Bucharest, Urziceni, 85);
+    result.addPath(Neamt, Iasi, 87);
+    result.addPath(Iasi, Vaslui, 92);
+    result.addPath(Vaslui, Urziceni, 142);
+    result.addPath(Urziceni, Hirsova, 98);
+    result.addPath(Hirsova, Eforie, 86);
 
+    //add straight line distances
+    result.addStraightLineDistance(Bucharest,Bucharest,0);
+    result.addStraightLineDistance(Bucharest,Arad,366);
+    result.addStraightLineDistance(Bucharest,Craiova,160);
+    result.addStraightLineDistance(Bucharest,Dobreta,242);
+    result.addStraightLineDistance(Bucharest,Eforie,161);
+    result.addStraightLineDistance(Bucharest,Fagaras,176);
+    result.addStraightLineDistance(Bucharest,Giurgiu,77);
+    result.addStraightLineDistance(Bucharest,Hirsova,151);
+    result.addStraightLineDistance(Bucharest,Iasi,226);
+    result.addStraightLineDistance(Bucharest,Lugoj,244);
+    result.addStraightLineDistance(Bucharest,Mehadia,241);
+    result.addStraightLineDistance(Bucharest,Neamt,234);
+    result.addStraightLineDistance(Bucharest,Oradea,380);
+    result.addStraightLineDistance(Bucharest,Pitesti,100);
+    result.addStraightLineDistance(Bucharest,RimnicuVilcea,193);
+    result.addStraightLineDistance(Bucharest,Sibiu,253);
+    result.addStraightLineDistance(Bucharest,Timisoara,329);
+    result.addStraightLineDistance(Bucharest,Urziceni,80);
+    result.addStraightLineDistance(Bucharest,Vaslui,199);
+    result.addStraightLineDistance(Bucharest,Zerind,374);
     result
   }
 }
