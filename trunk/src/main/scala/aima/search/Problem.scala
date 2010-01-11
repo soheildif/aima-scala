@@ -123,21 +123,21 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 }
 
 // ** Route finding Map based problem **
-class LocationMap {
+class LocationMap[A] {
 
   import scala.collection.mutable.Map
 
-  private val map: Map[Symbol,Map[Symbol,Double]] = Map()
+  private val map: Map[A,Map[A,Double]] = Map()
 
   //straight line distance between various pair of locations
-  private val stDist : Map[(Symbol,Symbol),Double] = Map()
+  private val stDist : Map[(A,A),Double] = Map()
   
-  def addLocation(location: Symbol) {
+  def addLocation(location: A) {
     if(!map.contains(location))
-      map += Tuple(location, Map[Symbol,Double]())
+      map += Tuple(location, Map[A,Double]())
   }
   
-  def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean) {
+  def addPath(from: A, to: A, cost: Double, bidirectional: Boolean) {
     //add locations if they are not there already
     addLocation(from)
     addLocation(to)
@@ -151,9 +151,9 @@ class LocationMap {
   //to arguments, then we will not need this overloaded method
   //instead the above method signature will become
   //def addPath(from: Symbol, to: Symbol, cost: Double, bidirectional: Boolean = true)
-  def addPath(from: Symbol, to: Symbol, cost: Double) { addPath(from,to,cost,true) }
+  def addPath(from: A, to: A, cost: Double) { addPath(from,to,cost,true) }
 
-  def addStraightLineDistance(loc1: Symbol, loc2: Symbol, dist: Double) {
+  def addStraightLineDistance(loc1: A, loc2: A, dist: Double) {
     //add locations if not there already
     addLocation(loc1)
     addLocation(loc2)
@@ -164,14 +164,14 @@ class LocationMap {
     }
   }
 
-  def getLocationsReachableFrom(from: Symbol): List[Symbol] =
+  def getLocationsReachableFrom(from: A): List[A] =
     map.get(from) match {
       case Some(x) => x.keys.toList
       case None => throw new IllegalStateException(from + " is not in the map.")
     }
 
   //path distance from To to, provided they are adjacent
-  def distance(from: Symbol, to: Symbol): Double = {
+  def distance(from: A, to: A): Double = {
     map.get(from) match {
       case Some(tmp) => tmp.get(to) match {
                           case Some(x) => x
@@ -181,7 +181,7 @@ class LocationMap {
   }
 
   //straight line distance between from AND to
-  def straightLineDistance(from: Symbol, to: Symbol): Double =
+  def straightLineDistance(from: A, to: A): Double =
     stDist.contains((from,to)) match {
       case true => stDist.getOrElse((from,to),0)
       case false if stDist.contains((to,from)) => stDist.getOrElse((to,from),0)
@@ -190,25 +190,25 @@ class LocationMap {
 }
 
 
-case class In(val location: Symbol) extends State
-case class Go(val location: Symbol) extends Action
+case class In[A](val location: A) extends State
+case class Go[A](val location: A) extends Action
 
-class MapProblem(locationMap: LocationMap, initState: In, goalState: In) extends Problem[In,Go](initState){
+class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalState: In[Symbol]) extends Problem[In[Symbol],Go[Symbol]](initState){
 
-  override def goalTest(s: In): Boolean = s == goalState
+  override def goalTest(s: In[Symbol]): Boolean = s == goalState
 
-  override def successorFn(s: In): List[(Go,In)] =
+  override def successorFn(s: In[Symbol]): List[(Go[Symbol],In[Symbol])] =
     s match {
       case In(x) =>
         locationMap.getLocationsReachableFrom(x).map(
           (s:Symbol) => (Go(s),In(s)))
     }
 
-  override def stepCost(from: In, to: In): Double =
+  override def stepCost(from: In[Symbol], to: In[Symbol]): Double =
     (from,to) match {
       case (In(f),In(t)) => locationMap.distance(f,t) }
 
-  override def estimatedCostToGoal(from: In): Double =
+  override def estimatedCostToGoal(from: In[Symbol]): Double =
     (from,goalState) match {
       case (In(f),In(g)) => locationMap.straightLineDistance(f,g)}
 }
@@ -239,7 +239,7 @@ object RomaniaMapFactory {
   
   
   def createRomaniaMap() = {
-    val result = new LocationMap()
+    val result = new LocationMap[Symbol]()
 
     //add various paths
     result.addPath(Oradea, Zerind, 71);

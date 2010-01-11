@@ -141,3 +141,42 @@ class AStarSearchTest extends Suite {
 }
 
 // RecursiveBestFirstSearch Test
+/* class RecursiveBestFirstSearchTest extends Suite {
+
+  def testRomaniaMap() {
+    val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
+    Informed.RecursiveBestFirstSearch(p) match {
+      case Success(x) => println(x); assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
+      case CutOff() | Failure() => println("no result found"); assert(false)
+    }
+  } 
+}*/
+
+//Online DFS Tests
+class OnlineDFSTest extends Suite {
+
+  def testAIMA2eFig4_18() {
+    var result:List[Go[String]] = List()
+    val map = new LocationMap[String]()
+    map.addPath("1,1", "1,2", 1.0);
+    map.addPath("1,1", "2,1", 1.0);
+    map.addPath("2,1", "3,1", 1.0);
+    map.addPath("2,1", "2,2", 1.0);
+    map.addPath("3,1", "3,2", 1.0);
+    map.addPath("2,2", "2,3", 1.0);
+    map.addPath("3,2", "3,3", 1.0);
+    map.addPath("2,3", "1,3", 1.0);
+
+    val problem = new OnlineSearchMapProblem[String](map,In("3,3"))
+    val agent = new OnlineDFSMapAgent[String](problem,In("1,1"))
+
+    val env = new MapEnvironment[OnlineDFSMapAgent[String],String]()
+
+    env.registerView( _ match {
+                          case Some(a) => result = a :: result
+                          case None => ;})
+    env.addAgent(agent)
+    env.stepUntilNoOp()
+    assert(result.reverse == List(Go(1,2), Go(1,1), Go(2,1), Go(3,1), Go(3,2), Go(3,1), Go(2,1), Go(2,2), Go(2,3), Go(2,2), Go(2,1), Go(1,1), Go(2,1), Go(2,2), Go(2,3), Go(1,3), Go(2,3), Go(1,3), Go(2,3), Go(2,2), Go(2,1), Go(3,1), Go(3,2), Go(3,3)))
+  }
+}
