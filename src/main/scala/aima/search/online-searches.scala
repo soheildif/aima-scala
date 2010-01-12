@@ -71,8 +71,67 @@ abstract class OnlineSearchProblem[P,A] {
 
   def actions(s: P): Stack[A]
   def goalTest(s: P): Boolean
+  //heuristic function, estimated cost to reach
+  //goal from state "s"
+  def h(s: P): Double
+  //cost to reach "to" from "from" in one step by
+  //taking "action"
+  def stepCost(from: P, action: A, to: P): Double
 }
 
+trait LRTAStar[P,A] {
+
+  val problem: OnlineSearchProblem[P,A]
+
+  import scala.collection.mutable.{Map}
+  //H, a table of cost estimates indexed by state
+  private val H = Map[P,Double]()
+  //Result, a table indexed with (action,state) -> state
+  private val Result = Map[(A,P),P]()
+
+  //previous state and action
+  private var s:Option[P] = None
+  private var a:Option[A] = None
+
+  def search(sPrime: P): Option[A] = {
+
+    if(problem.goalTest(sPrime)) a = None
+    else {
+      //if sPrime is a new state(not in H)
+      if (!H.contains(sPrime))
+        H += (sPrime -> problem.h(sPrime))
+
+      (s,a) match {
+        case (Some(prevS),Some(prevA)) => {
+          //unless s is null
+          Result += ((prevA,prevS) -> sPrime)
+          H += (prevS -> 
+                problem.actions(prevS).map((p) => LRTAStarCost(prevS,p,Result.get((p,prevS)),H)).
+                  foldLeft(Math.MAX_DOUBLE)((p,q) => if(p < q) p else q)) }
+        case _ => ;
+      }
+
+      val as = problem.actions(sPrime)
+      a = Some(as.foldLeft(as.pop)(
+                  (p,q) => if(LRTAStarCost(sPrime,p,Result.get((p,sPrime)),H) < LRTAStarCost(sPrime,q,Result.get((q,sPrime)),H)) p else q))
+    }
+    s = Some(sPrime)
+    a
+  }
+
+  private def LRTAStarCost(s: P,a: A,sPrime: Option[P],H: Map[P,Double]): Double =
+    sPrime match {
+      case Some(x) if H.contains(x) => problem.stepCost(s,a,x) + H.getOrElse(x,0.0)
+      case _ => problem.h(s)
+    }
+
+  def reset {
+    s = None
+    a = None
+    H.clear
+    Result.clear
+  } 
+}
 
 import aima.basic.{Environment,Agent}
 
@@ -101,6 +160,12 @@ class OnlineDFSMapAgent[S](prob: OnlineSearchMapProblem[S],initState: In[S]) ext
   override def agentProgram(percept: In[S]) = search(percept)
 }
 
+class LRTAStarMapAgent[S](prob: OnlineSearchMapProblem[S],initState: In[S]) extends MapAgent[S] with LRTAStar[In[S],Go[S]] {
+  var currentState = initState
+  val problem = prob
+  override def agentProgram(percept: In[S]) = search(percept)
+}
+
 class OnlineSearchMapProblem[S](locationMap: LocationMap[S], goalState: In[S]) 
 extends OnlineSearchProblem[In[S],Go[S]] {
 
@@ -114,4 +179,12 @@ extends OnlineSearchProblem[In[S],Go[S]] {
   }
 
   def goalTest(s: In[S]) = s == goalState
+
+  def h(s: In[S]) =
+    (s,goalState) match {
+      case (In(x),In(y)) => locationMap.straightLineDistance(x,y) }
+
+  def stepCost(from: In[S], action: Go[S], to: In[S]) = 
+    (from,to) match {
+      case (In(x),In(y)) => locationMap.distance(x,y) }
 }
