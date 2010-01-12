@@ -2,6 +2,7 @@ package aima.search
 
 //Tests
 import org.scalatest.Suite
+import org.scalatest.ImpSuite
 
 
 class NQueensProblemTest {
@@ -177,6 +178,111 @@ class OnlineDFSTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result.reverse == List(Go(1,2), Go(1,1), Go(2,1), Go(3,1), Go(3,2), Go(3,1), Go(2,1), Go(2,2), Go(2,3), Go(2,2), Go(2,1), Go(1,1), Go(2,1), Go(2,2), Go(2,3), Go(1,3), Go(2,3), Go(1,3), Go(2,3), Go(2,2), Go(2,1), Go(3,1), Go(3,2), Go(3,3)))
+    assert(result.reverse == List(Go("1,2"), Go("1,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,1"), Go("2,1"), Go("2,2"), Go("2,3"), Go("2,2"), Go("2,1"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,3"), Go("1,3"), Go("2,3"), Go("1,3"), Go("2,3"), Go("2,2"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
   }
 }
+
+class LRTAStarTest extends Suite {
+
+  private def map = {
+    val aMap = new LocationMap[String]()
+    aMap.addPath("A", "B", 4.0);
+    aMap.addPath("B", "C", 4.0);
+    aMap.addPath("C", "D", 4.0);
+    aMap.addPath("D", "E", 4.0);
+    aMap.addPath("E", "F", 4.0);
+
+    aMap.addStraightLineDistance("F","F",0);
+    aMap.addStraightLineDistance("F","A",1);
+    aMap.addStraightLineDistance("F","B",1);
+    aMap.addStraightLineDistance("F","C",1);
+    aMap.addStraightLineDistance("F","D",1);
+    aMap.addStraightLineDistance("F","E",1);
+    aMap
+  }
+
+  def testAlreadyAtgoal() {
+    var result:List[Go[String]] = List()
+
+    val problem = new OnlineSearchMapProblem[String](map,In("A"))
+    val agent = new LRTAStarMapAgent[String](problem,In("A"))
+
+    val env = new MapEnvironment[LRTAStarMapAgent[String],String]()
+
+    env.registerView( _ match {
+                          case Some(a) => result = a :: result
+                          case None => ;})
+    env.addAgent(agent)
+    env.stepUntilNoOp()
+    assert(result == List())
+  }
+
+  def testNormalSearch() {
+    var result:List[Go[String]] = List()
+
+    val problem = new OnlineSearchMapProblem[String](map,In("F"))
+    val agent = new LRTAStarMapAgent[String](problem,In("A"))
+
+    val env = new MapEnvironment[LRTAStarMapAgent[String],String]()
+
+    env.registerView( _ match {
+                          case Some(a) => result = a :: result
+                          case None => ;})
+    env.addAgent(agent)
+    env.stepUntilNoOp()
+    assert(result.reverse == List(Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("D"), Go("E"), Go("F")))
+  }
+
+  def testNoPath() {
+    val aMap = map
+    aMap.addStraightLineDistance("G","G",0);
+    aMap.addStraightLineDistance("G","A",1);
+    aMap.addStraightLineDistance("G","B",1);
+    aMap.addStraightLineDistance("G","C",1);
+    aMap.addStraightLineDistance("G","D",1);
+    aMap.addStraightLineDistance("G","E",1);
+    aMap.addStraightLineDistance("G","F",1);
+    
+    var result:List[Go[String]] = List()
+
+    val problem = new OnlineSearchMapProblem[String](aMap,In("G"))
+    val agent = new LRTAStarMapAgent[String](problem,In("A"))
+
+    val env = new MapEnvironment[LRTAStarMapAgent[String],String]()
+
+    env.registerView( _ match {
+                          case Some(a) => result = a :: result
+                          case None => ;})
+    env.addAgent(agent)
+    env.step(14) //or else it'll run forever
+
+    assert(result.reverse == List(Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("D"), Go("E")))
+  }
+}
+
+/*
+class MyTest extends Suite {
+
+  var x = -1
+
+  override def beforeEach() {
+    println("setup called")
+    x = 1
+  }
+  
+  override def afterEach() {
+    println("teardown called")
+  }
+
+  def testOne() {
+    println("testOne called" + x)
+    x = 5
+    assert(true)
+  }
+
+  def testTwo() {
+    println("testTwo called" + x)
+    x = 10
+    assert(true)
+  }
+}*/
