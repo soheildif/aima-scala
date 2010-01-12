@@ -260,6 +260,27 @@ class LRTAStarTest extends Suite {
   }
 }
 
+class CSPTest extends Suite {
+
+  def testA() {
+    import AustraliaMapColorCSP._
+
+    CSPSolver.BacktrackingSearch(csp) match {
+      case None => assert(false)
+      case Some(assignment) => {
+        assert(assignment.getOrElse(Wa,-1) == Blue)
+        assert(assignment.getOrElse(Nt,-1) == Red)
+        assert(assignment.getOrElse(Q,-1) == Blue)
+        assert(assignment.getOrElse(Sa,-1) == Green)
+        assert(assignment.getOrElse(Nsw,-1) == Red)
+        assert(assignment.getOrElse(V,-1) == Blue)
+        assert(assignment.getOrElse(T,-1) == Red ||
+               assignment.getOrElse(T,-1) == Blue ||
+               assignment.getOrElse(T,-1) == Green)
+      }
+    }
+  }
+}
 /*
 class MyTest extends Suite {
 
