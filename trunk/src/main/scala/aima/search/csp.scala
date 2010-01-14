@@ -2,8 +2,8 @@
 
 package aima.search
 
-//Assignment is of type Map[K,V]
 
+//*********************** CSP solver algorithms ***************************************
 object CSPSolver {
   
   //------------ Backtracking Search ----------------
@@ -41,20 +41,36 @@ object CSPSolver {
     csp.domain(variable)
 
   //----------- MIN-CONFLICTS ------------
-  /*def MinConflicts[K,V](csp,maxSteps: Int) = {
+  def MinConflicts[K,V](csp: CSP[K,V],maxSteps: Int) = {
     
-    def loop(current: Map[K,V],count: Int): Option[Map[K,V]] =
+    def loop(current: Map[K,V],count: Int): Option[Map[K,V]] = {
       if(count < maxSteps) {
         if (csp.isComplete(current)) Some(current)
         else {
-          var variable = randomlyChosenConflictedVariable(csp,current)
-          val value = valueThatMinimizesConflicts(dadadada)
+          var variable = randomlyChoseVariableInConflict(csp,current)
+          val value = valueThatMinimizesConflicts(variable,current,csp)
           loop(current + (variable -> value),count+1)
         }
       }
-      else None
+      else None }
 
-    loop(randomCompleteAssignment(csp),0)
+    loop(randomFullAssignment(csp),0)
+  }
+
+  //Returns a randomly generated full assignment that may or
+  //may not satisfy all the constraints
+  private def randomFullAssignment[K,V](csp: CSP[K,V]) = {
+    
+    val random = new scala.util.Random(new java.util.Random)
+    def randomValue(variable: K) = {
+      val domain = csp.domain(variable)
+      if(domain.length > 0)
+        domain(random.nextInt(domain.length))
+      else
+        throw new IllegalStateException("domain for " + variable + " is empty.")
+    }
+
+    Map[K,V]() ++ (csp.variables.map((x) => (x, randomValue(x))))
   }
 
   private def valueThatMinimizesConflicts[K,V](variable: K, assignment: Map[K,V], csp: CSP[K,V]) = {
@@ -62,18 +78,55 @@ object CSPSolver {
     domain.foldLeft(domain.head)( (p,q) => if (csp.constraintsInConflict(assignment + (variable -> p)).length <
                                                                   csp.constraintsInConflict(assignment + (variable -> q)).length)
                                                             p
-                                                         else q )
-  }*/
+                                                            else q )
+  }
 
-  
+  //returns a variable(randomly chosen,higher probability for higher number of conflicts) in conflict, 
+  //provided given assignment is not partial and atleast one constraint is broken
+  private def randomlyChoseVariableInConflict[K,V](csp: CSP[K,V], assignment: Map[K,V]) = {
+    val random = new scala.util.Random(new java.util.Random)
+    def loop(constraints: List[Constraint[K,V]], variablesInConflict: List[K]): List[K] =
+      constraints match {
+        case c :: rest => {
+          if (!c.isSatisfied(assignment)) {
+            loop(rest,c.variables.filter(assignment.contains(_)) ++ variablesInConflict)
+          }
+          else loop(rest, variablesInConflict) }
+        case Nil => variablesInConflict
+      }
+    loop(csp.constraints,Nil) match {
+      case Nil => throw new IllegalStateException("assignment is either complete or partial.")
+      case x => x(random.nextInt(x.length)) }
+    
+  }  
 }
 
+//*************************** Generic CSP representation ***************************
+abstract class Constraint[K,V] {
+  def variables: List[K] //variables involved in this constraint
+  def isSatisfied(assignment: Map[K,V]): Boolean
+}
 
-abstract class CSP[K,V] {
+class CSP[K,V] {
 
-  def constraints: List[Constraint[K,V]]
-  def variables: List[K]
-  def domain(variable: K): List[V]
+  private var _variableMap = Map[K,List[V]]()
+  private var _constraints = List[Constraint[K,V]]()
+
+  def constraints = _constraints
+  def variables = List.fromIterator(_variableMap.keys)
+  def domain(variable: K) =
+    _variableMap.get(variable) match {
+      case Some(x) => x
+      case None => throw new IllegalStateException("domain for " + variable + " not found.")
+    }
+
+  def addVariables(variableAndDomains: (K,List[V]) *) {
+    _variableMap = _variableMap ++ variableAndDomains
+  }
+
+  def addConstraints(constraints: Constraint[K,V] *) {
+    _constraints = _constraints ++ constraints
+  }
 
   def isComplete(assignment: Map[K,V]) =
     constraints.forall(_.isSatisfied(assignment)) &&
@@ -88,39 +141,20 @@ abstract class CSP[K,V] {
 
   //returns List of Constraints which are in Conflict
   def constraintsInConflict(assignment: Map[K,V]) =
-    constraints.filter(_.isSatisfied(assignment))
+    constraints.filter(!_.isSatisfied(assignment))
+
+  //another implementation can return a sensible representation
+  //of the current state of the CSP
+  //For debugging purposes only.
+  def toString(assignment: Map[K,V]): String = { toString() }
 }
 
-abstract class Constraint[K,V] {
-  def variables: List[K] //variables involved in this constraint
-  def isSatisfied(assignment: Map[K,V]): Boolean
-}
+
+// *************************** Example CSPs ********************************
 
 
-//Map Coloring Constraint Satisfaction Problem
-class MapColorCSP extends CSP[String,Int] {
 
-
-  private var _variableMap = Map[String,List[Int]]()
-  private var _constraints = List[MapColorConstraint]()
-
-  def constraints = _constraints
-  def variables = List.fromIterator(_variableMap.keys)
-  def domain(variable: String) =
-    _variableMap.get(variable) match {
-      case Some(x) => x
-      case None => throw new IllegalStateException("domain for " + variable + " not found.")
-    }
-
-  def addVariables(variableAndDomains: (String,List[Int]) *) {
-    _variableMap = _variableMap ++ variableAndDomains
-  }
-
-  def addConstraints(constraints: MapColorConstraint *) {
-    _constraints = _constraints ++ constraints
-  }
-}
-
+// -------------- Map Coloring Constraint Satisfaction Problem ---------------------
 class MapColorConstraint(x1: String, x2: String) extends Constraint[String,Int] {
 
   def variables = List(x1,x2)
@@ -150,7 +184,7 @@ object AustraliaMapColorCSP {
 
   def csp = {
     
-    val prob = new MapColorCSP()
+    val prob = new CSP[String,Int]()
 
     prob.addVariables((Wa,domain),
                       (Nt,domain),
@@ -169,4 +203,63 @@ object AustraliaMapColorCSP {
                        new MapColorConstraint(V, Sa),
                        new MapColorConstraint(V, Nsw))
     prob }
+}
+
+// ------------------------------- N queens problem ------------------------------
+case class Queen(n: Int)
+class NQueensConstraint(x1: Queen, x2: Queen) extends Constraint[Queen,Int] {
+
+  def variables = List(x1,x2)
+
+  //check that no two queens are not atacking each other
+  //in the given assignment
+  def isSatisfied(assignment: Map[Queen,Int]) =
+    (assignment.get(x1),assignment.get(x2)) match {
+      case(None,_) => false
+      case (_, None) => false
+      case (Some(qy1),Some(qy2)) if qy1 == qy2 => false
+      case (Some(qy1),Some(qy2)) => {
+        (x1,x2) match {
+          case (Queen(qx1),Queen(qx2)) => Math.abs(qy1 - qy2) != Math.abs(qx1 - qx2) }
+      }
+    }
+}
+  
+//Factory for N-Queens CSP
+object NQueensCSP {
+  
+  private def generateDomain(n: Int,result: List[Int]): List[Int] = 
+    if(n == 0) result else generateDomain(n-1,n :: result)
+  
+  def csp(n: Int) = {
+    val csp = new CSP[Queen,Int]() {
+      //overriding toString to print a human-friendly version of
+      //the assignment
+      override def toString(assignment: Map[Queen,Int]) = {
+        val n = assignment.size
+        var result = "\n"
+        for(y <- n until (0,-1)) {
+          for(x <- 1 to n) {
+            assignment.get(Queen(x)) match {
+              case None => throw new IllegalStateException(Queen(x) + " is not assigned.")
+              case Some(yPos) => 
+                result = result + (if(y == yPos) "X " else "- ")
+            }
+          }
+          result = result + "\n"
+        }
+        result
+      }
+    }
+
+    val domain = generateDomain(n,Nil)
+    
+    //add n Queens
+    for(i <- 1 to n) { csp.addVariables((Queen(i),domain)) }
+
+    //add constraint for every pair of queen
+    for(i <- 1 to n; j <- i+1 to n) { csp.addConstraints(new NQueensConstraint(Queen(i),Queen(j))) }
+
+    csp //return the csp
+  }
 }
