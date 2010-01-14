@@ -262,7 +262,7 @@ class LRTAStarTest extends Suite {
 
 class CSPTest extends Suite {
 
-  def testA() {
+  def testBacktrackingSearchForAustraliaMapColorCSP() {
     import AustraliaMapColorCSP._
 
     CSPSolver.BacktrackingSearch(csp) match {
@@ -280,30 +280,19 @@ class CSPTest extends Suite {
       }
     }
   }
+
+  def testBacktrackingSearchForNQueensCSP() {
+    
+    val csp = NQueensCSP.csp(8)
+    CSPSolver.BacktrackingSearch(csp) match {
+      case None => assert(false)
+      case Some(assignment) =>
+        println("Nqueeens solution found: " + csp.toString(assignment))        
+        assert(true)
+    }
+  }
+
+  def testMinConflictsForAustraliaMapColorCSP() {
+    CSPSolver.MinConflicts(AustraliaMapColorCSP.csp,100) 
+  }
 }
-/*
-class MyTest extends Suite {
-
-  var x = -1
-
-  override def beforeEach() {
-    println("setup called")
-    x = 1
-  }
-  
-  override def afterEach() {
-    println("teardown called")
-  }
-
-  def testOne() {
-    println("testOne called" + x)
-    x = 5
-    assert(true)
-  }
-
-  def testTwo() {
-    println("testTwo called" + x)
-    x = 10
-    assert(true)
-  }
-}*/
