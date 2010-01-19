@@ -2,9 +2,9 @@ package aima.search
 
 import org.scalatest.Suite
 
-class FifoFringeTest {
+class FifoQueueTest {
   def testIt() {
-    val f = new FifoFringe[Int]
+    val f = new FifoQueue[Int]
     assert(f.isEmpty)
     f.insert(1)
     f.insertAll(List(2,3))
@@ -18,9 +18,9 @@ class FifoFringeTest {
   }
 }
 
-class LifoFringeTest {
+class LifoQueueTest {
   def testIt() {
-    val f = new LifoFringe[Int]
+    val f = new LifoQueue[Int]
     assert(f.isEmpty)
     f.insert(1)
     f.insertAll(List(2,3))
@@ -34,9 +34,9 @@ class LifoFringeTest {
   }
 }
 
-class PriorityQueueFringeTest {
+class PriorityQueueTest {
   def testIt() {
-    val f = new PriorityQueueFringe[Int](
+    val f = new PriorityQueue[Int](
       (a) => new Ordered[Int] {
                 def compare(that: Int) = that - a })
                     
@@ -52,4 +52,3 @@ class PriorityQueueFringeTest {
     assert(f.isEmpty)
   }
 }
-

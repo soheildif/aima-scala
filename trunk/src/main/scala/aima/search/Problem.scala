@@ -8,13 +8,16 @@ abstract class Action
 
 
 //Problem
-abstract class Problem[S <: State, A <: Action](initState: S){
+abstract class Problem[S, A](initState: S){
   def initialState: S = initState
   def goalTest(s: S): Boolean
+
+  //TODO: needs to be broken down into Actions(state) and TransitionModel(action,state)
   def successorFn(s: S): List[(A,S)]
   
   //provided one can go from TO to in single step, what is the
   //cost
+  //TODO: argument should be like the book describes c(s,a,s')
   def stepCost(from: S, to: S): Double
 
   //estimated cost to reach goal from
@@ -290,5 +293,3 @@ object RomaniaMapFactory {
     result
   }
 }
-
-
