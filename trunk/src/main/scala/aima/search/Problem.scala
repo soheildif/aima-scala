@@ -12,16 +12,19 @@ abstract class Problem[S, A](initState: S){
   def initialState: S = initState
   def goalTest(s: S): Boolean
 
-  //TODO: needs to be broken down into Actions(state) and TransitionModel(action,state)
+  //TODO: needs to be removed
   def successorFn(s: S): List[(A,S)]
+
+  def actions(s: S): List[A]
+  def result(s: S,a: A): S
   
   //provided one can go from TO to in single step, what is the
   //cost
-  //TODO: argument should be like the book describes c(s,a,s')
   def stepCost(from: S, to: S): Double
+  //def stepCost(from: S, action: A, to: S): Double
 
   //estimated cost to reach goal from
-  //given state ( h(n) )
+  //given state, heuristic function : h(n)
   def estimatedCostToGoal(from: S): Double
 }
 
@@ -105,6 +108,7 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 
   override def goalTest(s: NQueensState) = (s.numQueens == size)
 
+  //TODO: needs to be removed
   override def successorFn(s: NQueensState): List[(Put,NQueensState)] = {
 
     def loop(i:Int, successors: List[(Put,NQueensState)]): List[(Put,NQueensState)] = {
@@ -117,6 +121,21 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
     }
     loop(1,Nil)
   }
+
+  override def actions(s: NQueensState): List[Put] = {
+
+    def loop(i:Int, resultActions: List[Put]): List[Put] = {
+      if (i > size) resultActions
+      else {
+        if (s.isSafe(Put(i)))
+          loop(i+1, Put(i) :: resultActions)
+        else loop(i+1, resultActions)
+      }
+    }
+    loop(1,Nil)
+  }
+
+  override def result(s: NQueensState, a: Put): NQueensState = s.executeAction(a)
 
   //to be implemented properly
   override def stepCost(from: NQueensState, to: NQueensState): Double = 0.0
@@ -206,6 +225,16 @@ class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalSt
         locationMap.getLocationsReachableFrom(x).map(
           (s:Symbol) => (Go(s),In(s)))
     }
+
+  override def actions(s: In[Symbol]): List[Go[Symbol]] =
+    s match {
+      case In(x) => locationMap.getLocationsReachableFrom(x).map(Go(_))
+    }
+
+  override def result(s: In[Symbol], a: Go[Symbol]): In[Symbol] = {
+    val Go(x) = a
+    In(x)
+  }
 
   override def stepCost(from: In[Symbol], to: In[Symbol]): Double =
     (from,to) match {
