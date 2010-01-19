@@ -1,5 +1,9 @@
 package aima.basic.simplerule
 
+/** Framework for condition-action rules
+ *
+ * @author Himanshu Gupta
+ */
 class Rule[S,A](val condition: Condition[S], val action: A) {
   def execute(state: S):Boolean = condition.execute(state)
 }

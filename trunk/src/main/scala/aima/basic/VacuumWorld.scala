@@ -1,12 +1,17 @@
 package aima.basic
 
+/* This file containts code for Vacuum World environment as described in *
+ * in Fig 2.2 and various agents in it.
+ *
+ * @author Himanshu Gupta
+ */
 object VacuumWorld {
 
   type Percept = (String,String) //("A"/"B" , "Clean"/"Dirty")
   type Action = String           // "Suck" / "Left" / "Right"
   type State = Map[String,String]
 
-  //===================== Trivial Vacuum World Environment ====================
+  /* ----------------- Trivial Vacuum World Environment ------------------- */
   class TrivialVacuumEnvironment[T <: VacuumWorldAgent](private var statusA:String,
                                                         private var statusB:String) 
   extends Environment[T , Percept, Action] {
@@ -55,6 +60,7 @@ object VacuumWorld {
   abstract class VacuumWorldAgent(var location: String, var performance: Int)
            extends Agent[Percept,Action]
 
+  /* A Table-Driven-Agent based on the table described in Fig 2.3 */
   class TableDrivenVacuumAgent(l:String)
   extends VacuumWorldAgent(l,0) with TableDrivenAgent[Percept,Action] {
     override protected val table = {
@@ -91,6 +97,7 @@ object VacuumWorld {
     }
   }
 
+  /* Reflex-Vacuum-Agent as described in Fig 2.8 */
   class ReflexVacuumAgent(l: String) extends VacuumWorldAgent(l,0) {
     override def agentProgram(percept: Percept) = 
       percept match {
@@ -103,6 +110,7 @@ object VacuumWorld {
 
   import simplerule._
 
+  /* A vacuum world agent based on Simple-Reflex-Agent */
   class SimpleReflexVacuumAgent(l: String) 
   extends VacuumWorldAgent(l,0) with SimpleReflexAgent[State,Percept,Action] {
     
@@ -125,8 +133,9 @@ object VacuumWorld {
       Map("location" -> percept._1, "status" -> percept._2)
   }
 
+  /* A vacuum world agent based on Model-Based-Reflex-Agent */
   class ReflexVacuumAgentWithState(l: String)
-  extends VacuumWorldAgent(l,0) with ReflexAgentWithState[State,Percept,Action] {
+  extends VacuumWorldAgent(l,0) with ModelBasedReflexAgent[State,Percept,Action] {
     
     override protected var state: State = Map()
 

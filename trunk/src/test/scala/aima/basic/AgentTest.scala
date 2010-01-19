@@ -1,8 +1,13 @@
 package aima.basic
 
-//Tests
 import org.scalatest.Suite
 import VacuumWorld._
+
+/* This file contains tests for basic agents from the
+ * Vacuum world.
+ *
+ * @author Himanshu Gupta
+ */
 
 //TableDrivenVacuumAgent test
 class TableDrivenVacuumAgentTest extends Suite {
@@ -100,8 +105,8 @@ class SimpleReflexVacuumAgentTest extends Suite {
   }
 }
 
-//ReflexVacuumAgentWithState test
-class ReflexVacuumAgentWithStateTest extends Suite {
+//ModelBasedVacuumAgent test
+class ModelBasedVacuumAgentTest extends Suite {
 
   def testCleanClean() {
     template("Clean", "Clean","Right")
