@@ -1,7 +1,12 @@
 package aima.search
 
-//Node :  a node in the search tree
-class Node[S <: State, A <: Action](val state: S, val parent: Option[Node[S,A]], 
+/* This file contains code for algorithms from Chapter-3, AIMA-3e
+ *
+ * @author Himanshu Gutpta
+ */
+
+/* Node data structure as described in Fig 3.10 */
+class Node[S, A](val state: S, val parent: Option[Node[S,A]], 
            val action: Option[A], val depth: Int, val pathCost: Double) {
   
   def solution: List[A] = {
@@ -14,30 +19,34 @@ class Node[S <: State, A <: Action](val state: S, val parent: Option[Node[S,A]],
   }
 }
 
+/* Factory for easy Node creation */
 object Node {
-  def apply[S <: State,A <: Action](state:S) = new Node[S,A](state,None,None,0,0.0)
+  def apply[S,A](state:S) = new Node[S,A](state,None,None,0,0.0)
 
-  def apply[S <: State,A <: Action](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int) =
+  def apply[S,A](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int) =
     new Node[S,A](state,parent,action,depth,0.0)
 
-  def apply[S <: State,A <: Action](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int, pathCost: Double) =
+  def apply[S,A](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int, pathCost: Double) =
     new Node[S,A](state,parent,action,depth,pathCost)
 }
 
 
-//Possible Search Results
-sealed abstract class SearchResult[+A <: Action]
-final case class Success[A <: Action](actions: List[A]) extends SearchResult
+/* Possible search results that various search algorithms can return */
+sealed abstract class SearchResult
+final case class Success[A](actions: List[A]) extends SearchResult
 final case class Failure extends SearchResult
-final case class CutOff extends SearchResult[Nothing]
+final case class CutOff extends SearchResult
 
-//Uninformed search algorithms
+/* ------ Uninformed search algorithms --------- */
 object Uninformed {  
 
+  //TODO: Queue does not exit but Frontier and Queue does
+  //TODO: Closed-List is gone but Explored-Set is in for graph search
+  //TODO: Do we really need the base classes to be declared every where??
   //Tree Search
-  private def TreeSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
+  private def TreeSearch[S,A](problem: Problem[S,A], fringe: Queue[Node[S,A]]) = {
 
-    def loop(fringe:Fringe[Node[S,A]]): Option[Node[S,A]] =
+    def loop(fringe:Queue[Node[S,A]]): Option[Node[S,A]] =
       fringe.removeFirst match {
         case None => None
         case Some(node) if problem.goalTest(node.state) => 
@@ -52,31 +61,32 @@ object Uninformed {
     }
   }
 
-  def expand[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A]) =
+  def expand[S, A](node: Node[S,A], problem: Problem[S,A]) =
     problem.successorFn(node.state).map(
       (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, 
                                node.pathCost + problem.stepCost(node.state,t._2)))
 
-  def BreadthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new FifoFringe[Node[S,A]]())
+  def BreadthFirstSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new FifoQueue[Node[S,A]]())
 
-  def DepthFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) = TreeSearch(problem, new LifoFringe[Node[S,A]]())
+  def DepthFirstSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new LifoQueue[Node[S,A]]())
 
-  def UniformCostSearch[S <: State, A <: Action](problem: Problem[S,A]) =
-    TreeSearch(problem, new PriorityQueueFringe[Node[S,A]](
+  //TODO: Write a test case from Sibiu to Bucharest as in Fig-3.15
+  def UniformCostSearch[S, A](problem: Problem[S,A]) =
+    TreeSearch(problem, new PriorityQueue[Node[S,A]](
       (node) => new Ordered[Node[S,A]] {
                     def compare(that: Node[S,A]) =
                       that.pathCost.compare(node.pathCost)
       }))
 
-  def DepthLimitedSearch[S <: State, A <: Action](problem: Problem[S,A], limit: Int) =
+  def DepthLimitedSearch[S, A](problem: Problem[S,A], limit: Int) =
     recursiveDLS(Node[S,A](problem.initialState),problem,limit)
 
-  private def recursiveDLS[S <: State, A <: Action](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult[A] = {
+  private def recursiveDLS[S, A](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult = {
     if (problem.goalTest(node.state)) Success(node.solution) //success
     else {
       if (node.depth == limit) CutOff() //cut-off limit reached
       else {
-        def loop(nodes: List[Node[S,A]], cutoffOccured: Boolean): SearchResult[A] = 
+        def loop(nodes: List[Node[S,A]], cutoffOccured: Boolean): SearchResult = 
           nodes match {
             case Nil => if(cutoffOccured) CutOff() else Failure()
             case n :: rest => 
@@ -91,8 +101,8 @@ object Uninformed {
     }
   }
 
-  def IterativeDeepeningSearch[S <: State, A <: Action](problem: Problem[S,A]) = {
-    def loop(depth: Int): SearchResult[A] =
+  def IterativeDeepeningSearch[S, A](problem: Problem[S,A]) = {
+    def loop(depth: Int): SearchResult =
       DepthLimitedSearch(problem,depth) match {
         case CutOff() => loop(depth + 1)
         case Failure() => Failure()
@@ -101,9 +111,11 @@ object Uninformed {
     loop(0)
   }
 
-   def GraphSearch[S <: State,A <: Action](problem: Problem[S,A], fringe: Fringe[Node[S,A]]) = {
+   def GraphSearch[S,A](problem: Problem[S,A], fringe: Queue[Node[S,A]]) = {
 
-    def loop(fringe:Fringe[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
+    //TODO: Change we change closed to explored(see if we can store state instead of node here) and make lookup hash based for O(1)
+    //AND s/fringe/frontier; do not use successor function but actions and transitionModel; may be we can get rid of expand now
+    def loop(fringe:Queue[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
       fringe.removeFirst match {
         case None => None
         case Some(node) if problem.goalTest(node.state) => 
@@ -123,11 +135,11 @@ object Uninformed {
     }
   }
 
-  def BreadthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) =
-    GraphSearch(problem, new FifoFringe[Node[S,A]]())
+  def BreadthFirstGraphSearch[S, A](problem: Problem[S,A]) =
+    GraphSearch(problem, new FifoQueue[Node[S,A]]())
 
-  def DepthFirstGraphSearch[S <: State, A <: Action](problem: Problem[S,A]) =
-    GraphSearch(problem, new LifoFringe[Node[S,A]]())
+  def DepthFirstGraphSearch[S, A](problem: Problem[S,A]) =
+    GraphSearch(problem, new LifoQueue[Node[S,A]]())
 }
 
 //Informed Search Algorithms
@@ -135,31 +147,31 @@ object Informed {
 
   import Uninformed._;
 
-  private def GreedyBestFirstHeuristic[S <: State, A <: Action](node: Node[S,A],problem: Problem[S,A]) =
+  private def GreedyBestFirstHeuristic[S, A](node: Node[S,A],problem: Problem[S,A]) =
     problem.estimatedCostToGoal(node.state) //h(n)
 
-  def GreedyBestFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) =
-    GraphSearch(problem, new PriorityQueueFringe[Node[S,A]](
+  def GreedyBestFirstSearch[S, A](problem: Problem[S,A]) =
+    GraphSearch(problem, new PriorityQueue[Node[S,A]](
       (node) => new Ordered[Node[S,A]] {
                     def compare(that: Node[S,A]) =
                       GreedyBestFirstHeuristic(that,problem).compare(GreedyBestFirstHeuristic(node,problem))
       }))
 
-  private def AStarHeuristic[S <: State, A <: Action](node: Node[S,A],problem: Problem[S,A]) =
+  private def AStarHeuristic[S, A](node: Node[S,A],problem: Problem[S,A]) =
     node.pathCost + problem.estimatedCostToGoal(node.state) //f(n) = g(n) + h(n)
 
-  def AStarSearch[S <: State, A <: Action](problem: Problem[S,A]) =
-    GraphSearch(problem, new PriorityQueueFringe[Node[S,A]](
+  def AStarSearch[S, A](problem: Problem[S,A]) =
+    GraphSearch(problem, new PriorityQueue[Node[S,A]](
       (node) => new Ordered[Node[S,A]] {
                     def compare(that: Node[S,A]) =
                       AStarHeuristic(that,problem).compare(AStarHeuristic(node,problem))
       }))
 
-  //def RecursiveBestFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+  //def RecursiveBestFirstSearch[S, A](problem: Problem[S,A]) =
 
 /*
   //max(f-value-of-node, f-value-of-parent-node)
-  private def RBFSHeuristic[S <: State, A <: Action](node: Node[S,A],problem: Problem[S,A]) =
+  private def RBFSHeuristic[S, A](node: Node[S,A],problem: Problem[S,A]) =
     node.parent match {
       case Some(paren) => Math.max(node.pathCost + problem.estimatedCostToGoal(node.state),
                                  paren.pathCost + problem.estimatedCostToGoal(paren.state))
@@ -170,14 +182,14 @@ object Informed {
   final case class RBFSFailure(fVal: Double) extends SearchResult
 
   //returns success, failure AND a new f-cost limit
-  private def RBFS[S <: State, A <: Action](problem: Problem[S,A], node: Node[S,A], fLimit: Double): SearchResult[A] = {
+  private def RBFS[S, A](problem: Problem[S,A], node: Node[S,A], fLimit: Double): SearchResult[A] = {
     println("print " + node.state)
     if(problem.goalTest(node.state)) Success(node.solution)
     val successors = expand(node,problem)
     successors.foreach( (node) => println("successors " + node.state))
     if(successors.isEmpty) RBFSFailure(Infinity)
     else {
-      val successorsPq = new PriorityQueueFringe[(Double,Node[S,A])](
+      val successorsPq = new PriorityQueueQueue[(Double,Node[S,A])](
         (arg) => { 
           val (fVal, _) = arg
           new Ordered[(Double,Node[S,A])] {
@@ -209,7 +221,7 @@ object Informed {
     }
   }
 
-  def RecursiveBestFirstSearch[S <: State, A <: Action](problem: Problem[S,A]) =
+  def RecursiveBestFirstSearch[S, A](problem: Problem[S,A]) =
     RBFS(problem,Node[S,A](problem.initialState),Infinity) match {
       case Success(x) => Success(x)
       case _ => Failure() }
@@ -221,7 +233,7 @@ object Informed {
 object Local {
 
   //returns state that maximizes the value
-  def HillClimbingSearch[S <: State, A <: Action](problem: Problem[S,A], value: (S)=>Double) = {
+  def HillClimbingSearch[S, A](problem: Problem[S,A], value: (S)=>Double) = {
 
     def getHighestValuedSuccessor(s: S): Option[(Double,S)] = {
       val successors = problem.successorFn(s)
@@ -242,7 +254,7 @@ object Local {
     loop(problem.initialState)
   }
 
-  def SimulatedAnnealingSearch[S <: State, A <: Action](problem: Problem[S,A],value: (S)=>Double, schedule: (Int)=>Double) = {
+  def SimulatedAnnealingSearch[S, A](problem: Problem[S,A],value: (S)=>Double, schedule: (Int)=>Double) = {
 
     val random = new scala.util.Random(new java.util.Random)
 
