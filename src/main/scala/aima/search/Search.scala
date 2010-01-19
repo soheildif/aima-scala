@@ -28,6 +28,13 @@ object Node {
 
   def apply[S,A](state: S, parent: Option[Node[S,A]], action: Option[A], depth: Int, pathCost: Double) =
     new Node[S,A](state,parent,action,depth,pathCost)
+
+  def childNode[S,A](problem: Problem[S,A], parent: Node[S,A], action: A) = {
+    val state = problem.result(parent.state,action)
+    //TODO: change step cost signature
+    val pathCost = parent.pathCost + problem.stepCost(parent.state,state)
+    new Node[S,A](state,Some(parent),Some(action),parent.depth+1,pathCost)
+  }
 }
 
 
@@ -40,48 +47,79 @@ final case class CutOff extends SearchResult
 /* ------ Uninformed search algorithms --------- */
 object Uninformed {  
 
-  //TODO: Queue does not exit but Frontier and Queue does
-  //TODO: Closed-List is gone but Explored-Set is in for graph search
-  //TODO: Do we really need the base classes to be declared every where??
-  //Tree Search
-  private def TreeSearch[S,A](problem: Problem[S,A], fringe: Queue[Node[S,A]]) = {
+  /* Tree-Search as described in Fig 3.7 */
+  def TreeSearch[S,A](problem: Problem[S,A], frontier: Queue[Node[S,A]]) = {
 
-    def loop(fringe:Queue[Node[S,A]]): Option[Node[S,A]] =
-      fringe.removeFirst match {
-        case None => None
+    def loop(frontier:Queue[Node[S,A]]): SearchResult =
+      frontier.removeFirst match {
+        case None => Failure()
         case Some(node) if problem.goalTest(node.state) => 
-          println(node.state.toString()) //print the state when goal is reached
-          Some(node)
-        case Some(node) => loop(fringe.insertAll(expand(node,problem)))
+          //println(node.state.toString())
+          Success(node.solution)
+        case Some(node) => {
+          problem.actions(node.state).foreach( (a:A) => frontier.insert(Node.childNode(problem,node,a)))
+          loop(frontier)
+        }
       }
     
-    loop(fringe.insert(Node(problem.initialState))) match {
-      case None => Failure()
-      case Some(node) => Success(node.solution)
-    }
+    loop(frontier.insert(Node(problem.initialState)))
   }
 
+  /* Graph-Search as described in Fig 3.7 */
+  def GraphSearch[S,A](problem: Problem[S,A], frontier: Queue[Node[S,A]]) = {
+
+    //TODO: make "explored" a hash based data structure so that lookup
+    //is O(1)
+    def loop(frontier:Queue[Node[S,A]], explored: List[S]): SearchResult =
+      frontier.removeFirst match {
+        case None => Failure()
+        case Some(node) if problem.goalTest(node.state) => 
+          //println(node.state.toString())
+          Success(node.solution)
+        case Some(node) => 
+          if(explored.exists(_ == node.state)) 
+             loop(frontier,explored)
+          else {
+            problem.actions(node.state).foreach((a:A) => frontier.insert(Node.childNode(problem,node,a)))
+            loop(frontier, node.state :: explored)
+          }
+      }
+    
+    loop(frontier.insert(Node(problem.initialState)),Nil)
+  }
+
+  //TODO: see if it can be removed altogether
   def expand[S, A](node: Node[S,A], problem: Problem[S,A]) =
     problem.successorFn(node.state).map(
       (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, 
                                node.pathCost + problem.stepCost(node.state,t._2)))
 
-  def BreadthFirstSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new FifoQueue[Node[S,A]]())
+  /* Breadth-First-Search based on Tree-Search */
+  def BreadthFirstTreeSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new FifoQueue[Node[S,A]]())
 
-  def DepthFirstSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new LifoQueue[Node[S,A]]())
+  /* Breadth-First-Search based on Graph-Search */
+  def BreadthFirstGraphSearch[S, A](problem: Problem[S,A]) = GraphSearch(problem, new FifoQueue[Node[S,A]]())
 
-  //TODO: Write a test case from Sibiu to Bucharest as in Fig-3.15
+  /* Depth-First-Search based on Tree-Search */
+  def DepthFirstTreeSearch[S, A](problem: Problem[S,A]) = TreeSearch(problem, new LifoQueue[Node[S,A]]())
+
+  /* Depth-First-Search based on Graph-Search */
+  def DepthFirstGraphSearch[S, A](problem: Problem[S,A]) = GraphSearch(problem, new LifoQueue[Node[S,A]]())
+
+  /* Uniform-Cost-Search, described in Fig 3.14 */
   def UniformCostSearch[S, A](problem: Problem[S,A]) =
-    TreeSearch(problem, new PriorityQueue[Node[S,A]](
+    GraphSearch(problem, new PriorityQueue[Node[S,A]](
       (node) => new Ordered[Node[S,A]] {
                     def compare(that: Node[S,A]) =
                       that.pathCost.compare(node.pathCost)
       }))
 
+  /* Depth-Limited-Search, described in Fig 3.17 */
   def DepthLimitedSearch[S, A](problem: Problem[S,A], limit: Int) =
     recursiveDLS(Node[S,A](problem.initialState),problem,limit)
 
-  private def recursiveDLS[S, A](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult = {
+  /* Recursive-DLS, described in Fig 3.17 */
+  def recursiveDLS[S, A](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult = {
     if (problem.goalTest(node.state)) Success(node.solution) //success
     else {
       if (node.depth == limit) CutOff() //cut-off limit reached
@@ -96,11 +134,12 @@ object Uninformed {
                 case Success(n) => Success(n)
               }
           }
-        loop(expand(node,problem),false)
+        loop(problem.actions(node.state).map(Node.childNode(problem,node,_)), false)
       }
     }
   }
 
+  /* Iterative-Deepening-Search, described in Fig 3.18 */
   def IterativeDeepeningSearch[S, A](problem: Problem[S,A]) = {
     def loop(depth: Int): SearchResult =
       DepthLimitedSearch(problem,depth) match {
@@ -110,36 +149,6 @@ object Uninformed {
       }
     loop(0)
   }
-
-   def GraphSearch[S,A](problem: Problem[S,A], fringe: Queue[Node[S,A]]) = {
-
-    //TODO: Change we change closed to explored(see if we can store state instead of node here) and make lookup hash based for O(1)
-    //AND s/fringe/frontier; do not use successor function but actions and transitionModel; may be we can get rid of expand now
-    def loop(fringe:Queue[Node[S,A]], closed: List[Node[S,A]]): Option[Node[S,A]] =
-      fringe.removeFirst match {
-        case None => None
-        case Some(node) if problem.goalTest(node.state) => 
-          println(node.state.toString()) //print the state when goal is reached
-          Some(node)
-        case Some(node) => 
-          if(closed.exists(_.state == node.state)) 
-             loop(fringe,closed) //ignore successors if node is already visited
-          else {
-            loop(fringe.insertAll(expand(node,problem)), node :: closed)
-          }
-      }
-    
-    loop(fringe.insert(Node(problem.initialState)),Nil) match {
-      case None => Failure()
-      case Some(node) => Success(node.solution)
-    }
-  }
-
-  def BreadthFirstGraphSearch[S, A](problem: Problem[S,A]) =
-    GraphSearch(problem, new FifoQueue[Node[S,A]]())
-
-  def DepthFirstGraphSearch[S, A](problem: Problem[S,A]) =
-    GraphSearch(problem, new LifoQueue[Node[S,A]]())
 }
 
 //Informed Search Algorithms
