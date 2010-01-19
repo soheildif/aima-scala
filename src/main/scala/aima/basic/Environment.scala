@@ -1,10 +1,15 @@
 package aima.basic
 
+/** Abstract Environment representation.
+ *
+ * Type parameter P is the Percept and A is the Action.
+ * 
+ * @author Himanshu Gupta
+ */
 abstract class Environment[T <: Agent[P,A],P,A] {
   private var agents: List[T] = Nil
   private var views: List[(Option[A])=>Unit] = Nil
 
-  //abstract methods
   def executeAction(agent: T, action: Option[A]): Unit
   def getPerceptSeenBy(agent: T): P
 
