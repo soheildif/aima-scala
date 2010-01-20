@@ -1,6 +1,9 @@
 package aima.search
 
-//Problem
+/** A generic representation for Problem as described in section-3.1.1
+ *
+ * @author Himanshu Gupta
+ */
 abstract class Problem[S, A](initState: S){
   def initialState: S = initState
   def goalTest(s: S): Boolean
@@ -20,5 +23,3 @@ abstract class Problem[S, A](initState: S){
   //given state, heuristic function : h(n)
   def estimatedCostToGoal(from: S): Double
 }
-
-

@@ -64,4 +64,22 @@ class PriorityQueue[A](orderer: (A)=>Ordered[A]) extends Queue[A] {
 
   def removeFirst : Option[A] =
     if (pq.isEmpty) None else Some(pq.dequeue)
+
+  //Returns the nth item without removing it
+  //from the queue, n starts with 0
+  def nth(n: Int) : Option[A] = {
+
+    def iter(i: Int, elements: Iterator[A]): Option[A] =
+      elements.hasNext match {
+        case true if i < n => elements.next; iter(i+1,elements)
+        case true if i == n => Some(elements.next)
+        case true if i > n => throw new IllegalStateException("It should not happen")
+        case false => None
+      }
+
+    iter(0,pq.elements)
+  }
+
+  //--- for debugging only ---
+  override def toString = pq.toString
 }
