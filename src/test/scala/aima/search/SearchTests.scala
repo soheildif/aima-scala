@@ -7,14 +7,14 @@ import org.scalatest.ImpSuite
 class BreadthFirstTreeSearchTest {
 
   def test8QueensProblem() { //successful search test
-    Uninformed.BreadthFirstTreeSearch(new NQueensProblem(8)) match {
+    BreadthFirstTreeSearch(new NQueensProblem(8)) match {
       case Success(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
       case _ => assert(false) 
     }
   }
 
   def test3QueensProblem() { //unsuccessful search test
-    Uninformed.BreadthFirstTreeSearch(new NQueensProblem(3)) match {
+    BreadthFirstTreeSearch(new NQueensProblem(3)) match {
       case Failure() => assert(true)
       case _ => assert(false)
     }
@@ -24,14 +24,14 @@ class BreadthFirstTreeSearchTest {
 class BreadthFirstGraphSearchTest extends Suite {
 
   def test8QueensProblem() { //successful search test
-    Uninformed.BreadthFirstGraphSearch(new NQueensProblem(8)) match {
+    BreadthFirstGraphSearch(new NQueensProblem(8)) match {
       case Success(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
       case _ => assert(false) 
     }
   }
 
   def test3QueensProblem() { //unsuccessful search test
-    Uninformed.BreadthFirstGraphSearch(new NQueensProblem(3)) match {
+    BreadthFirstGraphSearch(new NQueensProblem(3)) match {
       case Failure() => assert(true)
       case _ => assert(false)
     }
@@ -40,7 +40,7 @@ class BreadthFirstGraphSearchTest extends Suite {
   def testRomaniaMapAradToBucharest() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
-    Uninformed.BreadthFirstGraphSearch(p) match {
+    BreadthFirstGraphSearch(p) match {
       case Success(x) => assert(x == List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
       case _ => assert(false)
     }
@@ -50,14 +50,14 @@ class BreadthFirstGraphSearchTest extends Suite {
 class DepthFirstTreeSearchTest {
 
   def test8QueensProblem() { //successful search test
-    Uninformed.DepthFirstTreeSearch(new NQueensProblem(8)) match {
+    DepthFirstTreeSearch(new NQueensProblem(8)) match {
       case Success(x) => assert(x == List(Put(1), Put(5), Put(8), Put(6), Put(3), Put(7), Put(2), Put(4)))
       case _ => assert(false) 
     }
   }
 
   def test3QueensProblem() { //unsuccessful search test
-    Uninformed.DepthFirstTreeSearch(new NQueensProblem(3)) match {
+    DepthFirstTreeSearch(new NQueensProblem(3)) match {
       case Failure() => assert(true)
       case _ => assert(false)
     }
@@ -67,14 +67,14 @@ class DepthFirstTreeSearchTest {
 class DepthFirstGraphSearchTest extends Suite {
 
   def test8QueensProblem() { //successful search test
-    Uninformed.DepthFirstGraphSearch(new NQueensProblem(8)) match {
+    DepthFirstGraphSearch(new NQueensProblem(8)) match {
       case Success(x) => assert(x == List(Put(1), Put(5), Put(8), Put(6), Put(3), Put(7), Put(2), Put(4)))
       case _ => assert(false) 
     }
   }
 
   def test3QueensProblem() { //unsuccessful search test
-    Uninformed.DepthFirstGraphSearch(new NQueensProblem(3)) match {
+    DepthFirstGraphSearch(new NQueensProblem(3)) match {
       case Failure() => assert(true)
       case _ => assert(false)
     }
@@ -82,7 +82,7 @@ class DepthFirstGraphSearchTest extends Suite {
 
   def testRomaniaMapAradToBucharest() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
-    Uninformed.DepthFirstGraphSearch(p) match {
+    DepthFirstGraphSearch(p) match {
       case Success(x) => assert(x.last == Go('Bucharest)) //it'll find different path in different execution
       case _  => assert(false)
     }
@@ -94,7 +94,7 @@ class UniformCostSearchTest extends Suite {
   def testRomaniaMapAradToBucharest() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     //Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
-    Uninformed.UniformCostSearch(p) match {
+    UniformCostSearch(p) match {
       case Success(x) => assert(x == List(Go('Sibiu), Go('Rimnicu_Vilcea), Go('Pitesti), Go('Bucharest)))
       case _  => assert(false)
     }
@@ -103,7 +103,7 @@ class UniformCostSearchTest extends Suite {
   //test described in Fig 3.15
   def testRomaniaMapSibiuToBucharest() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Sibiu), In(RomaniaMapFactory.Bucharest))
-    Uninformed.UniformCostSearch(p) match {
+    UniformCostSearch(p) match {
       case Success(x) => assert(x == List(Go('Rimnicu_Vilcea), Go('Pitesti), Go('Bucharest)))
       case _  => assert(false)
     }
@@ -113,21 +113,21 @@ class UniformCostSearchTest extends Suite {
 class DepthLimitedSearchTest extends Suite {
 
   def testSuccessful() {
-    Uninformed.DepthLimitedSearch(new NQueensProblem(8),8) match {
+    DepthLimitedSearch(new NQueensProblem(8),8) match {
       case Success(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
       case _ => assert(false)
     }
   }
 
   def testCutoff() {
-    Uninformed.DepthLimitedSearch(new NQueensProblem(8),7) match {
+    DepthLimitedSearch(new NQueensProblem(8),7) match {
       case CutOff() => assert(true)
       case _ => assert(false)
     }
   }
 
   def testFailure() {
-    Uninformed.DepthLimitedSearch(new NQueensProblem(3),5) match {
+    DepthLimitedSearch(new NQueensProblem(3),5) match {
       case Failure() => assert(true)
       case _ => assert(false)
     }
@@ -137,7 +137,7 @@ class DepthLimitedSearchTest extends Suite {
 class IterativeDeepeningSearchTest extends Suite {
 
   def testIt() {
-    Uninformed.IterativeDeepeningSearch(new NQueensProblem(8)) match {
+    IterativeDeepeningSearch(new NQueensProblem(8)) match {
       case Success(x) => assert(x == List(Put(8), Put(4), Put(1), Put(3), Put(6), Put(2), Put(7), Put(5)))
       case _ => assert(false)
     }
@@ -149,7 +149,7 @@ class GreedyBestFirstSearchTest extends Suite {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
-    Informed.GreedyBestFirstSearch(p) match {
+    GreedyBestFirstSearch(p) match {
       case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.Fagaras), Go(RomaniaMapFactory.Bucharest)))
       case CutOff() | Failure() => assert(false)
     }
@@ -161,7 +161,7 @@ class AStarSearchTest extends Suite {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
-    Informed.AStarSearch(p) match {
+    AStarSearch(p) match {
       case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
       case CutOff() | Failure() => assert(false)
     }
@@ -169,16 +169,16 @@ class AStarSearchTest extends Suite {
 }
 
 // RecursiveBestFirstSearch Test
-/* class RecursiveBestFirstSearchTest extends Suite {
+class RecursiveBestFirstSearchTest extends Suite {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
-    Informed.RecursiveBestFirstSearch(p) match {
+    RecursiveBestFirstSearch(p) match {
       case Success(x) => println(x); assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
-      case CutOff() | Failure() => println("no result found"); assert(false)
+      case _ => assert(false)
     }
   } 
-}*/
+}
 
 //Online DFS Tests
 class OnlineDFSTest extends Suite {
