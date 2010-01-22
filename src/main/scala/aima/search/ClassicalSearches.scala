@@ -170,17 +170,6 @@ object IterativeDeepeningSearch {
   }
 }
 
-//TODO: to be deleted
-object Uninformed {  
-
-  //TODO: see if it can be removed altogether
-  def expand[S, A](node: Node[S,A], problem: Problem[S,A]) =
-    problem.successorFn(node.state).map(
-      (t: Tuple2[A,S]) => Node(t._2, Some(node), Some(t._1), node.depth+1, 
-                               node.pathCost + problem.stepCost(node.state,t._2)))
-
-
-}
 
 /*************************************************************************************
  * 
