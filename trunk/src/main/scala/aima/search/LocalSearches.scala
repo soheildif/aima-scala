@@ -1,13 +1,16 @@
 package aima.search
 
-/* Hill-Climbing-Search, described in Fig 4.2 */
+/** Hill-Climbing-Search, described in Fig 4.2
+ *
+ * @author Himanshu Gupta
+ */
 object HillClimbingSearch {
   def apply[S,A](problem: Problem[S,A], value: (S)=>Double) = {
 
     def getHighestValuedSuccessor(s: S): Option[(Double,S)] = {
-      val successors = problem.successorFn(s)
+      val successors = problem.actions(s).map(problem.result(s,_))
       if(!successors.isEmpty) {
-        val tmp = successors.map((st) => (value(st._2),st._2))
+        val tmp = successors.map((st) => (value(st),st))
         Some(tmp.foldLeft(tmp.head)((a,b)=>if(a._1 < b._1) b else a))
       }
       else None
@@ -24,17 +27,20 @@ object HillClimbingSearch {
   }
 }
 
-/* Simulated-Annealing-Search, described in Fig 4.5 */
+/** Simulated-Annealing-Search, described in Fig 4.5
+ *
+ * @author Himanshu Gupta
+ */
 object SimulatedAnnealingSearch {
   def apply[S,A](problem: Problem[S,A],value: (S)=>Double, schedule: (Int)=>Double) = {
 
     val random = new scala.util.Random(new java.util.Random)
 
     def randomSuccessor(s: S): Option[S] = {
-      val successors = problem.successorFn(s)
+      val successors = problem.actions(s).map(problem.result(s,_))
       if(successors.isEmpty) None
       else {
-        Some(successors(random.nextInt(successors.length))._2)
+        Some(successors(random.nextInt(successors.length)))
       }
     }
  
@@ -58,7 +64,10 @@ object SimulatedAnnealingSearch {
   }
 }
 
-/* Genetic-Algorithm, described in Fig 4.8 */
+/** Genetic-Algorithm, described in Fig 4.8
+ *
+ * @author Himanshu Gupta
+ */
 class GeneticAlgorithm(finiteAlphabet: Array[Char], mutationProbability: Double) {
 
   private val random = new scala.util.Random(new java.util.Random)
