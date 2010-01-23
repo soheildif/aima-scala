@@ -180,6 +180,18 @@ class RecursiveBestFirstSearchTest extends Suite {
   } 
 }
 
+//AndOrSearch Tests
+class AndOrGraphSearchTest extends Suite {
+  import aima.search.local._
+  def testIt() {
+    val problem = new VacuumWorldNonDeterministicProblem("A")
+    AndOrGraphSearch(problem) match {
+      case aima.search.local.Success(x) => println(x); assert(true)
+      case _ => assert(false)
+    }
+  }
+}
+
 //Online DFS Tests
 class OnlineDFSTest extends Suite {
 
