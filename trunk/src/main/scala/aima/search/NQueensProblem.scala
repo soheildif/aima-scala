@@ -8,20 +8,6 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 
   override def goalTest(s: NQueensState) = (s.numQueens == size)
 
-  //TODO: needs to be removed
-  override def successorFn(s: NQueensState): List[(Put,NQueensState)] = {
-
-    def loop(i:Int, successors: List[(Put,NQueensState)]): List[(Put,NQueensState)] = {
-      if (i > size) successors
-      else {
-        if (s.isSafe(Put(i)))
-          loop(i+1, (Put(i),s.executeAction(Put(i))) :: successors)
-        else loop(i+1, successors)
-      }
-    }
-    loop(1,Nil)
-  }
-
   override def actions(s: NQueensState): List[Put] = {
 
     def loop(i:Int, resultActions: List[Put]): List[Put] = {
