@@ -39,7 +39,7 @@ class BreadthFirstGraphSearchTest extends Suite {
 
   def testRomaniaMapAradToBucharest() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
-    Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
+//    Success(List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
     BreadthFirstGraphSearch(p) match {
       case Success(x) => assert(x == List(Go('Sibiu), Go('Fagaras), Go('Bucharest)))
       case _ => assert(false)
@@ -174,7 +174,7 @@ class RecursiveBestFirstSearchTest extends Suite {
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     RecursiveBestFirstSearch(p) match {
-      case Success(x) => println(x); assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
+      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
       case _ => assert(false)
     }
   } 
@@ -182,11 +182,10 @@ class RecursiveBestFirstSearchTest extends Suite {
 
 //AndOrSearch Tests
 class AndOrGraphSearchTest extends Suite {
-  import aima.search.local._
   def testIt() {
     val problem = new VacuumWorldNonDeterministicProblem("A")
     AndOrGraphSearch(problem) match {
-      case aima.search.local.Success(x) => println(x); assert(true)
+      case Success(x) => assert(x.toString() == "Suck IF (A,false,false) THEN [NoOp] ELSE  IF (A,false,true) THEN [Right Suck NoOp]")
       case _ => assert(false)
     }
   }
