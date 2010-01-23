@@ -8,12 +8,10 @@ abstract class Problem[S, A](initState: S){
   def initialState: S = initState
   def goalTest(s: S): Boolean
 
-  //TODO: needs to be removed
-  def successorFn(s: S): List[(A,S)]
-
   def actions(s: S): List[A]
   def result(s: S,a: A): S
-  
+ 
+  //TODO change signature
   //provided one can go from TO to in single step, what is the
   //cost
   def stepCost(from: S, to: S): Double
@@ -35,7 +33,4 @@ abstract class NonDeterministicProblem[S,A](initState: S) extends Problem[S,A](i
 
   override def result(state: S, action: A):S =
     throw new UnsupportedOperationException("result does not exist for non-deterministic problem.")
-
-  override def successorFn(state: S) =
-    throw new UnsupportedOperationException("result does not exist.")
 }

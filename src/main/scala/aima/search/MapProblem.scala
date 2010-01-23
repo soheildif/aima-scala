@@ -11,13 +11,6 @@ class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalSt
 
   override def goalTest(s: In[Symbol]): Boolean = s == goalState
 
-  override def successorFn(s: In[Symbol]): List[(Go[Symbol],In[Symbol])] =
-    s match {
-      case In(x) =>
-        locationMap.getLocationsReachableFrom(x).map(
-          (s:Symbol) => (Go(s),In(s)))
-    }
-
   override def actions(s: In[Symbol]): List[Go[Symbol]] =
     s match {
       case In(x) => locationMap.getLocationsReachableFrom(x).map(Go(_))

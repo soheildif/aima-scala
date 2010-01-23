@@ -20,7 +20,7 @@ object AndOrGraphSearch {
             case action :: rest =>
               AndSearch(problem.results(state,action),problem, state :: path,state,action) match {
                 case Success(x) => Success(x)
-                case Failure() => loop(rest)
+                case _ => loop(rest)
               }
             case Nil => Failure()
           }
