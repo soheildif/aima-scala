@@ -40,10 +40,10 @@ object Node {
 
 
 /* Possible search results that various search algorithms can return */
-sealed abstract class SearchResult
-case class Success[A](actions: List[A]) extends SearchResult
-case class Failure extends SearchResult
-case class CutOff extends SearchResult
+sealed abstract class SearchResult[A]
+case class Success[A](result: A) extends SearchResult[A]
+case class Failure[A] extends SearchResult[A]
+case class CutOff[A] extends SearchResult[A]
 
 
 /*************************************************************************************
@@ -55,7 +55,7 @@ case class CutOff extends SearchResult
 /* Tree-Search, described in Fig 3.7 */
 object TreeSearch {
   def apply[S,A](problem: Problem[S,A], frontier: Queue[Node[S,A]]) = {
-    def loop(frontier:Queue[Node[S,A]]): SearchResult =
+    def loop(frontier:Queue[Node[S,A]]): SearchResult[List[A]] =
       frontier.removeFirst match {
         case None => Failure()
         case Some(node) if problem.goalTest(node.state) => 
@@ -77,7 +77,7 @@ object GraphSearch {
 
     //TODO: make "explored" a hash based data structure so that lookup
     //is O(1)
-    def loop(frontier:Queue[Node[S,A]], explored: List[S]): SearchResult =
+    def loop(frontier:Queue[Node[S,A]], explored: List[S]): SearchResult[List[A]] =
       frontier.removeFirst match {
         case None => Failure()
         case Some(node) if problem.goalTest(node.state) => 
@@ -136,12 +136,12 @@ object DepthLimitedSearch {
     recursiveDLS(Node[S,A](problem.initialState),problem,limit)
 
   /* Recursive-DLS, described in Fig 3.17 */
-  private def recursiveDLS[S, A](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult = {
+  private def recursiveDLS[S, A](node: Node[S,A], problem: Problem[S,A], limit: Int): SearchResult[List[A]] = {
     if (problem.goalTest(node.state)) Success(node.solution) //success
     else {
       if (node.depth == limit) CutOff() //cut-off limit reached
       else {
-        def loop(nodes: List[Node[S,A]], cutoffOccured: Boolean): SearchResult = 
+        def loop(nodes: List[Node[S,A]], cutoffOccured: Boolean): SearchResult[List[A]] = 
           nodes match {
             case Nil => if(cutoffOccured) CutOff() else Failure()
             case n :: rest => 
@@ -160,7 +160,7 @@ object DepthLimitedSearch {
 /* Iterative-Deepening-Search, described in Fig 3.18 */
 object IterativeDeepeningSearch {
   def apply[S, A](problem: Problem[S,A]) = {
-    def loop(depth: Int): SearchResult =
+    def loop(depth: Int): SearchResult[List[A]] =
       DepthLimitedSearch(problem,depth) match {
         case CutOff() => loop(depth + 1)
         case Failure() => Failure()
@@ -206,14 +206,14 @@ object AStarSearch {
 /* Recursive-Best-First-Search, described in Fig 3.26 */
 object RecursiveBestFirstSearch {
 
-  def apply[S, A](problem: Problem[S,A]) =
+  def apply[S, A](problem: Problem[S,A]): SearchResult[List[A]] =
     RBFS(problem,RBFSNode(problem,problem.initialState),Infinity) match {
       case Success(x) => Success(x)
       case _ => Failure()
     }
 
   private val Infinity = Math.MAX_DOUBLE
-  private final case class RBFSFailure(fVal: Double) extends Failure
+  private final case class RBFSFailure[A](fVal: Double) extends Failure[A]
   
   //RBFS-Node is a special purpose node that stores node's fVal in a variable 
   //along with what is stored in a regular Node
@@ -237,7 +237,7 @@ object RecursiveBestFirstSearch {
   /* RBFS, described in Fig 3.26
    * returns Success or RBFSFailure AND a new f-cost limit
    */
-  private def RBFS[S, A](problem: Problem[S,A], node: RBFSNode[S,A], fLimit: Double): SearchResult = {
+  private def RBFS[S, A](problem: Problem[S,A], node: RBFSNode[S,A], fLimit: Double): SearchResult[List[A]] = {
     if(problem.goalTest(node.state)) Success(node.solution)
     else {
       val successors = problem.actions(node.state).map((a:A)=>RBFSNode.childNode(problem,node,a))
@@ -254,7 +254,7 @@ object RecursiveBestFirstSearch {
           })
         successorsPq.insertAll(successors)
 
-        def loop: SearchResult = {
+        def loop: SearchResult[List[A]] = {
           val Some(bestNode) = successorsPq.nth(0)
           if(bestNode.fVal > fLimit) RBFSFailure(bestNode.fVal)
           else {
