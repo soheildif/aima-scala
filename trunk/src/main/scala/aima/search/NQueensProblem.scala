@@ -23,9 +23,10 @@ class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(s
 
   override def result(s: NQueensState, a: Put): NQueensState = s.executeAction(a)
 
-  override def stepCost(from: NQueensState, to: NQueensState): Double = 0.0
+  //TODO to be implemented properly
+  override def stepCost(from: NQueensState, action: Put, to: NQueensState): Double = 0.0
 
-  //to be implemented properly
+  //TODO to be implemented properly
   override def estimatedCostToGoal(from: NQueensState): Double = 0.0
 }
 

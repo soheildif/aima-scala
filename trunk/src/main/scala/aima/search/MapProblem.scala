@@ -21,7 +21,7 @@ class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalSt
     In(x)
   }
 
-  override def stepCost(from: In[Symbol], to: In[Symbol]): Double =
+  override def stepCost(from: In[Symbol], action: Go[Symbol], to: In[Symbol]): Double =
     (from,to) match {
       case (In(f),In(t)) => locationMap.distance(f,t) }
 

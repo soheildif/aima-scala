@@ -11,11 +11,9 @@ abstract class Problem[S, A](initState: S){
   def actions(s: S): List[A]
   def result(s: S,a: A): S
  
-  //TODO change signature
   //provided one can go from TO to in single step, what is the
-  //cost
-  def stepCost(from: S, to: S): Double
-  //def stepCost(from: S, action: A, to: S): Double
+  //cost; c(s,a,s')
+  def stepCost(from: S, action: A, to: S): Double
 
   //estimated cost to reach goal from
   //given state, heuristic function : h(n)
@@ -33,4 +31,23 @@ abstract class NonDeterministicProblem[S,A](initState: S) extends Problem[S,A](i
 
   override def result(state: S, action: A):S =
     throw new UnsupportedOperationException("result does not exist for non-deterministic problem.")
+}
+
+/** A generic representation for Online-Search-Problem,
+ * described in section 4.5.1
+ *
+ * @author Himanshu Gupta
+ */
+abstract class OnlineSearchProblem[P,A] {
+  
+  import scala.collection.mutable.Stack
+
+  def actions(s: P): Stack[A]
+  def goalTest(s: P): Boolean
+  //heuristic function, estimated cost to reach
+  //goal from state "s"
+  def h(s: P): Double
+  //cost to reach "to" from "from" in one step by
+  //taking "action"
+  def stepCost(from: P, action: A, to: P): Double
 }

@@ -32,8 +32,7 @@ object Node {
 
   def childNode[S,A](problem: Problem[S,A], parent: Node[S,A], action: A) = {
     val state = problem.result(parent.state,action)
-    //TODO: change step cost signature
-    val pathCost = parent.pathCost + problem.stepCost(parent.state,state)
+    val pathCost = parent.pathCost + problem.stepCost(parent.state,action,state)
     new Node[S,A](state,Some(parent),Some(action),parent.depth+1,pathCost)
   }
 }
@@ -227,8 +226,7 @@ object RecursiveBestFirstSearch {
 
     def childNode[S,A](problem: Problem[S,A],parent: RBFSNode[S,A],action: A) = {
       val state = problem.result(parent.state,action)
-      //TODO: change step cost signature
-      val pathCost = parent.pathCost + problem.stepCost(parent.state,state)
+      val pathCost = parent.pathCost + problem.stepCost(parent.state,action,state)
       val fVal = pathCost + problem.estimatedCostToGoal(state)
       new RBFSNode[S,A](state,Some(parent),Some(action),parent.depth+1,pathCost,fVal)
     }

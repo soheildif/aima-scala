@@ -1,5 +1,10 @@
 package aima.search
 
+/** A generic trait, implementing the algorithm for Online-DFS-Agent
+ * described in Fig 4.21
+ *
+ * @author Himanshu Gupta
+ */
 trait OnlineDFS[P,A] {
 
   val problem: OnlineSearchProblem[P,A]
@@ -64,21 +69,12 @@ trait OnlineDFS[P,A] {
     Unbacktracked.clear
   }
 }   
-  
-abstract class OnlineSearchProblem[P,A] {
-  
-  import scala.collection.mutable.Stack
 
-  def actions(s: P): Stack[A]
-  def goalTest(s: P): Boolean
-  //heuristic function, estimated cost to reach
-  //goal from state "s"
-  def h(s: P): Double
-  //cost to reach "to" from "from" in one step by
-  //taking "action"
-  def stepCost(from: P, action: A, to: P): Double
-}
-
+/** A generic trait, implementing the algorithm for LRTA*-Agent
+ * described in Fig 4.24
+ *
+ * @author Himanshu Gupta
+ */
 trait LRTAStar[P,A] {
 
   val problem: OnlineSearchProblem[P,A]
@@ -135,11 +131,12 @@ trait LRTAStar[P,A] {
 
 import aima.basic.{Environment,Agent}
 
-//Agent and Environment
+//Generic Map Environment Agent
 abstract class MapAgent[S] extends Agent[In[S],Go[S]] {
   var currentState:In[S]
 }
 
+//Generic Map Environment
 class MapEnvironment[T <: MapAgent[S],S] extends Environment[T,In[S],Go[S]] {
 
   override def executeAction(agent: T, action: Option[Go[S]]) {
@@ -153,19 +150,21 @@ class MapEnvironment[T <: MapAgent[S],S] extends Environment[T,In[S],Go[S]] {
 }
 
 
-//OnlineDFS + Map Problem
+//Agent to solve Map Problems with Online-DFS
 class OnlineDFSMapAgent[S](prob: OnlineSearchMapProblem[S],initState: In[S]) extends MapAgent[S] with OnlineDFS[In[S],Go[S]] {
   var currentState = initState
   val problem = prob
   override def agentProgram(percept: In[S]) = search(percept)
 }
 
+//Agent to solve Map Problems with LRTA*-Search
 class LRTAStarMapAgent[S](prob: OnlineSearchMapProblem[S],initState: In[S]) extends MapAgent[S] with LRTAStar[In[S],Go[S]] {
   var currentState = initState
   val problem = prob
   override def agentProgram(percept: In[S]) = search(percept)
 }
 
+//Online-Problem representation for solving Map based problems
 class OnlineSearchMapProblem[S](locationMap: LocationMap[S], goalState: In[S]) 
 extends OnlineSearchProblem[In[S],Go[S]] {
 
