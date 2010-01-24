@@ -4,8 +4,8 @@ package aima.search
  *
  * @author Himanshu Gupta
  */
-abstract class Problem[S, A](initState: S){
-  def initialState: S = initState
+abstract class Problem[S, A] {
+  def initialState: S
   def goalTest(s: S): Boolean
 
   def actions(s: S): List[A]
@@ -25,7 +25,9 @@ abstract class Problem[S, A](initState: S){
  *
  * @author Himanshu Gupta
  */
-abstract class NonDeterministicProblem[S,A](initState: S) extends Problem[S,A](initState) {
+abstract class NonDeterministicProblem[S,A](initState: S) extends Problem[S,A] {
+
+  def initialState = initState
 
   def results(state: S, action: A): List[S]
 
@@ -38,16 +40,11 @@ abstract class NonDeterministicProblem[S,A](initState: S) extends Problem[S,A](i
  *
  * @author Himanshu Gupta
  */
-abstract class OnlineSearchProblem[P,A] {
-  
-  import scala.collection.mutable.Stack
+abstract class OnlineSearchProblem[P,A] extends Problem[P,A]{
 
-  def actions(s: P): Stack[A]
-  def goalTest(s: P): Boolean
-  //heuristic function, estimated cost to reach
-  //goal from state "s"
-  def h(s: P): Double
-  //cost to reach "to" from "from" in one step by
-  //taking "action"
-  def stepCost(from: P, action: A, to: P): Double
+  def initialState: P =
+    throw new UnsupportedOperationException("initialState does not exist for Online problem.")
+
+  def result(s: P,a: A): P =
+    throw new UnsupportedOperationException("result does not exist for Online problem.")
 }

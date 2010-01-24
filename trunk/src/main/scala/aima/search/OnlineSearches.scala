@@ -13,7 +13,7 @@ trait OnlineDFS[P,A] {
 
   //map of (from,to) -> action
   private val Result = Map[(P,P),A]()
-  private val Unexplored = Map[P,Stack[A]]()
+  private val Unexplored = Map[P,List[A]]()
   private val Unbacktracked = Map[P,Stack[P]]()
 
   private var s: Option[P] = None //previous state
@@ -44,7 +44,7 @@ trait OnlineDFS[P,A] {
             case Some(y) => a = Some(action(sPrime,y.pop))
           }
         }
-        case Some(x) => a = Some(x.pop)
+        case Some(x) => Unexplored += (sPrime -> x.tail); a = Some(x.head)
         case None => throw new IllegalStateException("key should exist")
       }
     }
@@ -95,7 +95,7 @@ trait LRTAStar[P,A] {
     else {
       //if sPrime is a new state(not in H)
       if (!H.contains(sPrime))
-        H += (sPrime -> problem.h(sPrime))
+        H += (sPrime -> problem.estimatedCostToGoal(sPrime))
 
       (s,a) match {
         case (Some(prevS),Some(prevA)) => {
@@ -108,7 +108,7 @@ trait LRTAStar[P,A] {
       }
 
       val as = problem.actions(sPrime)
-      a = Some(as.foldLeft(as.pop)(
+      a = Some(as.tail.foldLeft(as.head)(
                   (p,q) => if(LRTAStarCost(sPrime,p,Result.get((p,sPrime)),H) < LRTAStarCost(sPrime,q,Result.get((q,sPrime)),H)) p else q))
     }
     s = Some(sPrime)
@@ -118,7 +118,7 @@ trait LRTAStar[P,A] {
   private def LRTAStarCost(s: P,a: A,sPrime: Option[P],H: Map[P,Double]): Double =
     sPrime match {
       case Some(x) if H.contains(x) => problem.stepCost(s,a,x) + H.getOrElse(x,0.0)
-      case _ => problem.h(s)
+      case _ => problem.estimatedCostToGoal(s)
     }
 
   def reset {
@@ -172,14 +172,12 @@ extends OnlineSearchProblem[In[S],Go[S]] {
 
   def actions(s: In[S]) = {
     val In(p) = s
-    val result = new Stack[Go[S]]()
-    locationMap.getLocationsReachableFrom(p).foreach((a:S) => result.push(Go(a)))
-    result
+    locationMap.getLocationsReachableFrom(p).map(Go(_))
   }
 
   def goalTest(s: In[S]) = s == goalState
 
-  def h(s: In[S]) =
+  def estimatedCostToGoal(s: In[S]) =
     (s,goalState) match {
       case (In(x),In(y)) => locationMap.straightLineDistance(x,y) }
 

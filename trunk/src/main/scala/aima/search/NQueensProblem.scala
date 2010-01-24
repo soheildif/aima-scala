@@ -4,7 +4,9 @@ package aima.search
  *
  * @author Himanshu Gupta
  */
-class NQueensProblem(size: Int) extends Problem[NQueensState,Put](NQueensState(size)) {
+class NQueensProblem(size: Int) extends Problem[NQueensState,Put] {
+
+  override def initialState = NQueensState(size)
 
   override def goalTest(s: NQueensState) = (s.numQueens == size)
 
