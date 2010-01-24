@@ -7,7 +7,9 @@ case class Go[A](val location: A) //"Action"
  *
  * @author Himanshu Gupta
  */
-class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalState: In[Symbol]) extends Problem[In[Symbol],Go[Symbol]](initState){
+class MapProblem(locationMap: LocationMap[Symbol], initState: In[Symbol], goalState: In[Symbol]) extends Problem[In[Symbol],Go[Symbol]] {
+
+  override def initialState = initState
 
   override def goalTest(s: In[Symbol]): Boolean = s == goalState
 

@@ -216,7 +216,7 @@ class OnlineDFSTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result.reverse == List(Go("1,2"), Go("1,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,1"), Go("2,1"), Go("2,2"), Go("2,3"), Go("2,2"), Go("2,1"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,3"), Go("1,3"), Go("2,3"), Go("1,3"), Go("2,3"), Go("2,2"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
+    assert(result.reverse == List(Go("2,1"), Go("1,1"), Go("1,2"), Go("1,1"), Go("1,2"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,1"), Go("3,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
   }
 }
 
@@ -268,7 +268,7 @@ class LRTAStarTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result.reverse == List(Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("D"), Go("E"), Go("F")))
+    assert(result.reverse == List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F")))
   }
 
   def testNoPath() {
@@ -294,7 +294,7 @@ class LRTAStarTest extends Suite {
     env.addAgent(agent)
     env.step(14) //or else it'll run forever
 
-    assert(result.reverse == List(Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("D"), Go("E")))
+    assert(result.reverse == List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F"), Go("E"), Go("D"), Go("C"), Go("B"), Go("C")))
   }
 }
 
