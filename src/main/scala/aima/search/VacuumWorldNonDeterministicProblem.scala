@@ -43,8 +43,7 @@ class VacuumWorldNonDeterministicProblem(initLocation: String) extends NonDeterm
       case _ => false
     }
 
-  //TODO: change the signature
-  def stepCost(from: State,to :State): Double =
+  def stepCost(from: State,action: String, to :State): Double =
     throw new UnsupportedOperationException("stepCost is not supported.")
 
   def estimatedCostToGoal(state: State): Double =
