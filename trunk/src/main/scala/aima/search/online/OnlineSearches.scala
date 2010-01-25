@@ -1,4 +1,4 @@
-package aima.search
+package aima.search.online
 
 /** A generic trait, implementing the algorithm for Online-DFS-Agent
  * described in Fig 4.21

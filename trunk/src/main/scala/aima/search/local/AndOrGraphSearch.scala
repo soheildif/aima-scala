@@ -1,4 +1,10 @@
-package aima.search
+package aima.search.local
+
+/* NOTE: Though AndOrGraphSearch belongs to package local, but it is *NOT* a
+ * local search algorithm. I just could not think of a better place to
+ * put it yet.
+ */
+
 
 /** And-Or-Graph-Search, described in Fig 4.11
  *
