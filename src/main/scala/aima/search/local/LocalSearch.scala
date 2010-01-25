@@ -1,4 +1,4 @@
-package aima.search
+package aima.search.local
 
 /** Hill-Climbing-Search, described in Fig 4.2
  *
