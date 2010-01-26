@@ -1,5 +1,9 @@
 package aima.search.adversarial
 
+/** A TicTacToe implementation of ZeroSumGame
+ *
+ * @author Himanshu Gupta
+ */
 class TicTacToeGame extends ZeroSumGame[(String,Array[Array[Char]]),(Int,Int)] {
 
   type Board = Array[Array[Char]]
@@ -23,14 +27,14 @@ class TicTacToeGame extends ZeroSumGame[(String,Array[Array[Char]]),(Int,Int)] {
   def result(s: State, a: Action) =
     s match {
       case (ZeroSumGame.Max, board) =>
-        if(board(a._1,a._2) == nullChar) {
+        if(board(a._1)(a._2) == nullChar) {
           val newBoard = cloneBoard(board)
           newBoard(a._1)(a._2) = X
           (ZeroSumGame.Min, newBoard)
         }
         else throw new IllegalStateException("Box at " + a + " is already filled.")
       case (ZeroSumGame.Min, board) =>
-        if(board(a._1,a._2) == nullChar) {
+        if(board(a._1)(a._2) == nullChar) {
           val newBoard = cloneBoard(board)
           newBoard(a._1)(a._2) = O
           (ZeroSumGame.Max, newBoard)
@@ -48,7 +52,7 @@ class TicTacToeGame extends ZeroSumGame[(String,Array[Array[Char]]),(Int,Int)] {
   def utility(s: State): Double =
     getWinner(s._2) match {
       case Some(ZeroSumGame.Max) => 1.0
-      case Some(ZeroSumGame.Min) => 0.0
+      case Some(ZeroSumGame.Min) => -1.0
       case None if actions(s).length == 0 => 0.5
       case _ => throw new IllegalStateException("Not a terminal state." + toString(s))
     }
