@@ -1,3 +1,7 @@
+// Algorithms to Solve Constraint Satisfaction Problems
+
+//All the algorithms are working on the assumption of
+//binary constraints
 //@Author: Himanshu Gupta
 
 package aima.search
@@ -7,9 +11,9 @@ package aima.search
 object CSPSolver {
   
   //------------ Backtracking Search ----------------
-  def BacktrackingSearch[K,V](csp: CSP[K,V]) = RecursiveBacktracking(Map[K,V](),csp)
+  def BacktrackingSearch[K,V](csp: CSP[K,V]) = RecursiveBacktracking(Map[K,V](),csp,identityInference)
 
-  def RecursiveBacktracking[K,V](assignment: Map[K,V],csp: CSP[K,V]): Option[Map[K,V]] = {
+  def RecursiveBacktracking[K,V](assignment: Map[K,V],csp: CSP[K,V], inference: (Map[K,V],CSP[K,V])=>Option[CSP[K,V]]): Option[Map[K,V]] = {
     if (csp.isComplete(assignment)) Some(assignment)
     else {
       var variable = selectUnassignedVariable(csp.variables,assignment,csp) match {
@@ -23,8 +27,12 @@ object CSPSolver {
           case value :: rest => {
             val newAssignment = assignment + (variable -> value)
             if (csp.isAssignmentOk(newAssignment)) {
-              val result = RecursiveBacktracking(newAssignment,csp)
-              if (result != None) result else loop(rest)
+              inference(newAssignment,csp) match {
+                case None => loop(rest)
+                case Some(newCsp) =>
+                  val result = RecursiveBacktracking(newAssignment,newCsp,inference)
+                  if (result != None) result else loop(rest)
+              }
             }
             else loop(rest)
           }
@@ -33,6 +41,8 @@ object CSPSolver {
       loop(values)
     }
   }
+
+  private def identityInference[K,V](assignment: Map[K,V],csp: CSP[K,V]) = Some(csp)
 
   private def selectUnassignedVariable[K,V](variables: List[K],assignment: Map[K,V],csp: CSP[K,V]) =
     variables.find(!assignment.contains(_))
@@ -101,165 +111,79 @@ object CSPSolver {
   }  
 }
 
-//*************************** Generic CSP representation ***************************
-abstract class Constraint[K,V] {
-  def variables: List[K] //variables involved in this constraint
-  def isSatisfied(assignment: Map[K,V]): Boolean
-}
+//TODO: write comments to describe the code and data structures
+//Various consistancy check algorithms
+object ConsistancyCheck {
 
-class CSP[K,V] {
+  /** AC-3 algorithm, described in Fig 6.3
+   * 
+   * A slight variation is that instead of returning
+   * true/false it returns a CSP with inconsistant
+   * values removed from domain of various variables
+   * or None if domain of one of the variables becomes
+   * empty.
+   *
+   * @author Himanshu Gupta
+   */
+  def AC3[K,V](csp: CSP[K,V]): Option[CSP[K,V]] = {
 
-  private var _variableMap = Map[K,List[V]]()
-  private var _constraints = List[Constraint[K,V]]()
+    //Prepare the queue containing all the arcs
+    var queue = List[(K,K,Constraint[K,V])]()
+    csp.constraints.foreach(c => {
+                              //TODO: can we make it pair based instead
+                              val x :: y :: Nil = c.variables
+                              queue = (x,y,c) :: (y,x,c) :: queue })
 
-  def constraints = _constraints
-  def variables = List.fromIterator(_variableMap.keys)
-  def domain(variable: K) =
-    _variableMap.get(variable) match {
-      case Some(x) => x
-      case None => throw new IllegalStateException("domain for " + variable + " not found.")
-    }
-
-  def addVariables(variableAndDomains: (K,List[V]) *) {
-    _variableMap = _variableMap ++ variableAndDomains
+    makeArcConsistant(csp,queue)
   }
 
-  def addConstraints(constraints: Constraint[K,V] *) {
-    _constraints = _constraints ++ constraints
-  }
-
-  def isComplete(assignment: Map[K,V]) =
-    constraints.forall(_.isSatisfied(assignment)) &&
-    variables.forall(assignment.contains(_))
-
-  //checks if a partial assignment is not broken
-  def isAssignmentOk(assignment: Map[K,V]) =
-    constraints.forall(
-      (constraint) => {
-        !constraint.variables.forall(assignment.contains(_)) ||
-        constraint.isSatisfied(assignment) })
-
-  //returns List of Constraints which are in Conflict
-  def constraintsInConflict(assignment: Map[K,V]) =
-    constraints.filter(!_.isSatisfied(assignment))
-
-  //another implementation can return a sensible representation
-  //of the current state of the CSP
-  //For debugging purposes only.
-  def toString(assignment: Map[K,V]): String = { toString() }
-}
-
-
-// *************************** Example CSPs ********************************
-
-
-
-// -------------- Map Coloring Constraint Satisfaction Problem ---------------------
-class MapColorConstraint(x1: String, x2: String) extends Constraint[String,Int] {
-
-  def variables = List(x1,x2)
-
-  def isSatisfied(assignment: Map[String,Int]) = {
-    val tmp = assignment.get(x1)
-    (tmp != None) && (tmp != assignment.get(x2))
-  }
-}
-
-//Factory for Australia Map color CSP
-
-object AustraliaMapColorCSP {
-  val Red = 0
-  val Green = 1
-  val Blue = 2
-
-  private val domain = List(Red,Green,Blue)
-
-  val Wa = "WA"
-  val Nt = "NT"
-  val Q = "Q"
-  val Sa = "SA"
-  val Nsw = "NSW"
-  val V = "V"
-  val T = "T"
-
-  def csp = {
+  //TODO: MAC is similar stuff
+//  def MAC[K,V](csp: CSP[K,V]): Option[CSP[K,V]] = {
     
-    val prob = new CSP[String,Int]()
 
-    prob.addVariables((Wa,domain),
-                      (Nt,domain),
-                      (Q,domain),
-                      (Sa,domain),
-                      (Nsw,domain),
-                      (V,domain),
-                      (T,domain))                      
-    prob.addConstraints(new MapColorConstraint(Wa,Nt),
-                       new MapColorConstraint(Nt, Sa),
-                       new MapColorConstraint(Wa, Sa),
-                       new MapColorConstraint(Nt, Q),
-                       new MapColorConstraint(Q, Sa),
-                       new MapColorConstraint(Nsw, Sa),
-                       new MapColorConstraint(Q, Nsw),
-                       new MapColorConstraint(V, Sa),
-                       new MapColorConstraint(V, Nsw))
-    prob }
-}
+  //Returns None if current input assignment is not possible
+  //Or else returns a new CSP with smaller domain for various
+  //variables
+  def makeArcConsistant[K,V](csp: CSP[K,V], queue: List[(K,K,Constraint[K,V])]): Option[CSP[K,V]] = {
 
-// ------------------------------- N queens problem ------------------------------
-case class Queen(n: Int)
-class NQueensConstraint(x1: Queen, x2: Queen) extends Constraint[Queen,Int] {
-
-  def variables = List(x1,x2)
-
-  //check that no two queens are not atacking each other
-  //in the given assignment
-  def isSatisfied(assignment: Map[Queen,Int]) =
-    (assignment.get(x1),assignment.get(x2)) match {
-      case(None,_) => false
-      case (_, None) => false
-      case (Some(qy1),Some(qy2)) if qy1 == qy2 => false
-      case (Some(qy1),Some(qy2)) => {
-        (x1,x2) match {
-          case (Queen(qx1),Queen(qx2)) => Math.abs(qy1 - qy2) != Math.abs(qx1 - qx2) }
-      }
-    }
-}
-  
-//Factory for N-Queens CSP
-object NQueensCSP {
-  
-  private def generateDomain(n: Int,result: List[Int]): List[Int] = 
-    if(n == 0) result else generateDomain(n-1,n :: result)
-  
-  def csp(n: Int) = {
-    val csp = new CSP[Queen,Int]() {
-      //overriding toString to print a human-friendly version of
-      //the assignment
-      override def toString(assignment: Map[Queen,Int]) = {
-        val n = assignment.size
-        var result = "\n"
-        for(y <- n until (0,-1)) {
-          for(x <- 1 to n) {
-            assignment.get(Queen(x)) match {
-              case None => throw new IllegalStateException(Queen(x) + " is not assigned.")
-              case Some(yPos) => 
-                result = result + (if(y == yPos) "X " else "- ")
-            }
+    //One binary constraint leads to two arcs(or variable pairs)
+    //in the queue, we also keep the constraint between those
+    //variables in the queue, so queue is a list of triplets
+    //For example a binary constraint, c with 2 variables x1
+    //and x2 results in two triplets in the queue
+    //(x1,x2,c) and (x2,x1,c)
+      queue match {
+        case (x,y,c) :: rest => {
+          revise(csp,x,y,c) match {
+            case None =>  //No change to the domain of x
+              makeArcConsistant(csp,rest)
+            case Some(domainX) => //domain of x reduced
+              if (domainX.isEmpty) None
+              else {
+                //add all other neighbouts of x to the queue
+                val neighbours = csp.neighbours(x) //returns a list of pair (neighbour,constraint)
+                var newQ = rest
+                neighbours.foreach(nbr => newQ = (nbr._1,x,nbr._2) :: newQ)
+                makeArcConsistant(csp.clone(x -> domainX),newQ)
+              }
           }
-          result = result + "\n"
         }
-        result
+        case Nil => Some(csp)
       }
-    }
+  }
 
-    val domain = generateDomain(n,Nil)
-    
-    //add n Queens
-    for(i <- 1 to n) { csp.addVariables((Queen(i),domain)) }
-
-    //add constraint for every pair of queen
-    for(i <- 1 to n; j <- i+1 to n) { csp.addConstraints(new NQueensConstraint(Queen(i),Queen(j))) }
-
-    csp //return the csp
+  //Returns new domain of x if changed or None
+  private def revise[K,V](csp: CSP[K,V], x: K, y: K, constraint: Constraint[K,V]): Option[List[V]] = {
+    val domainXi = csp.domain(x)
+    val domainYi = csp.domain(y)
+    val consistantDomainXi = csp.domain(x).filter( xi =>
+                                        domainYi.exists( yi => constraint.isSatisfied(Map(x -> xi, y -> yi))))
+    if(consistantDomainXi.length != domainXi.length)
+      Some(consistantDomainXi)
+    else None
   }
 }
+
+
+
+
