@@ -2,7 +2,10 @@ package aima.search.csp
 
 //Various CSP data structures
 
-//Absract Representation for a *binary* Constraint
+/** Absract Representation for a *binary* Constraint
+ *
+ * @author Himanshu Gupta
+ */
 abstract class Constraint[K,V](x1: K, x2: K) {
   
   def variables = (x1,x2)
@@ -22,13 +25,25 @@ abstract class Constraint[K,V](x1: K, x2: K) {
   def isSatisfied(assignment: Map[K,V]): Boolean
 }
 
+/**A generic All-Diff Constraint, puts the constraint that
+ * values to both variables should be different
+ *
+ * @author Himanshu Gupta
+ */
+class AllDiffConstraint[K,V](x1: K, x2: K) extends Constraint[K,V](x1,x2) {
+  def isSatisfied(assignment: Map[K,V]) =
+    (assignment.get(x1),assignment.get(x2)) match {
+      case (Some(val1),Some(val2)) => val1 != val2
+      case _ => false
+    }
+}
 
-//TODO: Write generic alldiff constraint
 
 
-
-
-
+/** A Generic CSP representation
+ *
+ * @author Himanshu Gupta
+ */
 class CSP[K,V] {
 
   private var _variableMap = Map[K,List[V]]()
