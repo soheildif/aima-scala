@@ -1,4 +1,4 @@
-package aima.search
+package aima.search.csp
 
 /** Factory for N-Queens CSP
  *
@@ -46,9 +46,7 @@ object NQueensCSP {
 case class Queen(n: Int) //NQueens CSP variable type
 
 //NQueens CSP constraint type
-class NQueensConstraint(x1: Queen, x2: Queen) extends Constraint[Queen,Int] {
-
-  def variables = List(x1,x2)
+class NQueensConstraint(x1: Queen, x2: Queen) extends Constraint[Queen,Int](x1,x2) {
 
   //check that no two queens are not atacking each other
   //in the given assignment
