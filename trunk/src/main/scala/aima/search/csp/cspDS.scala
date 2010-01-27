@@ -1,24 +1,34 @@
-package aima.search
+package aima.search.csp
 
 //Various CSP data structures
 
 //Absract Representation for a *binary* Constraint
-abstract class Constraint[K,V] {
+abstract class Constraint[K,V](x1: K, x2: K) {
   
-  //TODO: remove it and make it really a *BINARY*
-  //constraint
-  def variables: List[K]
-  //final def variables = List(x1,x2) //variables involved in this constraint
+  def variables = (x1,x2)
+
+  //Returns whether given assignment is complete w.r.t
+  //this constraint i.e. does given assignment assigns
+  //values to x1 and x2 both
+  def isComplete(assignment: Map[K,V]) =
+    (assignment.get(x1),assignment.get(x2)) match {
+      case (Some(_),Some(_)) => true
+      case _ => false
+    }
+
+  //Returns whether given assignment is complete w.r.t
+  //this constraint and values assigned are in agreement
+  //with this constraint
   def isSatisfied(assignment: Map[K,V]): Boolean
 }
 
 
+//TODO: Write generic alldiff constraint
 
 
 
-//TODO: somehow separate variable and domain from the
-//mainstream CSP because it can change with the
-//assignment with various consistency checks
+
+
 class CSP[K,V] {
 
   private var _variableMap = Map[K,List[V]]()
@@ -32,13 +42,14 @@ class CSP[K,V] {
       case None => throw new IllegalStateException("domain for " + variable + " not found.")
     }
 
-  //TODO: optimize it
+  //Returns list of pair of (variable,constraint) for all variable
+  //which are neighbour of input variable x
   def neighbours(x: K) = {
     
     def loop(constraints: List[Constraint[K,V]], neighbours: List[(K,Constraint[K,V])]): List[(K,Constraint[K,V])] =
       constraints match {
         case c :: rest =>
-          val  x1 :: x2 :: Nil = c.variables
+          val (x1,x2) = c.variables
           if(x1 == x)
             loop(rest,(x2,c) :: neighbours)
           else {
@@ -68,14 +79,14 @@ class CSP[K,V] {
   def isAssignmentOk(assignment: Map[K,V]) =
     constraints.forall(
       (constraint) => {
-        !constraint.variables.forall(assignment.contains(_)) ||
+        !constraint.isComplete(assignment) ||
         constraint.isSatisfied(assignment) })
 
   //returns List of Constraints which are in Conflict
   def constraintsInConflict(assignment: Map[K,V]) =
     constraints.filter(!_.isSatisfied(assignment))
 
-  //returns a *new* CSP object with same constraints as this
+  //returns a *new* CSP object with same constraints as *this*
   //with updated domain for given variables in the input
   def clone(variableAndDomains: (K,List[V]) *) = {
     val result = new CSP[K,V]()

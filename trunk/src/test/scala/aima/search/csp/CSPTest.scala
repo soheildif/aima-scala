@@ -1,9 +1,9 @@
-package aima.search
+package aima.search.csp
 
 import org.scalatest.Suite
 import org.scalatest.ImpSuite
 
-class A extends Suite {
+class AC3Test extends Suite {
 
   /* This tests the AC3 algorithm with problem described
    * in section 6.2.2
@@ -16,8 +16,7 @@ class A extends Suite {
   def testAC3() {
     val X = "X"
     val Y = "Y"
-    val constraint = new Constraint[String,Int]() {
-      def variables = List(X,Y)
+    val constraint = new Constraint[String,Int](X,Y) {
       def isSatisfied(assignment: Map[String,Int]) =
         (assignment.get(X),assignment.get(Y)) match {
           case (Some(valX),Some(valY)) => valY == valX*valX
@@ -31,7 +30,7 @@ class A extends Suite {
     csp.addConstraints(constraint)
     csp.addVariables((X,domain),(Y,domain))
 
-    ConsistancyCheck.AC3(csp) match {
+    Inference.AC3(csp) match {
       case None => assert(false)
       case Some(csp) =>
         val domainX = csp.domain(X)
@@ -48,4 +47,51 @@ class A extends Suite {
     }
   }
 }
+
+class BacktrackingSearchTest extends Suite {
+
+  /*******************************************************/
+  /**** Backtracking-Search Tests with NO Inferencing ****/
+  /*******************************************************/
+
+  def testBacktrackingSearchForAustraliaMapColorCSP() {
+    import AustraliaMapColorCSP._
+
+    BacktrackingSearch(csp) match {
+      case None => assert(false)
+      case Some(assignment) => {
+        assert(assignment.getOrElse(Wa,-1) == Blue)
+        assert(assignment.getOrElse(Nt,-1) == Red)
+        assert(assignment.getOrElse(Q,-1) == Blue)
+        assert(assignment.getOrElse(Sa,-1) == Green)
+        assert(assignment.getOrElse(Nsw,-1) == Red)
+        assert(assignment.getOrElse(V,-1) == Blue)
+        assert(assignment.getOrElse(T,-1) == Red ||
+               assignment.getOrElse(T,-1) == Blue ||
+               assignment.getOrElse(T,-1) == Green)
+      }
+    }
+  }
+
+  def testBacktrackingSearchForNQueensCSP() {
     
+    val csp = NQueensCSP.csp(8)
+    BacktrackingSearch(csp) match {
+      case None => assert(false)
+      case Some(assignment) =>
+        println("Nqueeens solution found: " + csp.toString(assignment))        
+        assert(true)
+    }
+  }
+
+  /*******************************************************/
+  /**** Backtracking-Search Tests with MAC Inferencing ***/
+  /*******************************************************/
+}
+
+class MinConflictsTest extends Suite {
+  
+  def testIt() {
+    MinConflicts(AustraliaMapColorCSP.csp,100) 
+  }
+}

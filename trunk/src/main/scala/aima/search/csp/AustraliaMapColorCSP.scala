@@ -1,4 +1,4 @@
-package aima.search
+package aima.search.csp
 
 /** Factory for Australia Map color CSP
  * described in Fig 6.1
