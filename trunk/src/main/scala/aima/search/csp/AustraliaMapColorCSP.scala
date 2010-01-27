@@ -31,14 +31,14 @@ object AustraliaMapColorCSP {
                       (Nsw,domain),
                       (V,domain),
                       (T,domain))                      
-    prob.addConstraints(new MapColorConstraint(Wa,Nt),
-                       new MapColorConstraint(Nt, Sa),
-                       new MapColorConstraint(Wa, Sa),
-                       new MapColorConstraint(Nt, Q),
-                       new MapColorConstraint(Q, Sa),
-                       new MapColorConstraint(Nsw, Sa),
-                       new MapColorConstraint(Q, Nsw),
-                       new MapColorConstraint(V, Sa),
-                       new MapColorConstraint(V, Nsw))
+    prob.addConstraints(new AllDiffConstraint(Wa,Nt),
+                       new AllDiffConstraint(Nt, Sa),
+                       new AllDiffConstraint(Wa, Sa),
+                       new AllDiffConstraint(Nt, Q),
+                       new AllDiffConstraint(Q, Sa),
+                       new AllDiffConstraint(Nsw, Sa),
+                       new AllDiffConstraint(Q, Nsw),
+                       new AllDiffConstraint(V, Sa),
+                       new AllDiffConstraint(V, Nsw))
     prob }
 }
