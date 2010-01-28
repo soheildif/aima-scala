@@ -37,6 +37,22 @@ class AllDiffConstraint[K,V](x1: K, x2: K) extends Constraint[K,V](x1,x2) {
       case _ => false
     }
 }
+object AllDiffConstraint {
+
+  //A convenience method to create (n combination 2) AllDiffConstraint
+  //for given list of n variables
+  def createConstraints[K,V](xs: K *): List[AllDiffConstraint[K,V]] = {
+    
+    def loop(xs: List[K], result: List[AllDiffConstraint[K,V]]): List[AllDiffConstraint[K,V]] =
+      xs match {
+        case x :: rest =>
+          loop(rest, result ++ rest.map(new AllDiffConstraint(x,_)))
+        case Nil => result
+      }
+
+    loop(xs,Nil)
+  }
+}
 
 
 
