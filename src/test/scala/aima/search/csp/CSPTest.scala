@@ -79,7 +79,7 @@ class BacktrackingSearchTest extends Suite {
     BacktrackingSearch(csp) match {
       case None => assert(false)
       case Some(assignment) =>
-        println("Nqueeens solution found: " + csp.toString(assignment))        
+        //println("Nqueeens solution found: " + csp.toString(assignment))        
         assert(true)
     }
   }
@@ -87,6 +87,32 @@ class BacktrackingSearchTest extends Suite {
   /*******************************************************/
   /**** Backtracking-Search Tests with MAC Inferencing ***/
   /*******************************************************/
+
+  //Note: Somehow, Inference.MAC is not transparently convering
+  //into a Function value, so I'm doing it manually.
+  //TODO: This needs to be investigated
+  //Ideally we should be able to call BacktrackingSearch(csp,Inference.MAC)
+  //directly
+  val mac = (x: String, a: Map[String,Int], csp: CSP[String,Int]) => {
+      Inference.MAC(x,a,csp) }
+
+  def testBacktrackingSearchWithMACForAustraliaMapColorCSP() {
+    import AustraliaMapColorCSP._
+    BacktrackingSearch(csp,mac) match {
+      case None => assert(false)
+      case Some(assignment) => {
+        assert(assignment.getOrElse(Wa,-1) == Blue)
+        assert(assignment.getOrElse(Nt,-1) == Red)
+        assert(assignment.getOrElse(Q,-1) == Blue)
+        assert(assignment.getOrElse(Sa,-1) == Green)
+        assert(assignment.getOrElse(Nsw,-1) == Red)
+        assert(assignment.getOrElse(V,-1) == Blue)
+        assert(assignment.getOrElse(T,-1) == Red ||
+               assignment.getOrElse(T,-1) == Blue ||
+               assignment.getOrElse(T,-1) == Green)
+      }
+    }
+  }
 }
 
 class MinConflictsTest extends Suite {
