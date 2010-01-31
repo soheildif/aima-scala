@@ -224,14 +224,47 @@ object MinConflicts {
  *
  * @author Himanshu Gupta
  */
-/*
 object TreeCspSolver {
 
-  def apply(csp: CSP[K,V]): Option[Map[K,V]] = {
+  def apply[K,V](csp: TreeCSP[K,V]): Option[Map[K,V]] = {
     
-    //TODO : get topologically sorted
-    val variables = csp.variables
-    val root = variables.head //let us chose first one to be the root
+    val variables = csp.variables //topologically sorted
 
-    
-*/
+    def loop(vars: List[Node[K,V]], csp: TreeCSP[K,V]): Option[TreeCSP[K,V]] =
+      vars match {
+        case _ :: Nil => Some(csp)
+        case x :: rest =>
+          makeArcConsistent(csp.parent(x),x,csp) match {
+            case None => None
+            case Some(newCsp) => loop(rest,newCsp)
+          }
+        case Nil => throw new IllegalStateException("Tree CSP with No variables.")
+      }
+
+    loop(variables.reverse,csp) match {
+      case None => None
+      case Some(csp) =>
+        def anotherLoop(nodes: List[Node[K,V]], result: Map[K,V]): Option[Map[K,V]] =
+          nodes match {
+            case n :: rest =>
+              csp.domain(n).find( (v:V) =>
+                csp.constraint(csp.parent(n),n).isSatisfied(result + (n.key -> v))) match {
+                case Some(v) => anotherLoop(rest,result + (n.key -> v))
+                case None => None
+              }
+            case Nil => Some(result)
+          }
+        anotherLoop(variables.tail,Map(variables.head.key -> csp.domain(variables.head).head))
+    }
+  }
+
+  private def makeArcConsistent[K,V](parent: Node[K,V], child: Node[K,V], csp: TreeCSP[K,V]): Option[TreeCSP[K,V]] = {
+    val domainXi = csp.domain(parent)
+    val domainYi = csp.domain(child)
+    val constraint = csp.constraint(parent,child)
+    val consistentDomainXi = domainXi.filter( xi =>
+                                        domainYi.exists( yi => constraint.isSatisfied(Map(parent.key -> xi, child.key -> yi))))
+    if(consistentDomainXi.isEmpty) None
+    else Some(csp.setDomain(child, consistentDomainXi))
+  }
+}

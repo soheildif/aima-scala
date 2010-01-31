@@ -9,7 +9,7 @@
   <packaging>jar</packaging>
   <version>0.0</version>
   <description>
-    Code for Artificial Intelligence: A Modern Approach 2nd Ed
+    Code for Artificial Intelligence: A Modern Approach 3rd Ed
   </description>
   
   <repositories>
@@ -58,6 +58,12 @@
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <jvmArgs>
+            <jvmArg>-Xms64m</jvmArg>
+            <jvmArg>-Xmx256m</jvmArg>
+          </jvmArgs>
+        </configuration>
         <!--configuration>
           <mainClass>aima.basic.Main</mainClass>
         </configuration-->

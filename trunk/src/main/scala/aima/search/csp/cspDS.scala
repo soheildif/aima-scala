@@ -41,7 +41,7 @@ object AllDiffConstraint {
 
   //A convenience method to create (n combination 2) AllDiffConstraint
   //for given list of n variables
-  def createConstraints[K,V](xs: K *): List[AllDiffConstraint[K,V]] = {
+  def createConstraints[K,V](xs: List[K]): List[AllDiffConstraint[K,V]] = {
     
     def loop(xs: List[K], result: List[AllDiffConstraint[K,V]]): List[AllDiffConstraint[K,V]] =
       xs match {
