@@ -88,16 +88,17 @@ class BacktrackingSearchTest extends Suite {
   /**** Backtracking-Search Tests with MAC Inferencing ***/
   /*******************************************************/
 
-  //Note: Somehow, Inference.MAC is not transparently convering
-  //into a Function value, so I'm doing it manually.
-  //TODO: This needs to be investigated
-  //Ideally we should be able to call BacktrackingSearch(csp,Inference.MAC)
-  //directly
-  val mac = (x: String, a: Map[String,Int], csp: CSP[String,Int]) => {
-      Inference.MAC(x,a,csp) }
-
   def testBacktrackingSearchWithMACForAustraliaMapColorCSP() {
     import AustraliaMapColorCSP._
+
+    //Note: Somehow, Inference.MAC is not transparently convering
+    //into a Function value, so I'm doing it manually.
+    //TODO: This needs to be investigated
+    //Ideally we should be able to call BacktrackingSearch(csp,Inference.MAC)
+    //directly
+    val mac = (x: String, a: Map[String,Int], csp: CSP[String,Int]) => {
+      Inference.MAC(x,a,csp) }
+
     BacktrackingSearch(csp,mac) match {
       case None => assert(false)
       case Some(assignment) => {
@@ -121,3 +122,41 @@ class MinConflictsTest extends Suite {
     MinConflicts(AustraliaMapColorCSP.csp,100) 
   }
 }
+
+class TreeCspSolverTest {
+
+  /** Test the tree csp described in Fig 6.10
+   * A
+   * |
+   * B
+   * |\
+   * C D
+   *   |\
+   *   E F
+   *
+   * Problem is to assign Red/Blue color to each variable
+   * so that no two connected ones get the same color.
+   */
+  def testIt() {
+    val Red = 0
+    val Blue = 1
+    val domain = List(Red,Blue)
+    
+    val csp = new TreeCSP[String,Int]("A",domain)
+    
+    //add constraints
+    val b = csp.addChild(csp.root, "B", domain, new AllDiffConstraint[String,Int]("A","B"))
+    csp.addChild(b, "C", domain, new AllDiffConstraint[String,Int]("B","C"))
+
+    val d = csp.addChild(b, "D", domain, new AllDiffConstraint[String,Int]("B","D"))
+    csp.addChild(d, "E", domain, new AllDiffConstraint[String,Int]("D","E"))
+    csp.addChild(d, "F", domain, new AllDiffConstraint[String,Int]("D","F"))
+
+    TreeCspSolver(csp) match {
+      case None => assert(false)
+      case Some(sol) =>
+        assert((sol("A") == Red && sol("B") == Blue && sol("C") == Red && sol("D") == Red && sol("E") == Blue && sol("F") == Blue) ||
+               (sol("A") == Blue && sol("B") == Red && sol("C") == Blue && sol("D") == Blue && sol("E") == Red && sol("F") == Red))
+  }
+}
+                         
