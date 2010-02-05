@@ -157,6 +157,7 @@ class TreeCspSolverTest {
       case Some(sol) =>
         assert((sol("A") == Red && sol("B") == Blue && sol("C") == Red && sol("D") == Red && sol("E") == Blue && sol("F") == Blue) ||
                (sol("A") == Blue && sol("B") == Red && sol("C") == Blue && sol("D") == Blue && sol("E") == Red && sol("F") == Red))
+    }
   }
 }
                          
