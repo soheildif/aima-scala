@@ -9,7 +9,7 @@ import scala.collection.immutable.{Set,ListSet}
  */
 class PropositionalLogicParserTest extends Suite {
 
-  private val PLP = PropositionalLogicParserTest
+  private val PLP = PropositionalLogicParser
 
   def testParser() {
 
