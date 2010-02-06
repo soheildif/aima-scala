@@ -19,10 +19,10 @@ object PropositionalLogicParser extends JavaTokenParsers {
                                        case premise~Some(_~conclusion) => new Conditional(premise,conclusion) }
   def disjunction: Parser[Sentence] = conjunction~rep("\\/"~conjunction) ^^
                                       {case c~Nil => c
-                                       case c~reps => new Disjunction(ListSet(c :: reps.map(_ match { case _~cond => cond }):_*))}
+                                       case c~reps => new Disjunction(c :: reps.map(_ match { case _~cond => cond }):_*)}
   def conjunction: Parser[Sentence] = negation~rep("/\\"~negation) ^^
                                       {case d~Nil => d
-                                       case d~reps => new Conjunction(ListSet(d :: reps.map(_ match { case _~disj => disj }):_*))}
+                                       case d~reps => new Conjunction(d :: reps.map(_ match { case _~disj => disj }):_*)}
   def negation: Parser[Sentence] = rep("~")~term ^^
                                     {case Nil~term => term
                                      case list~term => list.foldLeft(term)((x,y)=> new Negation(x))}
@@ -65,9 +65,13 @@ class PropositionSymbol(val key: String) extends Sentence {
   override def toString = key
 }  
 object PropositionSymbol {
+
+  val True = "True"
+  val False = "False"
+
   private val cache = scala.collection.mutable.Map[String,PropositionSymbol](
-    "True" -> new PropositionSymbol("True"),
-    "False" -> new PropositionSymbol("False"))
+    True -> new PropositionSymbol(True),
+    False -> new PropositionSymbol(False))
   
   //Note: This is not safe in a multi-threaded
   //executional environment
@@ -82,7 +86,7 @@ object PropositionSymbol {
 }
 
 //Complex Sentences
-class Negation(s: Sentence) extends Sentence {
+class Negation(val s: Sentence) extends Sentence {
   def isTrue(model: Map[PropositionSymbol,Boolean]) = 
     s.isTrue(model) match {
       case Some(x) => Some(!x)
@@ -94,8 +98,10 @@ class Negation(s: Sentence) extends Sentence {
   override def toString = "~" + s
 }
 
-class Conjunction(conjuncts: Set[Sentence]) extends Sentence {
+class Conjunction(cs: Sentence *) extends Sentence {
 
+  val conjuncts: Set[Sentence] = ListSet(cs: _*)
+ 
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
     //even if a single one is false, it is false
     if(conjuncts.exists(_.isTrue(model) == Some(false)))
@@ -112,7 +118,9 @@ class Conjunction(conjuncts: Set[Sentence]) extends Sentence {
   override def toString = "(" + conjuncts.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ")"
 }
 
-class Disjunction(disjuncts: Set[Sentence]) extends Sentence {
+class Disjunction(ds: Sentence *) extends Sentence {
+
+  val disjuncts: Set[Sentence] = ListSet(ds: _*)
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
     //even if a single one is true, it is true
@@ -130,7 +138,7 @@ class Disjunction(disjuncts: Set[Sentence]) extends Sentence {
   override def toString = "(" + disjuncts.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 
-class Conditional(premise: Sentence, conclusion: Sentence) extends Sentence {
+class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence {
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) =
     (premise.isTrue(model),conclusion.isTrue(model)) match {
@@ -146,7 +154,7 @@ class Conditional(premise: Sentence, conclusion: Sentence) extends Sentence {
   override def toString = "(" + premise + " => " + conclusion + ")"
 }
 
-class BiConditional(condition: Sentence, conclusion: Sentence) extends Sentence {
+class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence {
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) =
     (condition.isTrue(model),conclusion.isTrue(model)) match {
