@@ -1,37 +1,31 @@
 package aima.logic.propositional
 
 import aima.commons.Utils
-import scala.collection.immutable.{Set,ListSet}
-
-
-
-//CNF converter
-//def CNFConverter(s: Sentence): CNFSentence
+import scala.collection.immutable.{ListMap,HashMap,Set,ListSet}
 
 /** TT-ENTAILS, described in Fig 7.10
  *
  * @author Himanshu Gupta
  */
-//isTrue
-//symbols
-/*object TTEntails {
+object TTEntails {
   def apply(KB: Sentence,alpha: Sentence): Boolean = {
     val symbols = KB.symbols ++ alpha.symbols
-    ttCheckAll(KB,alpha,symbols.toList,Map[Symbol,Boolean]())
+    ttCheckAll(KB,alpha,symbols.toList,ListMap[PropositionSymbol,Boolean]())
   }
 
   private def ttCheckAll(KB: Sentence,alpha: Sentence,
-                         symbols: List[Symbol],model: Map[Symbol,Boolean]): Boolean = {
+                         symbols: List[PropositionSymbol],model: Map[PropositionSymbol,Boolean]): Boolean = {
     symbols match {
       case Nil =>
         KB.isTrue(model) match {
           case Some(true) =>
             alpha.isTrue(model) match {
               case Some(x) => x
-              case None => throw new IllegalStateException("Model does not contain all symbols.")
+              case None => throw new IllegalStateException("Model " + model + " does not contain all symbols.")
             }
           case Some(false) => true //when KB is false, always return true
-          case None => throw new IllegalStateException("Model does not contain all symbols.")
+          case None => 
+            throw new IllegalStateException("Model " + model + " does not contain all symbols.")
         }
       case first :: rest =>
         (ttCheckAll(KB,alpha,rest,model + (first -> true)) 
@@ -40,7 +34,7 @@ import scala.collection.immutable.{Set,ListSet}
     }
   }
 }
-*/
+
 /** PL-RESOLUTION, described in Fig 7.12
  *
  * @author Himanshu Gupta
