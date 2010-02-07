@@ -44,6 +44,15 @@ abstract class Sentence {
   //Returns the set of Symbols refered in this sentence
   def symbols: Set[PropositionSymbol]
 }
+object Sentence {
+
+  //Knowledge Base = conjunction of sentences
+  //Some convenience methods to deal with KB
+  def createKB(s: Sentence *): Conjunction = new Conjunction(s:_*)
+
+  def addToKB(KB: Conjunction, s: Sentence) =
+    new Conjunction((KB.conjuncts + s).toList:_*)
+} 
 
 //Atomic Sentence
 class PropositionSymbol private(val key: String) extends Sentence {

@@ -8,7 +8,7 @@ import scala.collection.immutable.{ListMap,HashMap,Set,ListSet}
  * @author Himanshu Gupta
  */
 object TTEntails {
-  def apply(KB: Sentence,alpha: Sentence): Boolean = {
+  def apply(KB: Conjunction,alpha: Sentence): Boolean = {
     val symbols = KB.symbols ++ alpha.symbols
     ttCheckAll(KB,alpha,symbols.toList,Map[PropositionSymbol,Boolean]())
   }
@@ -39,25 +39,25 @@ object TTEntails {
  *
  * @author Himanshu Gupta
  */
-/*object PLResolution {
-  def apply(KB,alpha: Sentence): Boolean = {
-    val clauses = convertToCNF(KB).clauses //TODO, add Not alpha also
+object PLResolution {
+  def apply(KB: Conjunction, alpha: Sentence): Boolean = {
+    val clauses = SentenceToCNF(Sentence.addToKB(KB, new Negation(alpha))).clauses
 
-    def loop(clauses: Set[Clause]) =
+    def loop(clauses: Set[Clause]):Boolean =
       loopIn(Utils.pairs(clauses.toList),ListSet.empty) match {
         case None => true //Empty clause found, return true
-        case Some(new) =>
-          if (new.subsetOf(clauses)) false
-          else loop(new ++ clauses)
+        case Some(newSet) =>
+          if (newSet.subsetOf(clauses)) false
+          else loop(newSet ++ clauses)
       }
 
-    def loopIn(pairs: List[(Clause,Clause)], new: Set[Clause]): Option[Set[Clause]] =
+    def loopIn(pairs: List[(Clause,Clause)], newSet: Set[Clause]): Option[Set[Clause]] =
       pairs match {
         case (c1,c2) :: rest =>
           val resolvents = plResolve(c1,c2)
         if(resolvents.exists(_.isEmpty)) None //Empty clause found
-        else loopIn(rest,new ++ resolvents)
-        case Nil => Some(new)
+        else loopIn(rest,newSet ++ resolvents)
+        case Nil => Some(newSet)
       }
 
     loop(clauses)
@@ -67,14 +67,14 @@ object TTEntails {
     
     def loop(ls: List[Literal], result: Set[Clause]): Set[Clause] =
       ls match {
-        case l:PositiveLiteral :: rest =>
-          if(c2.literals.exists(_ == NegativeLiteral(l.s)))
-            loop(rest,result + new Clause( (c1.literals - l) ++ (c2.literals - NegativeLiteral(l.s))))
+        case (l:PositiveLiteral) :: rest =>
+          if(c2.literals.exists(_ == NegativeLiteral(l.symbol)))
+            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - NegativeLiteral(l.symbol))).toList:_*))
           else
             loop(rest,result)
-        case L;NegativeLiteral :: rest =>
-          if(c2.literals.exists(_ == PositiveLiteral(l.s)))
-            loop(rest,result + new Clause( (c1.literals - l) ++ (c2.literals - PositiveLiteral(l.s))))
+        case (l:NegativeLiteral) :: rest =>
+          if(c2.literals.exists(_ == PositiveLiteral(l.symbol)))
+            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - PositiveLiteral(l.symbol))).toList:_*))
           else
             loop(rest,result)
         case Nil => result
@@ -85,15 +85,15 @@ object TTEntails {
     //check if a list of literals contain Positive as well as Negative literal
     //for the same symbol
     def isDiscardable(ls: List[Literal]) =
-      Utils.pairs.exists( pair =>
+      Utils.pairs(ls).exists( pair =>
                             pair match {
-                              case (PositiveLiteral(x),NegativeLiteral(x)) => true
-                              case (NegativeLiteral(x),PositiveLiteral(x)) => true
+                              case (PositiveLiteral(x),NegativeLiteral(y)) if x == y  => true
+                              case (NegativeLiteral(x),PositiveLiteral(y)) if x == y => true
                               case _ => false })
     //discard all such resolvents and return the rest
-    resolvents.filter(!isDiscardable(_.literals))    
+    resolvents.filter((c:Clause) => !isDiscardable(c.literals.toList))
   }
-}*/
+}
 
 /** PL-FC-ENTAILS?, described in Fig 7.15
  *
