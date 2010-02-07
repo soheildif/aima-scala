@@ -26,7 +26,7 @@ object PropositionalLogicParser extends JavaTokenParsers {
   def negation: Parser[Sentence] = rep("~")~term ^^
                                     {case Nil~term => term
                                      case list~term => list.foldLeft(term)((x,y)=> new Negation(x))}
-  def term: Parser[Sentence] = ident ^^ (new PropositionSymbol(_)) | "("~>sentence<~")"
+  def term: Parser[Sentence] = ident ^^ (PropositionSymbol(_)) | "("~>sentence<~")"
 
   def parse(in: String) = parseAll(sentence,in).get
 }
