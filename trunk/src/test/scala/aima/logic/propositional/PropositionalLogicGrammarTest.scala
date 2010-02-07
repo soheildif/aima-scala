@@ -18,6 +18,7 @@ class PropositionalLogicParserTest extends Suite {
     assert(PLP.parse("True").toString == "True")
     assert(PLP.parse("False").toString == "False")
     assert(PLP.parse("~ A12").toString == "~A12")
+    expect("(A \\/ B)")(PLP.parse("A\\/B").toString)
     assert(PLP.parse("A /\\ B /\\ C").toString == "(A /\\ B /\\ C)")
     assert(PLP.parse("A \\/ B \\/ C").toString == "(A \\/ B \\/ C)")
     assert(PLP.parse("A \\/ B /\\ C").toString == "(A \\/ (B /\\ C))")

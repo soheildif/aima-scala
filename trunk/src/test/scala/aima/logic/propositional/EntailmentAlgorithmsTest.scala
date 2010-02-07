@@ -26,31 +26,127 @@ object KB {
 }
     
 class TTEntailsTest extends Suite {
-  
-  private val PLP = PropositionalLogicParser
+
+  def test1() {
+    val KB = new TTEntailsBasedKB("A/\\B")
+    assert(KB.ask("A"))
+  }
+
+  def test2() {
+    val KB = new TTEntailsBasedKB("A\\/B")
+    assert(!KB.ask("A"))
+  }
+
+  def test3() {
+    val KB = new TTEntailsBasedKB("(A => B) /\\ B")
+    assert(!KB.ask("A"))
+  }
+
+  def test4() {
+    val KB = new TTEntailsBasedKB("A")
+    assert(!KB.ask("~ A"))
+  }
+
+  def test5() {
+    val KB = new TTEntailsBasedKB("(A => B) /\\ B")
+    assert(!KB.ask("X"))
+  }
+
+  def test6() {
+    val KB = new TTEntailsBasedKB("~A")
+    assert(!KB.ask("A"))
+  }
+
+  def test7() {
+    val KB = new TTEntailsBasedKB()
+    KB.tell("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")
+    KB.tell("(B21 <=> (P20 \\/ (P22 \\/ (P31 \\/ P11))))")
+    KB.tell("(B01 <=> (P00 \\/ (P02 \\/ P11)))")
+    KB.tell("(B10 <=> (P11 \\/ (P20 \\/ P00)))")
+    KB.tell("(~ B21)")
+    KB.tell("(~B12)")
+    KB.tell("(B10)")
+    KB.tell("(B01)")
+    assert(KB.ask("P00"))
+    assert(!KB.ask("~P00"))
+  }
 
   /**
-   * Test whether KB |= alpha, where alpha is ~P12?
-   * It should return true.
+   * Test based on simple KB described in Section - 7.4.3
    */
   def testSec7_4_3() {
-    val alpha = PLP.parse("~P12")
-    assert(TTEntails(KB.apply,alpha))
-  }
+    val R1 = "~P11"
+    val R2 = "B11 <=> (P12 \\/ P21)"
+    val R3 = "B21 <=> (P11 \\/ P22 \\/ P31)"
+    val R4 = "~B11"
+    val R5 = "B21"
+
+    val alpha = "~P12"
+
+    assert(new TTEntailsBasedKB(R1,R2,R3,R4,R5).ask(alpha))
+  } 
 }
 
 class PLResolutionTest extends Suite {
-  
-  private val PLP = PropositionalLogicParser
+
+  def test1() {
+    val KB = new PLResolutionBasedKB("A/\\B")
+    assert(KB.ask("A"))
+  }
+
+  def test2() {
+    val KB = new PLResolutionBasedKB("A\\/B")
+    assert(!KB.ask("A"))
+  }
+
+  def test3() {
+    val KB = new PLResolutionBasedKB("(A => B) /\\ B")
+    assert(!KB.ask("A"))
+  }
+
+  def test4() {
+    val KB = new PLResolutionBasedKB("A")
+    assert(!KB.ask("~ A"))
+  }
+
+  def test5() {
+    val KB = new PLResolutionBasedKB("(A => B) /\\ B")
+    assert(!KB.ask("X"))
+  }
+
+  def test6() {
+    val KB = new PLResolutionBasedKB("~A")
+    assert(!KB.ask("A"))
+  }
+
+/*  def test7() { //TODO: Fix it
+    val KB = new PLResolutionBasedKB()
+    KB.tell("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")
+    KB.tell("(B21 <=> (P20 \\/ (P22 \\/ (P31 \\/ P11))))")
+    KB.tell("(B01 <=> (P00 \\/ (P02 \\/ P11)))")
+    KB.tell("(B10 <=> (P11 \\/ (P20 \\/ P00)))")
+    KB.tell("(~ B21)")
+    KB.tell("(~B12)")
+    KB.tell("(B10)")
+    KB.tell("(B01)")
+    assert(KB.ask("P00"))
+    assert(!KB.ask("~P00"))
+  }*/
 
   /**
-   * Test whether KB |= alpha, where alpha is ~P12?
-   * It should return true.
+   * Test based on simple KB described in Section - 7.4.3
    */
   def testSec7_4_3() {
-    val alpha = PLP.parse("~P12")
-    assert(PLResolution(KB.apply,alpha))
-  }
+    val R1 = "~P11"
+    val R2 = "B11 <=> (P12 \\/ P21)"
+    val R3 = "B21 <=> (P11 \\/ P22 \\/ P31)"
+    val R4 = "~B11"
+    val R5 = "B21"
+
+    val alpha = "~P12"
+
+    assert(new PLResolutionBasedKB(R1,R2,R3,R4,R5).ask(alpha))
+  } 
 }
 
 class PLFCEntailsTest extends Suite {

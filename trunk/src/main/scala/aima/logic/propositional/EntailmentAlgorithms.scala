@@ -8,12 +8,12 @@ import scala.collection.immutable.{Set}
  * @author Himanshu Gupta
  */
 object TTEntails {
-  def apply(KB: Conjunction,alpha: Sentence): Boolean = {
+  def apply(KB: Conjunction, alpha: Sentence): Boolean = {
     val symbols = KB.symbols ++ alpha.symbols
     ttCheckAll(KB,alpha,symbols.toList,Map[PropositionSymbol,Boolean]())
   }
 
-  private def ttCheckAll(KB: Sentence,alpha: Sentence,
+  private def ttCheckAll(KB: Conjunction, alpha: Sentence,
                          symbols: List[PropositionSymbol],model: Map[PropositionSymbol,Boolean]): Boolean = {
     symbols match {
       case Nil =>
@@ -41,15 +41,17 @@ object TTEntails {
  */
 object PLResolution {
   def apply(KB: Conjunction, alpha: Sentence): Boolean = {
-    val clauses = SentenceToCNF(Sentence.addToKB(KB, new Negation(alpha))).clauses
+    val clauses = SentenceToCNF(new Conjunction((KB.conjuncts + new Negation(alpha)).toList:_*)).clauses
 
-    def loop(clauses: Set[Clause]):Boolean =
+    def loop(clauses: Set[Clause]):Boolean = {
+      //println("clauses " + clauses)
       loopIn(Utils.pairs(clauses.toList),Set.empty) match {
         case None => true //Empty clause found, return true
         case Some(newSet) =>
+          //println("newSet " + newSet)
           if (newSet.subsetOf(clauses)) false
           else loop(newSet ++ clauses)
-      }
+      }}
 
     def loopIn(pairs: List[(Clause,Clause)], newSet: Set[Clause]): Option[Set[Clause]] =
       pairs match {
@@ -63,7 +65,7 @@ object PLResolution {
     loop(clauses)
   }
 
-  private def plResolve(c1: Clause, c2: Clause): Set[Clause] = {
+  def plResolve(c1: Clause, c2: Clause): Set[Clause] = {
     
     def loop(ls: List[Literal], result: Set[Clause]): Set[Clause] =
       ls match {
