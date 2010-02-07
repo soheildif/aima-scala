@@ -46,7 +46,7 @@ abstract class Sentence {
 }
 
 //Atomic Sentence
-class PropositionSymbol(val key: String) extends Sentence {
+class PropositionSymbol private(val key: String) extends Sentence {
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
     if(key == "True") Some(true)
