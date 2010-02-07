@@ -10,7 +10,7 @@ import scala.collection.immutable.{ListMap,HashMap,Set,ListSet}
 object TTEntails {
   def apply(KB: Sentence,alpha: Sentence): Boolean = {
     val symbols = KB.symbols ++ alpha.symbols
-    ttCheckAll(KB,alpha,symbols.toList,ListMap[PropositionSymbol,Boolean]())
+    ttCheckAll(KB,alpha,symbols.toList,Map[PropositionSymbol,Boolean]())
   }
 
   private def ttCheckAll(KB: Sentence,alpha: Sentence,

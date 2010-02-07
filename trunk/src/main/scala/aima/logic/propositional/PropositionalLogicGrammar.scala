@@ -63,6 +63,8 @@ class PropositionSymbol(val key: String) extends Sentence {
     }
 
   override def toString = key
+
+  override def hashCode = key.hashCode
 }  
 object PropositionSymbol {
 
