@@ -49,8 +49,8 @@ abstract class Sentence {
 class PropositionSymbol private(val key: String) extends Sentence {
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
-    if(key == "True") Some(true)
-    else if(key == "False") Some(false)
+    if(key == PropositionSymbol.True) Some(true)
+    else if(key == PropositionSymbol.False) Some(false)
     else model.get(this) 
   }
 
@@ -75,8 +75,10 @@ object PropositionSymbol {
     True -> new PropositionSymbol(True),
     False -> new PropositionSymbol(False))
   
-  //Note: This is not safe in a multi-threaded
-  //executional environment
+  //Note: This is not ideal in a multi-threaded
+  //executional environment, more than one instance,
+  //for same key might be created, BUT this should
+  //cause no error
   def apply(name: String) =
     cache.get(name) match {
       case None =>
