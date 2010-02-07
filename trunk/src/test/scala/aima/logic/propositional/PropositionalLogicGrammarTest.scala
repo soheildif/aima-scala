@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import org.scalatest.Suite
-import scala.collection.immutable.{Set,ListSet}
+import scala.collection.immutable.{Set}
 
 /** Tests for Propositional Logic Grammar Parser
  *
@@ -30,6 +30,5 @@ class PropositionalLogicParserTest extends Suite {
     assert(PLP.parse("~ A \\/ (B => C) /\\ D").toString == "(~A \\/ ((B => C) /\\ D))")
     assert(PLP.parse("( norvig \\/ aima \\/ lisp ) /\\ (lisp => cool)").toString == 
                     "((norvig \\/ aima \\/ lisp) /\\ (lisp => cool))")
-
   }
 }

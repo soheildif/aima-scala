@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import scala.util.parsing.combinator._
-import scala.collection.immutable.{Map,Set,ListSet}
+import scala.collection.immutable.{Map,Set}
 
 /** Parser for Propositional Logic Grammar
  * described in Fig 7.7
@@ -63,7 +63,12 @@ class PropositionSymbol private(val key: String) extends Sentence {
     else model.get(this) 
   }
 
-  def symbols = ListSet(this)
+  def symbols = 
+    key match {
+      case PropositionSymbol.True => Set[PropositionSymbol]()
+      case PropositionSymbol.False => Set[PropositionSymbol]()
+      case _ => Set(this)
+    }
 
   override def equals(that: Any) =
     that match {
@@ -113,7 +118,7 @@ class Negation(val s: Sentence) extends Sentence {
 
 class Conjunction(cs: Sentence *) extends Sentence {
 
-  val conjuncts: Set[Sentence] = ListSet(cs: _*)
+  val conjuncts: Set[Sentence] = Set(cs: _*)
  
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
     //even if a single one is false, it is false
@@ -133,7 +138,7 @@ class Conjunction(cs: Sentence *) extends Sentence {
 
 class Disjunction(ds: Sentence *) extends Sentence {
 
-  val disjuncts: Set[Sentence] = ListSet(ds: _*)
+  val disjuncts: Set[Sentence] = Set(ds: _*)
 
   def isTrue(model: Map[PropositionSymbol,Boolean]) = {
     //even if a single one is true, it is true

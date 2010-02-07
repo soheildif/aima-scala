@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import org.scalatest.Suite
-import scala.collection.immutable.{Set,ListSet}
+import scala.collection.immutable.{Set}
 
 /* This file contains tests for CNF sentence Grammar
  * described in Fig 7.14
@@ -15,28 +15,21 @@ class CNFGrammarTest extends Suite {
 
   def testIt() {
 
-    assert(SentenceToCNF(PLP.parse("A")).toString == "((A))")
-    assert(SentenceToCNF(PLP.parse("AIMA")).toString == "((AIMA))")
-    assert(SentenceToCNF(PLP.parse("True")).toString == "((True))")
-    assert(SentenceToCNF(PLP.parse("False")).toString == "((False))")
-    assert(SentenceToCNF(PLP.parse("~ A12")).toString == "((~A12))")
-    assert(SentenceToCNF(PLP.parse("A /\\ B /\\ C")).toString == "((C) /\\ (B) /\\ (A))")
-    assert(SentenceToCNF(PLP.parse("A \\/ B \\/ C")).toString == "((A \\/ B \\/ C))")
-    assert(SentenceToCNF(PLP.parse("A \\/ B /\\ C")).toString == "((A \\/ C) /\\ (A \\/ B))")
-    assert(SentenceToCNF(PLP.parse("A \\/ ~ B /\\ C")).toString == "((A \\/ C) /\\ (A \\/ ~B))")
-    assert(SentenceToCNF(PLP.parse("A /\\ B => C")).toString == "((~A \\/ ~B \\/ C))")
-    assert(SentenceToCNF(PLP.parse("~A <=> (B /\\ C)")).toString == 
-      "((~A \\/ ~C \\/ ~B) /\\ (A \\/ B) /\\ (A \\/ C))")
-    assert(SentenceToCNF(PLP.parse("~A <=>   B /\\ C")).toString == 
-      "((~A \\/ ~C \\/ ~B) /\\ (A \\/ B) /\\ (A \\/ C))")
-    assert(SentenceToCNF(PLP.parse("~ A /\\ B => S /\\ T")).toString == 
-      "((A \\/ ~B \\/ T) /\\ (A \\/ ~B \\/ S))")
-    assert(SentenceToCNF(PLP.parse("~ A \\/ B => S /\\ T")).toString == 
-      "((A \\/ T) /\\ (A \\/ S) /\\ (~B \\/ T) /\\ (~B \\/ S))")
-    assert(SentenceToCNF(PLP.parse("~ A \\/ (B => C) /\\ D")).toString == 
-      "((~A \\/ D) /\\ (~A \\/ C \\/ ~B))")
-    assert(SentenceToCNF(PLP.parse("( norvig \\/ aima \\/ lisp ) /\\ (lisp => cool)")).toString == 
-      "((~lisp \\/ cool) /\\ (norvig \\/ aima \\/ lisp))")                    
+    expect("((A))")(SentenceToCNF(PLP.parse("A")).toString)
+    expect("((AIMA))")(SentenceToCNF(PLP.parse("AIMA")).toString)
+    expect("((True))")(SentenceToCNF(PLP.parse("True")).toString)
+    expect("((False))")(SentenceToCNF(PLP.parse("False")).toString)
+    expect("((~A12))")(SentenceToCNF(PLP.parse("~ A12")).toString)
+    expect("((A) /\\ (B) /\\ (C))")(SentenceToCNF(PLP.parse("A /\\ B /\\ C")).toString)
+    expect("((A \\/ B \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B \\/ C")).toString)
+    expect("((A \\/ B) /\\ (A \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B /\\ C")).toString)
+    expect("((A \\/ ~B) /\\ (A \\/ C))")(SentenceToCNF(PLP.parse("A \\/ ~ B /\\ C")).toString)
+    expect("((~A \\/ ~B \\/ C))")(SentenceToCNF(PLP.parse("A /\\ B => C")).toString)
+    expect("((A \\/ B) /\\ (A \\/ C) /\\ (~A \\/ ~B \\/ ~C))")(SentenceToCNF(PLP.parse("~A <=> (B /\\ C)")).toString)
+    expect("((A \\/ B) /\\ (A \\/ C) /\\ (~A \\/ ~B \\/ ~C))")(SentenceToCNF(PLP.parse("~A <=>   B /\\ C")).toString)
+    expect("((A \\/ ~B \\/ S) /\\ (A \\/ ~B \\/ T))")(SentenceToCNF(PLP.parse("~ A /\\ B => S /\\ T")).toString)
+    expect("((A \\/ S) /\\ (A \\/ T) /\\ (~B \\/ S) /\\ (~B \\/ T))")(SentenceToCNF(PLP.parse("~ A \\/ B => S /\\ T")).toString)
+    expect("((~A \\/ ~B \\/ C) /\\ (~A \\/ D))")(SentenceToCNF(PLP.parse("~ A \\/ (B => C) /\\ D")).toString)
+    expect("((norvig \\/ aima \\/ lisp) /\\ (~lisp \\/ cool))")(SentenceToCNF(PLP.parse("( norvig \\/ aima \\/ lisp ) /\\ (lisp => cool)")).toString)
   }
-
 }
