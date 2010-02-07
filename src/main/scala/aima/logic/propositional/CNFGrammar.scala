@@ -78,13 +78,6 @@ case class NegativeLiteral(val symbol: PropositionSymbol) extends Literal {
   override def toString = "~" + symbol.toString
 }
 
-/*
-class DefiniteClause  {
-  val premise: Set[PropositionSymbol]
-  val conclusion: PropositionSymbol
-}
-*/
-
 // Propositional Logic sentence to CNF sentence converter
 object SentenceToCNF {
   def apply(s: Sentence) : CNFSentence =
