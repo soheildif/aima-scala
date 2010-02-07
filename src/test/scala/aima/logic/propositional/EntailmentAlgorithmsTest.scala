@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import org.scalatest.Suite
-import scala.collection.immutable.{Set,ListSet}
+import scala.collection.immutable.{Set}
 
 /* This file contains tests for entailment algorithms
  * described in chapter 7.
@@ -53,7 +53,6 @@ class PLResolutionTest extends Suite {
   }
 }
 
-import scala.collection.immutable.ListSet
 class PLFCEntailsTest extends Suite {
 
   /** This test is based on the problem shown
@@ -67,11 +66,11 @@ class PLFCEntailsTest extends Suite {
     val A = PropositionSymbol("A")
     val B = PropositionSymbol("B")
 
-    val KB = ListSet(new DefiniteClause(ListSet(P),Q), // P => Q
-                     new DefiniteClause(ListSet(L,M),P), // L/\M => P
-                     new DefiniteClause(ListSet(B,L),M), // B/\L => M
-                     new DefiniteClause(ListSet(A,P),L), // A/\P => L
-                     new DefiniteClause(ListSet(A,B),L)) // A/\B => L
+    val KB = Set(new DefiniteClause(Set(P),Q), // P => Q
+                     new DefiniteClause(Set(L,M),P), // L/\M => P
+                     new DefiniteClause(Set(B,L),M), // B/\L => M
+                     new DefiniteClause(Set(A,P),L), // A/\P => L
+                     new DefiniteClause(Set(A,B),L)) // A/\B => L
 
     assert(PLFCEntails(KB,Q,List(A,B)))
   }

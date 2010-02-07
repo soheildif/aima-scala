@@ -1,6 +1,6 @@
 package aima.logic.propositional
 
-import scala.collection.immutable.{Set,ListSet}
+import scala.collection.immutable.{Set}
 
 /** AST for the CNF grammar described in Fig 7.14
  *
@@ -28,7 +28,7 @@ class CNFSentence(val clauses: Set[Clause]) {
 }
 
 class Clause(ls: Literal *) {
-  val literals: Set[Literal] = ListSet(ls: _*)
+  val literals: Set[Literal] = Set(ls: _*)
 
   def isEmpty = literals.isEmpty
 
@@ -53,27 +53,23 @@ class Clause(ls: Literal *) {
     }
 }
 
-abstract class Literal {
+abstract class Literal(val symbol: PropositionSymbol) {
   def isTrue(model: Map[PropositionSymbol,Boolean]): Option[Boolean]
-  def symbols: Set[PropositionSymbol]
+  def symbols: Set[PropositionSymbol] = symbol.symbols
 }
 
-case class PositiveLiteral(val symbol: PropositionSymbol) extends Literal {
+case class PositiveLiteral(s: PropositionSymbol) extends Literal(s) {
   def isTrue(model: Map[PropositionSymbol,Boolean]) =
     symbol.isTrue(model)
 
-  def symbols: Set[PropositionSymbol] = ListSet(symbol)
-
   override def toString = symbol.toString
 }
-case class NegativeLiteral(val symbol: PropositionSymbol) extends Literal {
+case class NegativeLiteral(s: PropositionSymbol) extends Literal(s) {
   def isTrue(model: Map[PropositionSymbol,Boolean]) =
     symbol.isTrue(model) match {
       case Some(x) => Some(!x)
       case None => None
     }
-
-  def symbols: Set[PropositionSymbol] = ListSet(symbol)
 
   override def toString = "~" + symbol.toString
 }
@@ -86,9 +82,9 @@ object SentenceToCNF {
   private def convert(s: Sentence, isNegated: Boolean): Set[Clause] =
     s match {
       case x: PropositionSymbol if isNegated => 
-        ListSet(new Clause(NegativeLiteral(x)))
+        Set(new Clause(NegativeLiteral(x)))
       case x: PropositionSymbol if !isNegated => 
-        ListSet(new Clause(PositiveLiteral(x)))
+        Set(new Clause(PositiveLiteral(x)))
       case x: Negation if isNegated =>
         convert(x.s,false)
       case x: Negation if !isNegated =>
@@ -140,5 +136,5 @@ object SentenceToCNF {
    * total # of resulting clauses = N X M
    */
   def unionOfTwoClauseSets(cs1: Set[Clause], cs2: Set[Clause]): Set[Clause] =
-    for(ci <- cs1; cj <- cs2) yield new Clause(ListSet((ci.literals ++ cj.literals).toList:_*).toList:_*)
+    for(ci <- cs1; cj <- cs2) yield new Clause(List((ci.literals ++ cj.literals).toList:_*).toList:_*)
 }

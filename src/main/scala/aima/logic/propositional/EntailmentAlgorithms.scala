@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import aima.commons.Utils
-import scala.collection.immutable.{ListMap,HashMap,Set,ListSet}
+import scala.collection.immutable.{Set}
 
 /** TT-ENTAILS, described in Fig 7.10
  *
@@ -44,7 +44,7 @@ object PLResolution {
     val clauses = SentenceToCNF(Sentence.addToKB(KB, new Negation(alpha))).clauses
 
     def loop(clauses: Set[Clause]):Boolean =
-      loopIn(Utils.pairs(clauses.toList),ListSet.empty) match {
+      loopIn(Utils.pairs(clauses.toList),Set.empty) match {
         case None => true //Empty clause found, return true
         case Some(newSet) =>
           if (newSet.subsetOf(clauses)) false
@@ -80,7 +80,7 @@ object PLResolution {
         case Nil => result
       }
 
-    val resolvents = loop(c1.literals.toList,ListSet.empty)
+    val resolvents = loop(c1.literals.toList,Set.empty)
 
     //check if a list of literals contain Positive as well as Negative literal
     //for the same symbol
@@ -136,11 +136,12 @@ object PLFCEntails {
  *
  * @author Himanshu Gupta
  */
-/*object DPLLSatisfiable {
-  def apply(s: Sentence): Boolean = DPLL(convertToCNF(s).clauses,s.symbols,Map[Symbol,Boolean]())
+object DPLLSatisfiable {
+  def apply(s: Sentence): Boolean =
+    DPLL(SentenceToCNF(s).clauses,s.symbols,Map[PropositionSymbol,Boolean]())
 
-  private def DPLL(clauses: Set[Clause],symbols: Set[Symbol],
-                   model: Map[Symbol,Boolean]): Boolean = {
+  private def DPLL(clauses: Set[Clause],symbols: Set[PropositionSymbol],
+                   model: Map[PropositionSymbol,Boolean]): Boolean = {
     if (clauses.forall(_.isTrue(model) == Some(true))) return true
     if(clauses.exists(_.isTrue(model) == Some(false))) return false
 
@@ -150,17 +151,17 @@ object PLFCEntails {
         FindUnitClause(clauses,model) match {
           case Some((p,value)) => DPLL(clauses,symbols - p, model + (p -> value))
           case None =>
-            //TODO
-            //p = first, rest = rest
+            val p = symbols.toList(0)
+            val rest = symbols - p
             DPLL(clauses,rest,model + (p -> true)) || DPLL(clauses,rest,model + (p -> false))
         }
     }
   }
 
-  private def FindPureSymbol(symbols, clauses: Set[Clause], model: Map[Symbol,Boolean]): Option[Symbol] = {
+  private def FindPureSymbol(symbols: Set[PropositionSymbol], clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
 
     //returns true, if given symbol appears as a Pure PositiveLiteral in given set of clauses
-    def isPurePositiveLiteral(p: Symbol, clauses: Set[Clause], model: Map[Symbol,Boolean]) =
+    def isPurePositiveLiteral(p: PropositionSymbol, clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]) =
       clauses.forall(c =>
         (c.literals.contains(PositiveLiteral(p)),c.literals.contains(NegativeLiteral(p))) match {
           case (_,false) => true
@@ -168,31 +169,35 @@ object PLFCEntails {
         })
 
     //Returns true, if given symbol appears as a Pure NegativeLiteral in given set of clauses
-    def isPureNegativeLiteral(p: Symbol, clauses: Set[Clause], model: Map[Symbol,Boolean]) =
+    def isPureNegativeLiteral(p: PropositionSymbol, clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]) =
       clauses.forall(c =>
         (c.literals.contains(PositiveLiteral(p)),c.literals.contains(NegativeLiteral(p))) match {
           case (false,_) => true
           case (true,_) => c.isTrue(model) == Some(true)
         })
 
-    symbols.find(isPurePositiveLiteral(_)) match {
+    symbols.find(isPurePositiveLiteral(_, clauses, model)) match {
       case Some(p) => Some((p,true))
       case None =>
-        symbols.find(isPureNegativeLiteral(_)) match {
+        symbols.find(isPureNegativeLiteral(_, clauses, model)) match {
           case Some(q) => Some((q,false))
           case None => None
         }
     }
   }
 
-  private def FindUnitClause(clauses: Set[Clause], model: Map[Symbol,Boolean]): Option[(Symbol,Boolean)] = {
-    clauses.find( _.literals.filter(!(_.isTrue(model) == Some(true))).size == 1 ) match {
+  private def FindUnitClause(clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
+    clauses.find( _.literals.filter(_.isTrue(model) != Some(true)).size == 1 ) match {
       case None => None
-      case Some(c) =>
-        c.literals.find... //TODO: basic is done.
+      case Some(c) => {
+        val Some(l) = c.literals.find(_.isTrue(model) != Some(true))
+        l match {
+          case _:PositiveLiteral => Some((l.symbol,true))
+          case _:NegativeLiteral => Some((l.symbol,false))
+        }}
     }
   }
-}*/
+}
 
 /** WALKSAT, described in Fig 7.18
  *
