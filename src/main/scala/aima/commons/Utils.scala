@@ -2,6 +2,11 @@ package aima.commons
 
 object Utils {
 
+  /**
+   * Returns (N combinatorial 2) pairs of the elements
+   * in the given list, N = list.length
+   * Returns Nil: If N < 2
+   */
   //TODO: Can we make it lazy somehow
   def pairs[A](list: List[A]): List[(A,A)] = {
 

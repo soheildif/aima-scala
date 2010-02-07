@@ -45,6 +45,14 @@ class Clause(ls: Literal *) {
 
   def symbols: Set[PropositionSymbol] = literals.flatMap(_.symbols)
 
+  override def equals(that: Any) =
+    that match {
+      case x: Clause => x.literals == this.literals
+      case _ => false
+    }
+
+  override def hashCode = literals.hashCode
+    
   override def toString =
     literals.size match {
       case 0 => "()"

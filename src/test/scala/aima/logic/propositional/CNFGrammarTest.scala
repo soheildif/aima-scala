@@ -20,6 +20,7 @@ class CNFGrammarTest extends Suite {
     expect("((True))")(SentenceToCNF(PLP.parse("True")).toString)
     expect("((False))")(SentenceToCNF(PLP.parse("False")).toString)
     expect("((~A12))")(SentenceToCNF(PLP.parse("~ A12")).toString)
+    expect("((A \\/ B))")(SentenceToCNF(PLP.parse("A\\/B")).toString)
     expect("((A) /\\ (B) /\\ (C))")(SentenceToCNF(PLP.parse("A /\\ B /\\ C")).toString)
     expect("((A \\/ B \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B \\/ C")).toString)
     expect("((A \\/ B) /\\ (A \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B /\\ C")).toString)
