@@ -52,3 +52,27 @@ class PLResolutionTest extends Suite {
     assert(PLResolution(KB.apply,alpha))
   }
 }
+
+import scala.collection.immutable.ListSet
+class PLFCEntailsTest extends Suite {
+
+  /** This test is based on the problem shown
+   * in Fig 7.16
+   */
+  def testFig7_16() {
+    val P = PropositionSymbol("P")
+    val Q = PropositionSymbol("Q")
+    val L = PropositionSymbol("L")
+    val M = PropositionSymbol("M")
+    val A = PropositionSymbol("A")
+    val B = PropositionSymbol("B")
+
+    val KB = ListSet(new DefiniteClause(ListSet(P),Q), // P => Q
+                     new DefiniteClause(ListSet(L,M),P), // L/\M => P
+                     new DefiniteClause(ListSet(B,L),M), // B/\L => M
+                     new DefiniteClause(ListSet(A,P),L), // A/\P => L
+                     new DefiniteClause(ListSet(A,B),L)) // A/\B => L
+
+    assert(PLFCEntails(KB,Q,List(A,B)))
+  }
+}

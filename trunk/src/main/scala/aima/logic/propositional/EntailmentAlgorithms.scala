@@ -99,16 +99,14 @@ object PLResolution {
  *
  * @author Himanshu Gupta
  */
-/*object PLFCEntails {
+object PLFCEntails {
 
-  import scala.collection.mutable.{Map,Queue}
-
-  def apply(KB: Set[DefiniteClause],q: Symbol, knownTrueSymbols: List[Symbol]): Sentence = {
+  def apply(KB: Set[DefiniteClause],q: PropositionSymbol, knownTrueSymbols: List[PropositionSymbol]): Boolean = {
     
-    val count = Map(KB.map(c => (c,c.premise.size)))
-    val inferred = Map(KB.flatMap(_.premise).map((_,false)))
-    val agenda = new Queue[Symbol]()
-    agenda ++ knownTrueSymbols
+    val count = scala.collection.mutable.Map((KB.map(c => c -> c.premise.size)).toList:_*)
+    val inferred = scala.collection.mutable.Map((KB.flatMap(c =>c.premise + c.conclusion).map((_ -> false))).toList:_*)
+    val agenda = new scala.collection.mutable.Queue[PropositionSymbol]()
+    agenda ++= knownTrueSymbols
 
     def loop: Boolean = {
       if(agenda.isEmpty) false
@@ -118,10 +116,12 @@ object PLResolution {
         else {
           if(!inferred(p)) {
             inferred += (p -> true)
-            KB.foreach(c =>
+            KB.foreach(c => {
               if(c.premise.contains(p))
-                count += (c -> count(c)-1)
-              if (count(c) == 0) agenda.enqueue(c.conclusion))
+                count += (c -> (count(c)-1))
+              if(count(c) == 0)
+                agenda.enqueue(c.conclusion)
+            })
           }
           loop
         }
@@ -130,7 +130,7 @@ object PLResolution {
 
     loop
   }
-}*/
+}
 
 /** DPLL-SATISFIABLE?, described in Fig 7.17
  *
