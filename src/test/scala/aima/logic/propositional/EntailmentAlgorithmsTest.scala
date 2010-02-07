@@ -75,3 +75,17 @@ class PLFCEntailsTest extends Suite {
     assert(PLFCEntails(KB,Q,List(A,B)))
   }
 }
+
+class DPLLSatisfiableTest extends Suite {
+  
+  private val PLP = PropositionalLogicParser
+
+  /**
+   * Test whether KB /\ ~alpha is unsatisfiable, where alpha is ~P12?
+   * It should return true.
+   */
+  def testSec7_4_3() {
+    val alpha = PLP.parse("~~P12")
+    assert(!DPLLSatisfiable(Sentence.addToKB(KB.apply,alpha)))
+  }
+}
