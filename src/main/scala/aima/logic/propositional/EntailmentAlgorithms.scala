@@ -43,14 +43,15 @@ object PLResolution {
   def apply(KB: Conjunction, alpha: Sentence): Boolean = {
     val clauses = SentenceToCNF(new Conjunction((KB.conjuncts + new Negation(alpha)).toList:_*)).clauses
 
-    def loop(clauses: Set[Clause]):Boolean = {
-      //println("clauses " + clauses)
-      loopIn(Utils.pairs(clauses.toList),Set.empty) match {
+    def loop(clauses: Set[Clause], newSet: Set[Clause]):Boolean = {
+      //println("clauses " + (clauses ++ newSet))
+      loopIn(makePairs(clauses, newSet),Set.empty[Clause]) match {
         case None => true //Empty clause found, return true
-        case Some(newSet) =>
-          //println("newSet " + newSet)
-          if (newSet.subsetOf(clauses)) false
-          else loop(newSet ++ clauses)
+        case Some(s) =>
+          //println("newSet " + s)
+          val oldClauses = clauses ++ newSet
+          if (s.subsetOf(oldClauses)) false
+          else loop(oldClauses,s)
       }}
 
     def loopIn(pairs: List[(Clause,Clause)], newSet: Set[Clause]): Option[Set[Clause]] =
@@ -62,7 +63,14 @@ object PLResolution {
         case Nil => Some(newSet)
       }
 
-    loop(clauses)
+    /** Returns result of pairing each clause in "clauses" with each in "newSet"
+     * plus the pairs made by combining clause in "newSet" with each other
+     */
+    def makePairs(clauses: Set[Clause], newSet: Set[Clause]): List[(Clause,Clause)] = {
+      (for(ci <- clauses; cj <- newSet) yield (ci,cj)).toList ++ Utils.pairs(newSet.toList)
+    }
+
+    loop(Set.empty[Clause],clauses)
   }
 
   def plResolve(c1: Clause, c2: Clause): Set[Clause] = {
