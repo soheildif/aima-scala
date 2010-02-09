@@ -150,7 +150,7 @@ object DPLLSatisfiable {
   def apply(s: Sentence): Boolean =
     DPLL(SentenceToCNF(s).clauses,s.symbols,Map[PropositionSymbol,Boolean]())
 
-  private def DPLL(clauses: Set[Clause],symbols: Set[PropositionSymbol],
+  def DPLL(clauses: Set[Clause],symbols: Set[PropositionSymbol],
                    model: Map[PropositionSymbol,Boolean]): Boolean = {
     if (clauses.forall(_.isTrue(model) == Some(true))) return true
     if(clauses.exists(_.isTrue(model) == Some(false))) return false
@@ -168,7 +168,7 @@ object DPLLSatisfiable {
     }
   }
 
-  private def FindPureSymbol(symbols: Set[PropositionSymbol], clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
+  def FindPureSymbol(symbols: Set[PropositionSymbol], clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
 
     //returns true, if given symbol appears as a Pure PositiveLiteral in given set of clauses
     def isPurePositiveLiteral(p: PropositionSymbol, clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]) =
@@ -196,11 +196,11 @@ object DPLLSatisfiable {
     }
   }
 
-  private def FindUnitClause(clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
-    clauses.find( _.literals.filter(_.isTrue(model) != Some(true)).size == 1 ) match {
+  def FindUnitClause(clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]): Option[(PropositionSymbol,Boolean)] = {
+    clauses.find( _.literals.filter(_.isTrue(model) == None).size == 1 ) match {
       case None => None
       case Some(c) => {
-        val Some(l) = c.literals.find(_.isTrue(model) != Some(true))
+        val Some(l) = c.literals.find(_.isTrue(model) == None)
         l match {
           case _:PositiveLiteral => Some((l.symbol,true))
           case _:NegativeLiteral => Some((l.symbol,false))
