@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
 import aima.commons.Utils
-import scala.collection.immutable.{Set}
+import scala.collection.immutable.{Set,Map}
 
 /** TT-ENTAILS, described in Fig 7.10
  *
@@ -215,31 +215,65 @@ object DPLLSatisfiable {
  * 
  * @author Himanshu Gupta
  */
-/*object WalkSat {
+object WalkSat {
 
-  import scala.collection.immutable.Map
+  def apply(clauses: Set[Clause], probability: Double, maxFlips: Int): Option[Map[PropositionSymbol,Boolean]] = {
 
-  def apply(clauses: Set[Clause], probability: Double, maxFlips: Int): Option[Map[Symbol,Boolean]] = {
-
-    val random = new scala.util.Random(java.util.Random)()
-    val randomModel = Map[Symbol,Boolean](clauses.symbols.map((_,random.nextBoolean)))
+    val random = new scala.util.Random
+    val randomModel = Map(clauses.flatMap(_.symbols).map((_,random.nextBoolean)).toList:_*)
     
-    def loop(counter: Int, model: Map[Symbol,Boolean]): Option = {
+    def loop(counter: Int, model: Map[PropositionSymbol,Boolean]): Option[Map[PropositionSymbol,Boolean]] = {
       if (counter < maxFlips) {
         //find clauses that fail in the model
         val failedClauses = clauses.filter(_.isTrue(model) match {
                                             case Some(true) => false
                                             case Some(false) => true
                                             case None =>
-                                              throw new IllegalStateException("Model should have all symbols defined.")})
-        //doable with current specs
-    
-    
+                                              throw new IllegalStateException("Model should have all symbols defined.")}).toList
+        //if length of failedClauses if 0, that means model satisfies all the
+        //clauses
+        val len = failedClauses.length
+        if(len == 0) Some(model)
+        else {
+          //randomly select a failed clause
+          val clause = failedClauses(random.nextInt(len))
+          val symbols = clause.symbols.toList
 
+          if(random.nextDouble < probability) {
+            //flip value of a randomly selected symbol from the failed clause
+            val symbol = symbols(random.nextInt(symbols.length))
+            loop(counter+1, model + (symbol -> !model(symbol)))
+          }
+          else {
+            //flip value of a symbol from failed clause, which maximizes the number
+            //of satisfied clauses
+            val symbol = bestSymbolToFlip(symbols, clauses, model)
+            loop(counter+1,model + (symbol -> !model(symbol)))
+          }
+        }
+      }
+      else None
+    }
 
+    loop(0,randomModel)
+  }
 
-    
+  //Returns one symbol from given symbols, flipping whose value in the model maximizes the
+  //total number of satisfied clauses
+  private def bestSymbolToFlip(symbols: List[PropositionSymbol], clauses: Set[Clause], model: Map[PropositionSymbol,Boolean]) = {
+    //TODO: use List.max function introduced in v2.8 to do it once
+    //migrated to v2.8
+    def loop(symbols: List[PropositionSymbol], bestSoFar: PropositionSymbol, maxSatisfiedSoFar: Int): PropositionSymbol =
+      symbols match {
+        case s :: rest =>
+          val n = clauses.filter(_.isTrue(model + (s -> !model(s))) == Some(true)).size
+          if(n > maxSatisfiedSoFar)
+            loop(rest,s,n)
+          else
+            loop(rest,bestSoFar,maxSatisfiedSoFar)
+        case Nil => bestSoFar
+      }
 
-
-
-*/
+    loop(symbols,symbols.head,-1)
+  }
+}

@@ -314,3 +314,15 @@ class DPLLSatisfiableTest extends Suite {
     assert(new DPLLBasedKB(R1,R2,R3,R4,R5).ask(alpha))
   }
 }
+
+//---------- WALKSAT Tests ------------------
+class WalkSatTest extends Suite {
+
+  def testIt(){
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A <=> (B \\/ (C \\/ (D \\/ E))))")).clauses
+    //clauses are
+    //Set((E \/ ~A \/ B \/ C \/ D), (A \/ ~B), (A \/ ~D), (A \/ ~E), (A \/ ~C))
+    WalkSat(clauses,0.5,10000) //result will change from one run to another
+    assert(true)
+  }
+}
