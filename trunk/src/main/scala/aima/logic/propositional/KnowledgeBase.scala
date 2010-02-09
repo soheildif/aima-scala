@@ -5,7 +5,7 @@ import scala.collection.immutable.Map
 
 abstract class KnowledgeBase(ss: String *) {
 
-  private val _sentences = Set[Sentence](ss.map(PropositionalLogicParser.parse(_)):_*)
+  protected val _sentences = Set[Sentence](ss.map(PropositionalLogicParser.parse(_)):_*)
 
   def tell(ss: String *) = {
     _sentences ++ ss.map(PropositionalLogicParser.parse(_))
@@ -27,4 +27,14 @@ class TTEntailsBasedKB(ss: String *) extends KnowledgeBase(ss:_*) {
 //A KnowledgeBase that inferences using PL-Resolution? algorithm
 class PLResolutionBasedKB(ss: String *) extends KnowledgeBase(ss:_*) {
   def ask(s: String) = PLResolution(sentence,PropositionalLogicParser.parse(s))
+}
+
+//A KnowledgeBase that inferences using DPLL algorithm
+class DPLLBasedKB(ss: String *) extends KnowledgeBase(ss:_*) {
+  def ask(s: String) = {
+    //if KB |= alpha then KB /\ ~alpha is unsatisfiable
+    val tmp = new Negation(PropositionalLogicParser.parse(s)) :: _sentences.toList
+    val kbAndNotAlpha = new Conjunction(tmp:_*)
+    !DPLLSatisfiable(kbAndNotAlpha)
+  }
 }

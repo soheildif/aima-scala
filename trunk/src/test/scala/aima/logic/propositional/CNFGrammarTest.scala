@@ -32,5 +32,6 @@ class CNFGrammarTest extends Suite {
     expect("((A \\/ S) /\\ (A \\/ T) /\\ (~B \\/ S) /\\ (~B \\/ T))")(SentenceToCNF(PLP.parse("~ A \\/ B => S /\\ T")).toString)
     expect("((~A \\/ ~B \\/ C) /\\ (~A \\/ D))")(SentenceToCNF(PLP.parse("~ A \\/ (B => C) /\\ D")).toString)
     expect("((norvig \\/ aima \\/ lisp) /\\ (~lisp \\/ cool))")(SentenceToCNF(PLP.parse("( norvig \\/ aima \\/ lisp ) /\\ (lisp => cool)")).toString)
+    expect("""((B12 \/ ~P02) /\ (~B12 \/ P22 \/ P11 \/ P02 \/ P13) /\ (B12 \/ ~P22) /\ (B12 \/ ~P13) /\ (B12 \/ ~P11))""".mkString)(SentenceToCNF(PLP.parse("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")).toString)
   }
 }
