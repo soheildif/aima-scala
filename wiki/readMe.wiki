@@ -1,0 +1,39 @@
+#summary Getting Started Doc
+
+=How To Setup=
+
+  * Install Maven<http://maven.apache.org/>
+  * Install Sun JDK
+  * Install your favourite svn client.
+  * Get the source code using svn from "http://aima-scala.googlecode.com/svn/trunk/"
+  * Go to base directory and run "$mvn clean test"; It should compile the code, run all the tests and prompt "Build Successful"
+  * Happy Hacking
+
+=Project Organization=
+
+Directory organization is based on the standard Maven directory layout.
+
+aima-scala
+  src
+    main
+      scala
+        aima
+          basic          //Code for Chapter 2
+          commons        //Common code used by all
+          logic          //Code for Chapter 7-
+          search         //Code for Chapter 3-6
+    test                 //Tests for above code
+      scala
+        basic
+        logic
+        search
+
+Best place to start to understand the code is to start with reading the tests for same.
+
+=Bugs:=
+Bug reports are well appreciated, When you send in a bug report, Please include following:
+
+  * What you did to see the bug
+  * What did you expect to see
+  * What you actually saw
+  * If possible, then a test written in scala that uncovers the bug
