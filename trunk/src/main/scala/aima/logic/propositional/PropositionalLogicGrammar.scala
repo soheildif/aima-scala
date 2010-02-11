@@ -6,6 +6,19 @@ import scala.collection.immutable.{Map,Set}
 /** Parser for Propositional Logic Grammar
  * described in Fig 7.7
  *
+ * An Informal Description:
+ *
+ * Sentene := AtomicSentence | ComplexSentence
+ * AtomicSentence := any-valid-scala-identifier
+ * ComplexSentence := "(" Sentence ")" | 
+ *                    "~" Sentence     |
+ *                    Sentence "/\" Sentence |
+ *                    Sentence "\/" Sentence |
+ *                    Sentence "=>" Sentence |
+ *                    Sentence "<=>" Sentence
+ *
+ * OPERATOR PRECEDENCE : ~ /\ \/ => <=>
+ * 
  * @author Himanshu Gupta
  */
 object PropositionalLogicParser extends JavaTokenParsers {
