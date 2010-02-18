@@ -54,11 +54,12 @@ object Subst {
     }
 }
 
+//TODO: complete it
 //has to be defined for
-//PositiveLiteral, AtomicSentence/PositiveLiteral
+//AtomicSentence, Term
 object Unify {
 
-  def apply(x: Term, y: Term, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] = {
+  def apply(x: Term, y: Term, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] =
     (theta,x,y) match {
       case (None,_,_) => None //failure
       case (_,_,_) if x == y => theta
@@ -81,7 +82,7 @@ object Unify {
           case _ => None
         }
     }
-
+    
   def UnifyVar(v: Variable, x: Term, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] =
     theta match {
       case None => None //failure
@@ -93,4 +94,13 @@ object Unify {
           case _ => Some(m + (v -> x))
         }
     }
+
+    def apply(x: AtomicSentence, y: AtomicSentence, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] =
+      (x,y) match {
+        case (a: Predicate, b: Predicate) =>
+          if(a.symbol == b.symbol) apply(a.args,b.args,theta)
+          else None
+        case (a: Equal, b: Equal) => //TODO: do it
+        case _ => None
+      }
 }

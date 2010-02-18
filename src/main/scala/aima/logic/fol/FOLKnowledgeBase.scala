@@ -13,8 +13,6 @@ class FOLKnowledgeBase {
 
   //indexes
   private var predicates = Map[String,Set[Predicate]].empty
-  private var negations = Set[Negation].empty
-  private var conjunctions = Set[Conjunction].empty
 
   def tell(s: String) {
     originalSentences = originalSentences + s
@@ -39,7 +37,7 @@ class FOLKnowledgeBase {
   //Set[PositiveLiteral], PositiveLiteral
   //Set[FOLDefiniteClause],FOLDefiniteClausePremise
 
-  def fetch(s: Sentence): Set[Map[Variable,Term]] = {
+  def fetch(s: AtomicSentence): Set[Map[Variable,Term]] = {
     s match {
       case x: Predicate =>
         predicates.get(x.symbol) match {
@@ -47,13 +45,6 @@ class FOLKnowledgeBase {
           case Some(ps) => fetch(s,ps)
         }
       case x: Equal => //TODO: do it
-      case x: Negation => fetch(x,negations)
-      case x: Conjunction => fetch(x,conjunctions)
-      case x: Disjunction => fetch(x,disjunctions)
-      case x: Conditional => fetch(x,conditionals)
-      case x: BiConditional => fetch(x,biConditionals)
-      case x: UniversalQuantifier => fetch(x,universalQuantifiers)
-      case x: ExistentialQuantifier => fetch(x,existentialQuantifiers)
     }
   }
 

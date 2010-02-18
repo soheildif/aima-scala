@@ -62,10 +62,10 @@ object FOLFCAsk {
             def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[PositiveLiteral]): Option[Map[Variable,Term]] =
               unifiers match {
                 case unifier :: rest =>
-                  val qPrime = Subst(unifier, clause.conclusion) //TODO: ??
+                  val qPrime = Subst(Set(unifier:_*), clause.conclusion) //TODO: ??
                   if (Fetch(KB, qPrime).isEmpty && Fetch(neW, qPrime).isEmpty) { //TODO: Fetch?
                     //add qPrime to new
-                    val phi = Unify(qPrime,alpha) //TODO: Unify for positive literal
+                    val phi = Unify(qPrime,alpha) //TODO: Unify for AtomicSentence
                     if(phi != None) Some(phi)
                     else unifierLoop(rest,neW + qPrime)
                   }
