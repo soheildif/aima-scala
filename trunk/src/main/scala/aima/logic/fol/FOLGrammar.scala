@@ -1,3 +1,5 @@
+package aima.logic.fol
+
 /** Grammar for FOL logic */
 
 //Sentence equality should work
@@ -15,14 +17,19 @@ class Predicate(val symbol, val args: Term *) extends AtomicSentence
 class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence //or we could say = is just a predefined binary predicate
 
 //Complex Sentence
-class Negation(val s: Sentence) extends Sentence
-class Conjunction(cs: Sentence *) extends Sentence
-class Disjunction(ds: Sentence *) extends Sentence
+abstract class ComplexSentence extends Sentence //do we need this??
+class Negation(val sentence: Sentence) extends Sentence
+class Conjunction(cs: Sentence *) extends Sentence {
+  val conjuncts: Set[Sentence] = Set(cs: _*)
+}
+class Disjunction(ds: Sentence *) extends Sentence {
+  val disjuncts: Set[Sentence] = Set(ds: _*)
+}
 class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence
 class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence
 
-class UniversalQuantification(val variable: Variable, val sentence: Sentence) extends Sentence
-class ExistentialQuentification(val variable: Variable, val sentence: Sentence) extends Sentence
+class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence
+class ExistentialQuentifier(val variable: Variable, val sentence: Sentence) extends Sentence
 
 
 /**
@@ -36,16 +43,53 @@ class Domain {
   private var _constants = Set[String]()
 }
 
-//Returns the sentence after applying the susbstitution
-def Subst[T](theta: Map[Variable,Term], alpha: T): T
 
-object Unify {
-
-  def apply(x: Term, y: Term, theda: Map[Variable,Term]): Option[Map[Variable,Term]]
-  def apply(x: List[Term], y: List[Term], theta: Map[Variable,Term]) : Option[Map[Variable,Term]]
-
-}
 
 object FOLFCAsk {
-  def apply(KB, alpha: AtomicSentence): Option[Map[Variable,Term]]
+  def apply(KB: Set[FOLDefiniteClause], alpha: AtomicSentence): Option[Map[Variable,Term]] = {
+
+    //separate implication rules and just literal from the KB
+    val rules = KB.filter(_.isRule)
+    val atoms = KB.filter(!_.isRule)
+
+    def loop: Option[Map[Variable,Term]] = {
+
+      def rulesLoop(KB: Set[FOLDefiniteClause], rules: List[FOLDefiniteClause], shouldLoopContinue: Boolean): Option[Map[Variable,Term]] = {
+        rules match {
+          case rule :: rest =>
+            val clause = standardizeVariables(rule) //TODO: define standardizeVariables
+          
+            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[PositiveLiteral]): Option[Map[Variable,Term]] =
+              unifiers match {
+                case unifier :: rest =>
+                  val qPrime = Subst(unifier, clause.conclusion) //TODO: ??
+                  if (Fetch(KB, qPrime).isEmpty && Fetch(neW, qPrime).isEmpty) { //TODO: Fetch?
+                    //add qPrime to new
+                    val phi = Unify(qPrime,alpha) //TODO: Unify for positive literal
+                    if(phi != None) Some(phi)
+                    else unifierLoop(rest,neW + qPrime)
+                  }
+                  else unifierLoop(rest,neW)
+                case Nil => rulesLoop(KB ++ neW,rest, !neW.isEmpty)
+              }
+            unifierLoop(Fetch(KB,clause.premise),Set[FOLDefiniteClause].empty) //TODO
+          case Nil if shouldLoopContinue => loop
+          case _ => None
+        }
+      }
+      rulesLoop(KB,rules,false)
+    }
+
+    loop
+  }
 }
+
+
+
+
+
+
+/*
+object FOLBCAsk {
+}
+*/
