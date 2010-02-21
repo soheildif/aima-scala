@@ -29,7 +29,7 @@ class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sente
 class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence
 
 class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence
-class ExistentialQuentifier(val variable: Variable, val sentence: Sentence) extends Sentence
+class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence
 
 
 /**
@@ -45,6 +45,7 @@ class Domain {
 
 
 
+/*
 object FOLFCAsk {
   def apply(KB: Set[FOLDefiniteClause], alpha: AtomicSentence): Option[Map[Variable,Term]] = {
 
@@ -83,7 +84,7 @@ object FOLFCAsk {
     loop
   }
 }
-
+*/
 
 
 
