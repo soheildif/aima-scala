@@ -159,7 +159,7 @@ object SentenceToCNF {
     }
 
   //TODO: remove Existentials
-  def removeExistentialQuantifiers(s: Sentence) =
+  def removeExistentialQuantifiers(s: Sentence) = {
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
@@ -170,12 +170,45 @@ object SentenceToCNF {
       case x: UniversalQuantifier =>
         new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence))
       case x: ExistentialQuantifier =>
-        //case1 -> free variables don't exist
-        Subst(Map(x.variable -> NewSkolemConstant), x.sentence) //TODO: generate skolem constant
+        val freeVars = freeVariables(Set[Variable].empty,x)
 
-        //case2 -> free variables do exist
-        Subst(Map(x.variable -> NewSkolemFunction(freeVars)),x.sentence) //TODO: generate skolem function
+        if(freeVars.isEmpty) //case1 -> free variables don't exist
+          Subst(Map(x.variable -> NewSkolemConstant),
+                x.sentence) //TODO: generate skolem constant
+        else //case2 -> free variables do exist
+          Subst(Map(x.variable -> NewSkolemFunction(freeVars)),
+                x.sentence) //TODO: generate skolem function
     }
+
+    //TODO: AtomicSentence -> Equal
+    //collect Free variables from a Sentence
+    def freeVariables(vs: Set[Variable], s: Sentence): Set[Variable] =
+      s match {
+        case x: Predicate =>
+          Set(x.args.flatMap(freeVariables(vs,_)):_*)
+        case x: Equal => Set() //TODO
+        case x: Negation =>
+          freeVariables(vs,x.sentence)
+        case x: Conjunction =>
+          x.conjuncts.flatMap(freeVariables(vs,_))
+        case x: Disjunction =>
+          x.disjuncts.flatMap(freeVariables(vs,_))
+        case x: UniversalQuantifier => //TODO: should we have an abstract Quantifier with same st
+          freeVariables(vs + x.variable, x.sentence)
+        case x: ExistentialQuantifier =>
+          freeVariables(vs + x.variable, x.sentence)
+      }
+
+    //collect Free variables from a Term
+    def freeVariables(vs: Set[Variable], t: Term): Set[Variable] =
+      t match {
+        case x: Constant => Set[Variable].empty
+        case x: Variable =>
+          if(vs.exists(x == _)) Set[Variable].empty else Set(x)
+        case x: Function =>
+          Set(args.flatMap(freeVariables(vs,_)):_*)
+      }
+  }
       
 
   def removeUniversalQuantifiers(s: Sentence) =>

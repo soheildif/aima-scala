@@ -8,7 +8,7 @@ abstract class Sentence
 //Term
 abstract class Term
 class Constant extends Term
-class Function(val symbol, args: Term *) extends Term
+class Function(val symbol, val args: Term *) extends Term
 class Variable(val key: String) extends Term
 
 //Atomic Sentence
