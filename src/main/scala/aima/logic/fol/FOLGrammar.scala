@@ -33,16 +33,27 @@ class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) exte
 
 
 /**
- * Domain -> contains Ontology(vocabulary) that is Constant, Predicate and Function symbols(sets of String), has to be defined upfront
- * To be precise, function and predicate airity should also be defined upfront
+ * Domain contains Ontology(vocabulary) that is Constant, Predicate and Function
+ * symbols(sets of String).
+ * It has to be defined upfront, because functions and predicates are syntactically the
+ * same.
+ * NOTE:
+ *   To be precise, function and predicate arity should also be defined, but
+ *   I'm relaxing that for now.
  *
-*/
-class Domain {
-  private var _predicates = Set[String]()
-  private var _functions = Set[String]()
-  private var _constants = Set[String]()
-}
+ * @author Himanshu Gupta
+ */
+class Domain(val constants: Set[String], val functions: Set[String],
+             val predicates: Set[String]) {
+  def addConstants(cs: String *) =
+    new Domain(constants ++ cs, functions,predicates)
 
+  def addFunctions(fs: String *) =
+    new Domain(constants, functions ++ fs, predicates)
+
+  def addPredicates(ps: String *) =
+    new Domain(constants, functions, predicates ++ ps)
+}
 
 
 /*

@@ -51,13 +51,35 @@ class FOLKnowledgeBase {
   def fetch(l: Literal): Set[Map[Variable,Term]] = fetch(l.sentence)
 
   //Returns set of unifiers that unifies s with elements in set
-  private def fetch[T](s: T, set: Set[T]): Set[Map[Variable,Term]] =
+/*  private def fetch[T](s: T, set: Set[T]): Set[Map[Variable,Term]] =
     set.map(unify(s,_) match {
               case None => null
               case Some(x) => x
             }).filter(_ != null)
 
   
-  
+  */
+
+  //Generators for unique constant, Variable and Function
+  //Not: These are not thread-safe
+  private var seqConstant = 0
+  private var seqVariable = 0
+  private var seqFunction = 0
+
+  def generateConstant = {
+    seqConstant = seqConstant + 1
+    Constant("C$$" + seqConstant)
+  }
+
+  def generateVariable = {
+    seqVariable = seqVariable + 1
+    Variable("v$$" + seqVariable)
+  }
+
+  def generateFunction(args: List[Term]) = {
+    seqFunction = seqFunction + 1
+    new Function("F$$" + seqFunction, args:_*)
+  }
+}
     
     
