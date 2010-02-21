@@ -1,47 +1,11 @@
 package aima.logic.fol
 
-abstract class Literal(val sentence: AtomicSentence) {
-  def isPositive = this.isInstanceOf[PositiveLiteral]
-  def isNegative = !isPositive
-}
-case class PositiveLiteral(s: AtomicSentence) extends Literal(s)
-case class NegativeLiteral(s: AtomicSentence) extends Literal(s)
-
-class Clause(ls: Literal *) {
-  val literals: Set[Literal] = Set(ls: _*)
-
-  def isEmpty = literals.isEmpty
-
-  //is convertible to definite clause
-  //there should be only one positive literal
-  def isDefiniteClause = literals.filter(_.isPositive).length == 1
-
-  //convert to FOL definite clause
-  //TODO: complete it
-  def toDefiniteClause = {
-    //find the positive literal
-    literals.filter(_.isPositive) match {
-      case pl :: Nil => //pl is the single positive literal in this clause
-        //find set or negative literals, get their positive literal counter part
-        val negativeLiterals = literals.filter(_.isNegative)
-        if(negativeLiterals != Nil)
-          new ImplicationDefiniteClause(
-            new IDCPremise(negativeLiterals.map(_.sentence):_*),
-            pl.sentence)
-        else new SimpleDefiniteClause(pl.sentence)
-      case _ => throw new IllegalStateException("Not a definite clause.")
-    }
-}
-
-
-//FOL Definite Clause
-abstract class FOLDefiniteClause
-class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause
-class ImplicationDefiniteClause(val premise: IDCPremise, val conclusion: AtomicSentence) extends FOLDefiniteClause
-
-// FOL sentence to FOL CNF sentence converter
+/** Converts a sentence to CNF Clause Set
+ *
+ * @author Himanshu Gupta
+ */
 object SentenceToCNF {
-  def apply(s: Sentence) : CNFSentence =
+  def apply(s: Sentence, KB: FOLKnowledgeBase) : CNFSentence =
 
     //step-1, Implications out, eliminate all the occurences of
     //=> and <=> ops
@@ -54,7 +18,7 @@ object SentenceToCNF {
 
     //step-3, Standardize-Variables, rename variables so that each
     //quantifier has a unique variable
-    result = standardizeQuantifierVariables(result)
+    result = standardizeQuantifierVariables(result,KB)
 
     //step-4, Existentials out,
     //case-1, if there are no free variables then replace quantifier var with
@@ -62,7 +26,7 @@ object SentenceToCNF {
     //case-2, if there are free variables then replace quantifier var with
     //skolem function, with a band new function symbol, that has free variables 
     //as its arguments
-    result = removeExistentials(result)
+    result = removeExistentials(result,KB)
 
     //step-5, Drop Universal Quatifiers
     result = removeUniversalQuantifiers(result)
@@ -71,7 +35,7 @@ object SentenceToCNF {
     result = toConjunctionOfDisjunctions(result)
 
     //step-7, Rename Variables so that no variable appears in more than one clause
-    result = renameVariables(result)
+    result = renameVariables(result,KB)
 
     //do any transformation to result and return it
     result
