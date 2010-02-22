@@ -19,18 +19,18 @@ class Clause(ls: Literal *) {
 
   //is convertible to definite clause
   //there should be only one positive literal
-  def isDefiniteClause = literals.filter(_.isPositive).length == 1
+  def isDefiniteClause = literals.filter(_.isPositive).size == 1
 
   //convert to FOL definite clause
   def toDefiniteClause = {
     //find the positive literal
-    literals.filter(_.isPositive) match {
+    literals.filter(_.isPositive).toList match {
       case pl :: Nil => //pl is the single positive literal in this clause
         //find set of negative literals, get their positive literal counter part
         val negativeLiterals = literals.filter(_.isNegative)
         if(negativeLiterals != Nil)
           new ImplicationDefiniteClause(
-            negativeLiterals.map(_.sentence):_*,pl.sentence)
+            negativeLiterals.map(_.sentence),pl.sentence)
         else new SimpleDefiniteClause(pl.sentence)
       case _ => throw new IllegalStateException("Not a definite clause.")
     }

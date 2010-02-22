@@ -7,16 +7,16 @@ package aima.logic.fol
 class FOLKnowledgeBase {
 
   //sentences told so far in original form
-  private var originalSentences = Set[String].empty
+  private var originalSentences = Set[String]()
 
   //sentences in parsed Sentence form
-  private var sentences = Set[Sentence].empty
+  private var sentences = Set[Sentence]()
 
   //sentences in CNF form
-  private var cnfSentences = Set[CNFSentence].empty
+  private var clauses = Set[Clause]()
 
   //indexes
-  private var predicates = Map[String,Set[Predicate]].empty
+  private var predicates = Map[String,Set[Predicate]]()
 /*
   def tell(s: String) {
     originalSentences = originalSentences + s
@@ -75,7 +75,7 @@ class FOLKnowledgeBase {
     Constant("C$$" + seqConstant)
   }
 
-  def generateVariable = generateVariable("")
+  def generateVariable: Variable = generateVariable("")
   def generateVariable(prefix: String) = {
     seqVariable = seqVariable + 1
     Variable(prefix + "$$" + seqVariable)
