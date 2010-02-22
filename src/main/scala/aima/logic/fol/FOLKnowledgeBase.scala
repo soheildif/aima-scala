@@ -1,5 +1,9 @@
 package aima.logic.fol
 
+/** FOL KnowledgeBase representation.
+ *
+ * @author Himanshu Gupta
+ */
 class FOLKnowledgeBase {
 
   //sentences told so far in original form
@@ -13,7 +17,7 @@ class FOLKnowledgeBase {
 
   //indexes
   private var predicates = Map[String,Set[Predicate]].empty
-
+/*
   def tell(s: String) {
     originalSentences = originalSentences + s
 
@@ -49,7 +53,7 @@ class FOLKnowledgeBase {
   }
 
   def fetch(l: Literal): Set[Map[Variable,Term]] = fetch(l.sentence)
-
+*/
   //Returns set of unifiers that unifies s with elements in set
 /*  private def fetch[T](s: T, set: Set[T]): Set[Map[Variable,Term]] =
     set.map(unify(s,_) match {
@@ -71,9 +75,10 @@ class FOLKnowledgeBase {
     Constant("C$$" + seqConstant)
   }
 
-  def generateVariable = {
+  def generateVariable = generateVariable("")
+  def generateVariable(prefix: String) = {
     seqVariable = seqVariable + 1
-    Variable("v$$" + seqVariable)
+    Variable(prefix + "$$" + seqVariable)
   }
 
   def generateFunction(args: List[Term]) = {
@@ -81,5 +86,3 @@ class FOLKnowledgeBase {
     new Function("F$$" + seqFunction, args:_*)
   }
 }
-    
-    

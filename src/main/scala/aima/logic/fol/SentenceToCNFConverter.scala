@@ -5,7 +5,7 @@ package aima.logic.fol
  * @author Himanshu Gupta
  */
 object SentenceToCNF {
-  def apply(s: Sentence, KB: FOLKnowledgeBase) : CNFSentence =
+  def apply(s: Sentence, KB: FOLKnowledgeBase) : Set[Clause] = {
 
     //step-1, Implications out, eliminate all the occurences of
     //=> and <=> ops
@@ -31,14 +31,15 @@ object SentenceToCNF {
     //step-5, Drop Universal Quatifiers
     result = removeUniversalQuantifiers(result)
 
-    //step-6, distribute \/ and /\ so that sentence becomes conjunction of disjunctions
-    result = toConjunctionOfDisjunctions(result)
+    //step-6, Operators Out,distribute \/ and /\ so that sentence becomes
+    //conjunction of disjunctions and then return Set[Clause]
+    val clauses = removeOperators(result)
 
     //step-7, Rename Variables so that no variable appears in more than one clause
-    result = renameVariables(result,KB)
+    clauses = renameVariables(clauses,KB)
 
-    //do any transformation to result and return it
-    result
+    //return the Set[Clause]
+    clauses
   }
 
   def removeImplications(s: Sentence): Sentence =
@@ -78,10 +79,6 @@ object SentenceToCNF {
             new Conjunction(x.conjuncts.map(negationsIn(_,false)).toList:_*)
           case x: Disjunction =>
             new Disjunction(x.disjuncts.map(negationsIn(_,false)).toList:_*)
-          case x: Conditional => //Implication-Out happens before, this should not occur
-            throw new IllegalStateException("Conditional in negationsIn")
-          case x: BiConditional => //Implication-Out happens before, this should not occur
-            throw new IllegalStateException("BiConditional in negationsIn")
           case x: UniversalQuantifier =>
             new UniversalQuantifier(x.variable,negationsIn(x.sentence,false))
           case x: ExistentialQuantifier =>
@@ -92,8 +89,8 @@ object SentenceToCNF {
     negationsIn(s,false)
   }
 
-  //TODO: Standardize Variables
-  def standardizeQuantifierVariables(s: Sentence) =
+  //Standardize Quantifier Variables
+  def standardizeQuantifierVariables(s: Sentence, KB: FOLKnowledgeBase) =
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
@@ -101,6 +98,7 @@ object SentenceToCNF {
         new Conjunction(x.conjuncts.map(standardizeQuantifierVariables(_)).toList:_*)
       case x: Disjunction =>
         new Disjunction(x.conjuncts.map(standardizeQuantifierVariables(_)).toList:_*)
+      //TODO: this can be optimized??
       case x: UniversalQuantifier =>
         val newVar = KB.generateVariable
         new UniversalQuantifer(newVar, 
@@ -113,35 +111,15 @@ object SentenceToCNF {
                                                                       x.sentence)))
     }
 
-  //TODO: remove Existentials
-  def removeExistentialQuantifiers(s: Sentence) = {
-    s match {
-      case x: AtomicSentence => x
-      case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
-      case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
-      case x: Disjunction =>
-        new Disjunction(x.disjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
-      case x: UniversalQuantifier =>
-        new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence))
-      case x: ExistentialQuantifier =>
-        val freeVars = freeVariables(Set[Variable].empty,x)
+  //remove Existentials
+  def removeExistentialQuantifiers(s: Sentence, KB: FOLKnowledgeBase) = {
 
-        if(freeVars.isEmpty) //case1 -> free variables don't exist
-          Subst(Map(x.variable -> KB.generateConstant),
-                x.sentence)
-        else //case2 -> free variables do exist
-          Subst(Map(x.variable -> KB.generateFunction(freeVars)),
-                x.sentence)
-    }
-
-    //TODO: AtomicSentence -> Equal
     //collect Free variables from a Sentence
     def freeVariables(vs: Set[Variable], s: Sentence): Set[Variable] =
       s match {
         case x: Predicate =>
           Set(x.args.flatMap(freeVariables(vs,_)):_*)
-        case x: Equal => Set() //TODO
+        case x: Equal => freeVariables(x.lTerm) ++ freeVariables(x.rTerm)
         case x: Negation =>
           freeVariables(vs,x.sentence)
         case x: Conjunction =>
@@ -163,53 +141,83 @@ object SentenceToCNF {
         case x: Function =>
           Set(args.flatMap(freeVariables(vs,_)):_*)
       }
+
+    s match {
+      case x: AtomicSentence => x
+      case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
+      case x: Conjunction =>
+        new Conjunction(x.conjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
+      case x: Disjunction =>
+        new Disjunction(x.disjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
+      case x: UniversalQuantifier =>
+        new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence))
+      case x: ExistentialQuantifier =>
+        val freeVars = freeVariables(Set[Variable].empty,x)
+
+        if(freeVars.isEmpty) //case1 -> free variables don't exist
+          Subst(Map(x.variable -> KB.generateConstant),
+                x.sentence)
+        else //case2 -> free variables do exist
+          Subst(Map(x.variable -> KB.generateFunction(freeVars)),
+                x.sentence)
+    }
   }
       
 
-  def removeUniversalQuantifiers(s: Sentence) =>
+  def removeUniversalQuantifiers(s: Sentence) =
     s match {
       case x: AtomicSentence => x
-      case x: Negation =>
-        x.sentence match {
-          case _:AtomicSentence => x
-          case _ => //negationsIn happened before, this should not happen
-            throw new IllegalStateException("Negation of non AtomicSentence in removeUniversalQuantifiers")
-        }
+      case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
       case x: Conjunction =>
         new Conjunction(x.conjuncts.map(removeUniversalQuantifiers(_)).toList:_*)
       case x: Disjunction =>
         new Disjunction(x.disjuncts.map(removeUniversalQuantifiers(_)).toList:_*)
-      case x: Conditional => //Implication-Out happens before, this should not occur
-        throw new IllegalStateException("Conditional in removeUniversalQuantifiers")
-      case x: BiConditional => //Implication-Out happens before, this should not occur
-        throw new IllegalStateException("BiConditional in removeUniversalQuantifiers")
       case x: UniversalQuantifier => x.sentence //drop it
-      case x: ExistentialQuantifier => //removeExistentials happens before, this should not occur
-        throw new IllegalStateException("Existential quantifier in removeUniversalQuantifiers")
     }
 
-  def makeCNFSentence(s: Sentence) = {
+  //Remove Operators
+  def removeOperators(s: Sentence): Set[Clause] = {
     
-    def convert(s: Sentence): Set[Clause] =
-      s match {
-        case x: AtomicSentence => Set(new Clause(PositiveLiteral(x)))
-        case x: Negation => Set(new Clause(NegativeLiteral(x.sentence.asInstanceOf[AtomicSentence])))
-        case x: Conjunction =>
-          x.conjuncts.flatMap(convert(_))
-        case x: Disjunction =>
-          x.disjuncts.map(convert(_).reduceLeft(unionOfTwoClauseSets(_,_)))
-      }
-
     def unionOfTwoClauseSets(cs1: Set[Clause], cs2: Set[Clause]): Set[Clause] =
       for(ci <- cs1; cj <- cs2) yield new Clause(List((ci.literals ++ cj.literals).toList:_*).toList:_*)
-
-    new CNFSentence(convert(s))
+    
+    s match {
+      case x: AtomicSentence => Set(new Clause(PositiveLiteral(x)))
+      case x: Negation => Set(new Clause(NegativeLiteral(x.sentence.asInstanceOf[AtomicSentence])))
+      case x: Conjunction =>
+        x.conjuncts.flatMap(convert(_))
+      case x: Disjunction =>
+        x.disjuncts.map(convert(_).reduceLeft(unionOfTwoClauseSets(_,_)))
+    }
   }
 
-  //Rename Variables, so that no two clauses have same variables
-  
-        
 
+  //Rename Variables, so that no two clauses have same variables
+  def renameClauseVariables(clauses: Set[Clause]) = {
+
+    def collectAllVariables(clause: Clause) =
+      clause.literals.flatMap(collectAllVariables(_.sentence))
+
+    def collectAllVariables(s: AtomicSentence) =
+      s match {
+        case x: Predicate =>
+          Set(x.args.flatMap(collectAllVariables(_)):_*)
+        case x: Equal =>
+          collectAllVariables(x.lTerm) ++ collectAllVariables(x.rTerm)
+      }
+
+    def collectAllVariables(t: Term) =
+      t match {
+        case x: Constant => Set[Variable].empty
+        case x: Variable => x
+        case x: Function => Set(x.args.flatMap(collectAllVariables(_)):_*)
+      }
+
+    clauses.map(c =>
+      Subst(Map(collectAllVariables(c).map(v => v -> KB.generateVariable(v.key))),
+            c))
+  }
+  
   //Returns negation of a sentence
   def negate(s: Sentence): Sentence =
     s match {
