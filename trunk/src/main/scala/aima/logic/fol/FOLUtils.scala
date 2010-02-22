@@ -8,7 +8,7 @@ package aima.logic.fol
 object Subst {
 
   //for Term
-  def apply(theta: Map[Variable,Term], alpha: Term) =
+  def apply(theta: Map[Variable,Term], alpha: Term): Term =
     alpha match {
       case x: Constant => x
       case x: Variable =>
@@ -19,16 +19,16 @@ object Subst {
     }
 
   //for FOL Sentence
-  def apply(theta: Map[Variable,Term], alpha: Sentence) =
+  def apply(theta: Map[Variable,Term], alpha: Sentence): Sentence =
     alpha match {
       case x: Predicate => new Predicate(x.symbol, x.args.map(apply(theta,_)):_*)
       case x: Equal => new Equal(apply(theta,x.lTerm),apply(theta,x.rTerm))
       case x: Negation =>
         new Negation(apply(theta,x.sentence))
       case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(apply(theta,n.sentence)).toList:_*)
+        new Conjunction(x.conjuncts.map(apply(theta,_)).toList:_*)
       case x: Disjunction =>
-        new Disjunction(x.disjuncts.map(apply(theta,x.sentence)).toList:_*)
+        new Disjunction(x.disjuncts.map(apply(theta,_)).toList:_*)
       case x: Conditional =>
         new Conditional(apply(theta,x.premise),apply(theta,x.conclusion))
       case x: BiConditional =>
@@ -38,7 +38,7 @@ object Subst {
           throw new IllegalStateException(x.variable + " should not occur in " + theta)
         else
           new UniversalQuantifier(x.variable,apply(theta,x.sentence))
-      case x: ExistentialQuantification =>
+      case x: ExistentialQuantifier =>
         if(theta.contains(x.variable))
           throw new IllegalStateException(x.variable + " should not occur in " + theta)
         else
@@ -48,16 +48,16 @@ object Subst {
   //for Positive/Negative Literal
   def apply[T <: Literal](theta: Map[Variable,Term], alpha: T): T =
     alpha match {
-      case p: PositiveLiteral => PositiveLiteral(apply(theta,alpha.sentence))
-      case n: NegativeLiteral => NegativeLiteral(apply(theta,alpha.sentence))
+      case _: PositiveLiteral => PositiveLiteral(apply(theta,alpha.sentence))
+      case _: NegativeLiteral => NegativeLiteral(apply(theta,alpha.sentence))
     }
 
   //for Clause
-  def apply(theta: Map[Variable,Term], alpha: Clause) =
+  def apply(theta: Map[Variable,Term], alpha: Clause): Clause =
     new Clause(alpha.literals.map(apply(theta,_)).toList:_*)
 
   //for Set[Clause]
-  def apply(theta: Map[Variable,Term], alpha: Set[Clause]) = alpha.map(apply(_))
+  def apply(theta: Map[Variable,Term], alpha: Set[Clause]): Set[Clause] = alpha.map(apply(_))
 }
 
 //TODO: complete it
