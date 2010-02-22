@@ -2,22 +2,21 @@ package aima.logic.fol
 
 /** Grammar for FOL logic */
 
-//Sentence equality should work
+//TODO:Sentence equality should work
 abstract class Sentence
 
 //Term
 abstract class Term
-class Constant extends Term
-class Function(val symbol, val args: Term *) extends Term
-class Variable(val key: String) extends Term
+case class Constant(val symbol: String) extends Term
+class Function(val symbol:String, val args: Term *) extends Term
+case class Variable(val symbol: String) extends Term
 
 //Atomic Sentence
 abstract class AtomicSentence extends Sentence
-class Predicate(val symbol, val args: Term *) extends AtomicSentence
-class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence //or we could say = is just a predefined binary predicate
+class Predicate(val symbol: String, val args: Term *) extends AtomicSentence
+class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence
 
 //Complex Sentence
-abstract class ComplexSentence extends Sentence //do we need this??
 class Negation(val sentence: Sentence) extends Sentence
 class Conjunction(cs: Sentence *) extends Sentence {
   val conjuncts: Set[Sentence] = Set(cs: _*)
@@ -43,7 +42,7 @@ class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) exte
  *
  * @author Himanshu Gupta
  */
-class Domain(val constants: Set[String], val functions: Set[String],
+/*class Domain(val constants: Set[String], val functions: Set[String],
              val predicates: Set[String]) {
   def addConstants(cs: String *) =
     new Domain(constants ++ cs, functions,predicates)
@@ -54,7 +53,7 @@ class Domain(val constants: Set[String], val functions: Set[String],
   def addPredicates(ps: String *) =
     new Domain(constants, functions, predicates ++ ps)
 }
-
+*/
 
 /*
 object FOLFCAsk {

@@ -1,49 +1,48 @@
 package aima.logic.fol
 
-//TODO: check out what is the best way to impl visitor pattern in
-//my case/scala
-
-//object Store
-
-//standardize variables
-
-//Returns the sentence after applying the susbstitution
-//has to be defined for
-//PositiveLiteral
+/** Returns given Sentence/Clause/Term.. after making the
+ * substitutions given in theta.
+ *
+ * @author Himanshu Gupta
+ */
 object Subst {
 
   //for Term
   def apply(theta: Map[Variable,Term], alpha: Term) =
     alpha match {
-      case c: Constant => c
-      case v: Variable =>
-        if(theta.contains(v)) //TODO: take care of hashcode for variable
-          theta(v)
-        else v
-      case f: Function => new Function(f.symbol, f.args.map(apply(theta,_)):_*)
+      case x: Constant => x
+      case x: Variable =>
+        if(theta.contains(x))
+          theta(x)
+        else x
+      case x: Function => new Function(x.symbol, x.args.map(apply(theta,_)):_*)
     }
 
-  //TODO: Build uniqueness of Variables at the time of compiling the
-  //sentence
-  //for AtomicSentence
+  //for FOL Sentence
   def apply(theta: Map[Variable,Term], alpha: Sentence) =
     alpha match {
-      case p: Predicate => new Predicate(p.symbol, p.args.map(apply(theta,_)):_*)
-      case e: Equal => new Equal(apply(theta,e.lTerm),apply(theta,e.rTerm))
-      case n: Negation =>
-        new Negation(apply(theta,n.sentence))
-      case c: Conjunction =>
-        new Conjunction(c.conjuncts.map(apply(theta,n.sentence)).toList:_*)
-      case d: Disjunction =>
-        new Disjunction(d.disjuncts.map(apply(theta,n.sentence)).toList:_*)
-      case c: Conditional =>
-        new Conditional(apply(theta,c.premise),apply(theta,c.conclution))
-      case b: BiConditional =>
-        new BiConditional(apply(theta,b.condition),apply(theta,d.conclution))
-      case u: UniversalQuantifier => //TODO: rethink the correctness
-        new UniversalQuantifier(u.variable,apply(theta,u.sentence))
-      case e: ExistentialQuantification => //TODO: rethink the correctness
-        new ExistentialQuantifier(e.variable,apply(theta,e.sentence))
+      case x: Predicate => new Predicate(x.symbol, x.args.map(apply(theta,_)):_*)
+      case x: Equal => new Equal(apply(theta,x.lTerm),apply(theta,x.rTerm))
+      case x: Negation =>
+        new Negation(apply(theta,x.sentence))
+      case x: Conjunction =>
+        new Conjunction(x.conjuncts.map(apply(theta,n.sentence)).toList:_*)
+      case x: Disjunction =>
+        new Disjunction(x.disjuncts.map(apply(theta,x.sentence)).toList:_*)
+      case x: Conditional =>
+        new Conditional(apply(theta,x.premise),apply(theta,x.conclusion))
+      case x: BiConditional =>
+        new BiConditional(apply(theta,x.condition),apply(theta,x.conclusion))
+      case x: UniversalQuantifier =>
+        if(theta.contains(x.variable))
+          throw new IllegalStateException(x.variable + " should not occur in " + theta)
+        else
+          new UniversalQuantifier(x.variable,apply(theta,x.sentence))
+      case x: ExistentialQuantification =>
+        if(theta.contains(x.variable))
+          throw new IllegalStateException(x.variable + " should not occur in " + theta)
+        else
+          new ExistentialQuantifier(x.variable,apply(theta,x.sentence))
     }
 
   //for Positive/Negative Literal
@@ -52,11 +51,19 @@ object Subst {
       case p: PositiveLiteral => PositiveLiteral(apply(theta,alpha.sentence))
       case n: NegativeLiteral => NegativeLiteral(apply(theta,alpha.sentence))
     }
+
+  //for Clause
+  def apply(theta: Map[Variable,Term], alpha: Clause) =
+    new Clause(alpha.literals.map(apply(theta,_)).toList:_*)
+
+  //for Set[Clause]
+  def apply(theta: Map[Variable,Term], alpha: Set[Clause]) = alpha.map(apply(_))
 }
 
 //TODO: complete it
 //has to be defined for
 //AtomicSentence, Term
+/*
 object Unify {
 
   def apply(x: Term, y: Term, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] =
@@ -104,3 +111,4 @@ object Unify {
         case _ => None
       }
 }
+*/
