@@ -46,10 +46,10 @@ object Subst {
     }
 
   //for Positive/Negative Literal
-  def apply[T <: Literal](theta: Map[Variable,Term], alpha: T): T =
+  def apply(theta: Map[Variable,Term], alpha: Literal): Literal =
     alpha match {
-      case _: PositiveLiteral => PositiveLiteral(apply(theta,alpha.sentence))
-      case _: NegativeLiteral => NegativeLiteral(apply(theta,alpha.sentence))
+      case x: PositiveLiteral => PositiveLiteral(apply(theta,x.sentence).asInstanceOf[AtomicSentence])
+      case x: NegativeLiteral => NegativeLiteral(apply(theta,x.sentence).asInstanceOf[AtomicSentence])
     }
 
   //for Clause
@@ -57,7 +57,7 @@ object Subst {
     new Clause(alpha.literals.map(apply(theta,_)).toList:_*)
 
   //for Set[Clause]
-  def apply(theta: Map[Variable,Term], alpha: Set[Clause]): Set[Clause] = alpha.map(apply(_))
+  def apply(theta: Map[Variable,Term], alpha: Set[Clause]): Set[Clause] = alpha.map(apply(theta,_))
 }
 
 //TODO: complete it

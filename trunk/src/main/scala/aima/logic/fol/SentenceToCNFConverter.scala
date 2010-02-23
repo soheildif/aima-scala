@@ -26,19 +26,19 @@ object SentenceToCNF {
     //case-2, if there are free variables then replace quantifier var with
     //skolem function, with a band new function symbol, that has free variables 
     //as its arguments
-    result = removeExistentials(result,KB)
+    result = removeExistentialQuantifiers(result,KB)
 
     //step-5, Drop Universal Quatifiers
     result = removeUniversalQuantifiers(result)
 
     //step-6, Operators Out,distribute \/ and /\ so that sentence becomes
     //conjunction of disjunctions and then return Set[Clause]
-    val clauses = removeOperators(result)
+    var clauses = removeOperators(result)
 
     //step-7, Rename Variables so that no variable appears in more than one clause
-    clauses = renameVariables(clauses,KB)
+    clauses = renameClauseVariables(clauses,KB)
 
-    //return the Set[Clause]
+    //return the Clauses
     clauses
   }
 
@@ -52,7 +52,7 @@ object SentenceToCNF {
       case x: Disjunction =>
         new Conjunction(x.disjuncts.map(removeImplications(_)).toList:_*)
       case x: Conditional =>
-        new Disjunction(new Negation(x.premise),conclusion)
+        new Disjunction(new Negation(x.premise),x.conclusion)
       case x: BiConditional =>
         new Conjunction(
           new Disjunction(new Negation(x.condition),x.conclusion),
@@ -63,10 +63,10 @@ object SentenceToCNF {
         new ExistentialQuantifier(x.variable,removeImplications(x.sentence))
     }
 
-  def negationsIn(s: Sentence): Sentence = {
+  def negationsIn(s: Sentence) = {
 
-    def negationsIn(s:Sentence, negate: Boolean) =
-      if(negate) negationsIn(negate(s),false)
+    def negationsIn(s:Sentence, shouldNegate: Boolean): Sentence =
+      if(shouldNegate) negationsIn(negate(s),false)
       else {
         s match {
           case x: AtomicSentence => x
@@ -85,86 +85,85 @@ object SentenceToCNF {
             new ExistentialQuantifier(x.variable,negationsIn(x.sentence,false))
         }
       }
-
     negationsIn(s,false)
   }
 
   //Standardize Quantifier Variables
-  def standardizeQuantifierVariables(s: Sentence, KB: FOLKnowledgeBase) =
+  def standardizeQuantifierVariables(s: Sentence, KB: FOLKnowledgeBase): Sentence =
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
       case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(standardizeQuantifierVariables(_)).toList:_*)
+        new Conjunction(x.conjuncts.map(standardizeQuantifierVariables(_,KB)).toList:_*)
       case x: Disjunction =>
-        new Disjunction(x.conjuncts.map(standardizeQuantifierVariables(_)).toList:_*)
+        new Disjunction(x.disjuncts.map(standardizeQuantifierVariables(_,KB)).toList:_*)
       //TODO: this can be optimized??
       case x: UniversalQuantifier =>
         val newVar = KB.generateVariable
-        new UniversalQuantifer(newVar, 
+        new UniversalQuantifier(newVar, 
                                standardizeQuantifierVariables(Subst(Map(x.variable -> newVar),
-                                                                    x.sentence)))
+                                                                    x.sentence),KB))
       case x: ExistentialQuantifier =>
-        val newVar = StandardizeVariable(x.variable)
-        new ExistentialQuantifer(newVar, 
+        val newVar = KB.generateVariable(x.variable.symbol)
+        new ExistentialQuantifier(newVar, 
                                  standardizeQuantifierVariables(Subst(Map(x.variable -> newVar),
-                                                                      x.sentence)))
+                                                                      x.sentence),KB))
     }
 
   //remove Existentials
-  def removeExistentialQuantifiers(s: Sentence, KB: FOLKnowledgeBase) = {
+  def removeExistentialQuantifiers(s: Sentence, KB: FOLKnowledgeBase): Sentence = {
 
     //collect Free variables from a Sentence
-    def freeVariables(vs: Set[Variable], s: Sentence): Set[Variable] =
+    def collectSentenceFreeVariables(vs: Set[Variable], s: Sentence): Set[Variable] =
       s match {
         case x: Predicate =>
-          Set(x.args.flatMap(freeVariables(vs,_)):_*)
-        case x: Equal => freeVariables(x.lTerm) ++ freeVariables(x.rTerm)
+          Set(x.args.flatMap(collectTermFreeVariables(vs,_)):_*)
+        case x: Equal => collectTermFreeVariables(vs,x.lTerm) ++ collectTermFreeVariables(vs,x.rTerm)
         case x: Negation =>
-          freeVariables(vs,x.sentence)
+          collectSentenceFreeVariables(vs,x.sentence)
         case x: Conjunction =>
-          x.conjuncts.flatMap(freeVariables(vs,_))
+          x.conjuncts.flatMap(collectSentenceFreeVariables(vs,_))
         case x: Disjunction =>
-          x.disjuncts.flatMap(freeVariables(vs,_))
+          x.disjuncts.flatMap(collectSentenceFreeVariables(vs,_))
         case x: UniversalQuantifier => //TODO: should we have an abstract Quantifier with same st
-          freeVariables(vs + x.variable, x.sentence)
+          collectSentenceFreeVariables(vs + x.variable, x.sentence)
         case x: ExistentialQuantifier =>
-          freeVariables(vs + x.variable, x.sentence)
+          collectSentenceFreeVariables(vs + x.variable, x.sentence)
       }
 
     //collect Free variables from a Term
-    def freeVariables(vs: Set[Variable], t: Term): Set[Variable] =
+    def collectTermFreeVariables(vs: Set[Variable], t: Term): Set[Variable] =
       t match {
-        case x: Constant => Set[Variable].empty
+        case x: Constant => Set[Variable]()
         case x: Variable =>
-          if(vs.exists(x == _)) Set[Variable].empty else Set(x)
+          if(vs.exists(x == _)) Set[Variable]() else Set(x)
         case x: Function =>
-          Set(args.flatMap(freeVariables(vs,_)):_*)
+          Set(x.args.flatMap(collectTermFreeVariables(vs,_)):_*)
       }
 
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
       case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
+        new Conjunction(x.conjuncts.map(removeExistentialQuantifiers(_,KB)).toList:_*)
       case x: Disjunction =>
-        new Disjunction(x.disjuncts.map(removeExistentialQuantifiers(_)).toList:_*)
+        new Disjunction(x.disjuncts.map(removeExistentialQuantifiers(_,KB)).toList:_*)
       case x: UniversalQuantifier =>
-        new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence))
+        new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence,KB))
       case x: ExistentialQuantifier =>
-        val freeVars = freeVariables(Set[Variable].empty,x)
+        val freeVars = collectSentenceFreeVariables(Set[Variable](),x)
 
         if(freeVars.isEmpty) //case1 -> free variables don't exist
           Subst(Map(x.variable -> KB.generateConstant),
                 x.sentence)
         else //case2 -> free variables do exist
-          Subst(Map(x.variable -> KB.generateFunction(freeVars)),
+          Subst(Map(x.variable -> KB.generateFunction(freeVars.toList)),
                 x.sentence)
     }
   }
       
 
-  def removeUniversalQuantifiers(s: Sentence) =
+  def removeUniversalQuantifiers(s: Sentence): Sentence =
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
@@ -185,36 +184,36 @@ object SentenceToCNF {
       case x: AtomicSentence => Set(new Clause(PositiveLiteral(x)))
       case x: Negation => Set(new Clause(NegativeLiteral(x.sentence.asInstanceOf[AtomicSentence])))
       case x: Conjunction =>
-        x.conjuncts.flatMap(convert(_))
+        x.conjuncts.flatMap(removeOperators(_))
       case x: Disjunction =>
-        x.disjuncts.map(convert(_).reduceLeft(unionOfTwoClauseSets(_,_)))
+        x.disjuncts.map(removeOperators(_)).reduceLeft(unionOfTwoClauseSets(_,_))
     }
   }
 
 
   //Rename Variables, so that no two clauses have same variables
-  def renameClauseVariables(clauses: Set[Clause]) = {
+  def renameClauseVariables(clauses: Set[Clause], KB: FOLKnowledgeBase): Set[Clause] = {
 
-    def collectAllVariables(clause: Clause) =
-      clause.literals.flatMap(collectAllVariables(_.sentence))
+    def collectClauseVariables(clause: Clause): Set[Variable] =
+      clause.literals.flatMap(l => collectAtomicSentenceVariables(l.sentence))
 
-    def collectAllVariables(s: AtomicSentence) =
+    def collectAtomicSentenceVariables(s: AtomicSentence): Set[Variable] =
       s match {
         case x: Predicate =>
-          Set(x.args.flatMap(collectAllVariables(_)):_*)
+          Set(x.args.flatMap(collectTermVariables(_)):_*)
         case x: Equal =>
-          collectAllVariables(x.lTerm) ++ collectAllVariables(x.rTerm)
+          collectTermVariables(x.lTerm) ++ collectTermVariables(x.rTerm)
       }
 
-    def collectAllVariables(t: Term) =
+    def collectTermVariables(t: Term): Set[Variable] =
       t match {
-        case x: Constant => Set[Variable].empty
-        case x: Variable => x
-        case x: Function => Set(x.args.flatMap(collectAllVariables(_)):_*)
+        case x: Constant => Set[Variable]()
+        case x: Variable => Set(x)
+        case x: Function => Set(x.args.flatMap(collectTermVariables(_)):_*)
       }
 
     clauses.map(c =>
-      Subst(Map(collectAllVariables(c).map(v => v -> KB.generateVariable(v.key))),
+      Subst(Map(collectClauseVariables(c).map(v => v -> KB.generateVariable(v.symbol)).toList:_*),
             c))
   }
   
