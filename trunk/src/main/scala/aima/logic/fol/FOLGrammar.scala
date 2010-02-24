@@ -60,6 +60,9 @@ object FOLParser extends JavaTokenParsers {
   def symbol = """[A-Z][a-z0-9A-Z]*""".r //symbol for Constant,Predicate,Function
 
   def parse(in: String) = parseAll(sentence,in).get
+
+  //term parser, meant for Testing ONLY
+  def parseTerm(in: String) = parseAll(term,in).get
 }
 
 
@@ -69,53 +72,120 @@ abstract class Sentence
 
 //Term
 abstract class Term
-case class Constant(val symbol: String) extends Term
-class Function(val symbol:String, val args: Term *) extends Term
-case class Variable(val symbol: String) extends Term
+case class Constant(val symbol: String) extends Term {
+  override def toString = symbol
+}
 
-//Atomic Sentence
+class Function(val symbol:String, as: Term *) extends Term {
+  val args = List(as:_*)
+
+  override def equals(that: Any) =
+    that match {
+      case x: Function =>
+        (x.symbol == this.symbol) && (x.args == this.args)
+      case _ => false
+    }
+
+  override def toString =
+    if(args == Nil)
+      symbol + "()"
+    else
+      symbol + "(" + args.map(_.toString).reduceLeft(_ + "," + _) + ")"
+}
+
+case class Variable(val symbol: String) extends Term {
+  override def toString = symbol
+}
+
+//======== Atomic Sentence ============
 abstract class AtomicSentence extends Sentence
-class Predicate(val symbol: String, val args: Term *) extends AtomicSentence
-class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence
 
-//Complex Sentence
-class Negation(val sentence: Sentence) extends Sentence
+class Predicate(val symbol: String, as: Term *) extends AtomicSentence {
+  val args = List(as:_*)
+
+  override def equals(that: Any) =
+    that match {
+      case x: Predicate =>
+        (x.symbol == this.symbol) && (x.args == this.args)
+      case _ => false
+    }
+
+  override def toString =
+    if(args == Nil)
+      symbol + "()"
+    else
+      symbol + "(" + args.map(_.toString).reduceLeft(_ + "," + _) + ")"
+}
+
+class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence {
+  override def equals(that: Any) =
+    that match {
+      case x: Equal => (x.lTerm == this.lTerm) && (x.rTerm == this.rTerm)
+      case _ => false
+    }
+}
+
+//========= Complex Sentence =========
+class Negation(val sentence: Sentence) extends Sentence {
+  override def equals(that: Any) =
+    that match {
+      case x: Negation => x.sentence == this.sentence
+      case _ => false
+    }
+}
+
 class Conjunction(cs: Sentence *) extends Sentence {
   val conjuncts: Set[Sentence] = Set(cs: _*)
+
+  override def equals(that: Any) =
+    that match {
+      case x: Conjunction => x.conjuncts == this.conjuncts
+      case _ => false
+    }
 }
+
 class Disjunction(ds: Sentence *) extends Sentence {
   val disjuncts: Set[Sentence] = Set(ds: _*)
+
+  override def equals(that: Any) =
+    that match {
+      case x: Disjunction => x.disjuncts == this.disjuncts
+    }
 }
-class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence
-class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence
 
-class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence
-class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence
-
-
-/**
- * Domain contains Ontology(vocabulary) that is Constant, Predicate and Function
- * symbols(sets of String).
- * It has to be defined upfront, because functions and predicates are syntactically the
- * same.
- * NOTE:
- *   To be precise, function and predicate arity should also be defined, but
- *   I'm relaxing that for now.
- *
- * @author Himanshu Gupta
- */
-/*class Domain(val constants: Set[String], val functions: Set[String],
-             val predicates: Set[String]) {
-  def addConstants(cs: String *) =
-    new Domain(constants ++ cs, functions,predicates)
-
-  def addFunctions(fs: String *) =
-    new Domain(constants, functions ++ fs, predicates)
-
-  def addPredicates(ps: String *) =
-    new Domain(constants, functions, predicates ++ ps)
+class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence {
+  override def equals(that: Any) =
+    that match {
+      case x: Conditional => (x.premise == this.premise) && (x.conclusion == this.conclusion)
+      case _ => false
+    }
 }
-*/
+
+class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence {
+  override def equals(that: Any) =
+    that match {
+      case x: BiConditional => (x.condition == this.condition) && (x.conclusion == this.conclusion)
+      case _ => false
+    }
+}
+
+class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
+  override def equals(that: Any) =
+    that match {
+      case x: UniversalQuantifier =>
+        (x.variable == this.variable) && (x.sentence == this.sentence)
+      case _ => false
+    }
+}
+
+class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
+  override def equals(that: Any) =
+    that match {
+      case x: UniversalQuantifier =>
+        (x.variable == this.variable) && (x.sentence == this.sentence)
+      case _ => false
+    }
+}
 
 /*
 object FOLFCAsk {
