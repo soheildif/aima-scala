@@ -69,12 +69,20 @@ class FOLParserTest extends Suite {
     expect(expected)(FOLParser.parse("(King(John) /\\ ~ King(Richard))  \\/King(Saladin)"))
   }
 
+  def testComplexConnectedSentence2() {
+    expect(new Conjunction(new Predicate("King",Variable("x")),
+                           new Equal(new Function("BrotherOf",Variable("x")),
+                                     Variable("y")))
+         )(FOLParser.parse("(King(x) /\\ BrotherOf(x) = y)"))
+  }
+
+
   def testQuantifierWithSingleVariable() {
     val expected = new UniversalQuantifier(Variable("x"),new Predicate("King",Variable("x")))
     expect(expected)(FOLParser.parse("4L x King(x)"))
   }
 
-/*
+
   def testQuantifierWithTwoVariables() {
     val expected = new ExistentialQuantifier(Variable("x"),
                                              new ExistentialQuantifier(Variable("y"),
@@ -83,9 +91,38 @@ class FOLParserTest extends Suite {
                                                                                                  Variable("y")))))
     expect(expected)(FOLParser.parse("3E x,y (King(x) /\\ BrotherOf(x) = y)"))
   }
-  */
-  def test3() {
-    expect(new Predicate("King",Constant("John")))(FOLParser.parse("King(John)"))
+
+  def testQuantifierSentenceWithPathologicalParanthesizing() {
+    val expected = new UniversalQuantifier(Variable("x"),
+                                             new UniversalQuantifier(Variable("y"),
+                                                                       new Conjunction(new Predicate("King",Variable("x")),
+                                                                                       new Equal(new Function("BrotherOf",Variable("x")),
+                                                                                                 Variable("y")))))
+    expect(expected)(FOLParser.parse("( ( ((4L x,y (King(x) /\\ (BrotherOf(x) = y  ))) )   )    )"))
   }
 
+  def testNestedQuantifier() {
+    val expected = new UniversalQuantifier(Variable("x"),
+                                             new ExistentialQuantifier(Variable("y"),
+                                                                       new Conjunction(new Predicate("King",Variable("x")),
+                                                                                       new Equal(new Function("BrotherOf",Variable("x")),
+                                                                                                 Variable("y")))))
+    expect(expected)(FOLParser.parse("4L x (3E y (King(x) /\\ BrotherOf(x) = y))"))
+  }
+
+  def testNestedQuantifier2() {
+    val expected = new ExistentialQuantifier(Variable("x"),
+                                             new UniversalQuantifier(Variable("y"),
+                                                                       new Conjunction(new Predicate("King",Variable("x")),
+                                                                                       new Equal(new Function("BrotherOf",Variable("x")),
+                                                                                                 Variable("y")))))
+    expect(expected)(FOLParser.parse("3E x (4L y (King(x) /\\ BrotherOf(x) = y))"))
+  }
+
+  def testImplication() {
+    val expected = new Conditional(new Conjunction(new Predicate("Missile",Variable("m")),
+                                                   new Predicate("Owns",Variable("m"))),
+                                   new Predicate("Sells",Constant("West"),Variable("m"),Constant("Nono")))
+    expect(expected)(FOLParser.parse("(Missile(m) /\\ Owns(m)) => Sells(West,m,Nono)"))
+  }
 }
