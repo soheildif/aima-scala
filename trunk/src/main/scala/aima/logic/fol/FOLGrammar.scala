@@ -14,10 +14,12 @@ import scala.util.parsing.combinator._
 object FOLParser extends JavaTokenParsers {
 
   def sentence: Parser[Sentence] = (
-    "4L"~variable~biconditional ^^
-    { case _~v~s => new UniversalQuantifier(Variable(v),s) } //Universal Quantifier
-    | "3E"~variable~","~biconditional ^^
-    { case _~v~s => new ExistentialQuantifier(Variable(v),s) } //Existential Quantifier
+    "4L"~repsep(variable,",")~biconditional ^^
+    { case _~vs~s =>
+      vs.map(Variable(_)).foldRight(s)(new UniversalQuantifier(_,_)) } //Universal Quantifier
+    | "3E"~repsep(variable,",")~biconditional ^^
+    { case _~vs~s =>
+      vs.map(Variable(_)).foldRight(s)(new ExistentialQuantifier(_,_)) } //Existential Quantifier
     | biconditional
   )
   def biconditional: Parser[Sentence] = conditional~opt("<=>"~conditional) ^^
@@ -123,6 +125,8 @@ class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence {
       case x: Equal => (x.lTerm == this.lTerm) && (x.rTerm == this.rTerm)
       case _ => false
     }
+
+  override def toString = "(" + lTerm + " = " + rTerm + ")"
 }
 
 //========= Complex Sentence =========
@@ -132,6 +136,8 @@ class Negation(val sentence: Sentence) extends Sentence {
       case x: Negation => x.sentence == this.sentence
       case _ => false
     }
+
+  override def toString = "~" + sentence
 }
 
 class Conjunction(cs: Sentence *) extends Sentence {
@@ -142,6 +148,8 @@ class Conjunction(cs: Sentence *) extends Sentence {
       case x: Conjunction => x.conjuncts == this.conjuncts
       case _ => false
     }
+
+  override def toString = "(" + conjuncts.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ")"
 }
 
 class Disjunction(ds: Sentence *) extends Sentence {
@@ -151,6 +159,8 @@ class Disjunction(ds: Sentence *) extends Sentence {
     that match {
       case x: Disjunction => x.disjuncts == this.disjuncts
     }
+
+  override def toString = "(" + disjuncts.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 
 class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence {
@@ -159,6 +169,8 @@ class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sente
       case x: Conditional => (x.premise == this.premise) && (x.conclusion == this.conclusion)
       case _ => false
     }
+
+  override def toString = "(" + premise + " => " + conclusion + ")"
 }
 
 class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence {
@@ -167,6 +179,8 @@ class BiConditional(val condition: Sentence, val conclusion: Sentence) extends S
       case x: BiConditional => (x.condition == this.condition) && (x.conclusion == this.conclusion)
       case _ => false
     }
+
+  override def toString = "(" + condition + " <=> " + conclusion + ")"
 }
 
 class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
@@ -176,15 +190,19 @@ class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extend
         (x.variable == this.variable) && (x.sentence == this.sentence)
       case _ => false
     }
+
+  override def toString = "(4L " + variable + " " + sentence + ")"
 }
 
 class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
   override def equals(that: Any) =
     that match {
-      case x: UniversalQuantifier =>
+      case x: ExistentialQuantifier =>
         (x.variable == this.variable) && (x.sentence == this.sentence)
       case _ => false
     }
+
+  override def toString = "(3E " + variable + " " + sentence + ")"
 }
 
 /*
