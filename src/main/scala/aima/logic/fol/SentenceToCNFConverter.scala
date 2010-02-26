@@ -89,26 +89,74 @@ object SentenceToCNF {
   }
 
   //Standardize Quantifier Variables
-  def standardizeQuantifierVariables(s: Sentence, KB: FOLKnowledgeBase): Sentence =
+  def standardizeQuantifierVariables(s: Sentence, KB: FOLKnowledgeBase): Sentence = {
+
+    //standardize the variables for all the quantifiers(if two or more of
+    //them share the same variable name) from the Set of Sentences, which
+    //are conjuncts/disjuncts of a Conjunction/Disjunction
+    def standardizeVariables(ss: Set[Sentence]) = {
+      //Separate Quantifiers and Non Quantifiers
+      val qs = ss.filter(_ match {
+        case _: Quantifier => true
+        case _ => false
+      }) //Quantifiers
+
+      val nqs = ss.filter(_ match {
+        case _: Quantifier => false
+        case _ => true
+      }) //Non Quantifiers
+
+      //collect groups of Quantifiers with same variable names
+      var m = Map[Variable,List[Quantifier]]()
+
+      qs.foreach( c =>
+        c match {
+          case y: Quantifier if m.contains(y.variable) =>
+            m = m + (y.variable -> (y :: m(y.variable)))
+          case y: Quantifier =>
+            m = m + (y.variable -> List(y))
+          case _ => ; //do nothing
+        })
+
+      //For a variable, if there are more than one Quantifiers in
+      //the group, rename variables in all but one
+      m = Map(m.map(a =>  (a: @unchecked) match {
+        case (v,q :: Nil) => a
+        case (v,q :: rest) =>
+          (v,q ::
+           rest.map(x => {
+             val newVar = KB.generateVariable(x.variable.symbol)
+             x match {
+               case _: UniversalQuantifier =>
+                 new UniversalQuantifier(newVar, Subst(Map(newVar -> x.variable),
+                                                       x.sentence))
+               case _: ExistentialQuantifier =>
+                 new ExistentialQuantifier(newVar, Subst(Map(newVar -> x.variable),
+                                                         x.sentence))
+             }})
+         )
+            
+      }).toList:_*)
+
+      val renamedQuantifiers: List[Quantifier] = m.values.toList.flatten
+
+      //Return the non quantifiers ++ renamed quantifiers
+      nqs ++ Set(renamedQuantifiers:_*)
+    }
+
     s match {
       case x: AtomicSentence => x
       case x: Negation if x.sentence.isInstanceOf[AtomicSentence] => x
       case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(standardizeQuantifierVariables(_,KB)).toList:_*)
+        new Conjunction(standardizeVariables(x.conjuncts).map(standardizeQuantifierVariables(_,KB)).toList:_*)
       case x: Disjunction =>
-        new Disjunction(x.disjuncts.map(standardizeQuantifierVariables(_,KB)).toList:_*)
-      //TODO: this can be optimized??
+        new Disjunction(standardizeVariables(x.disjuncts).map(standardizeQuantifierVariables(_,KB)).toList:_*)
       case x: UniversalQuantifier =>
-        val newVar = KB.generateVariable
-        new UniversalQuantifier(newVar, 
-                               standardizeQuantifierVariables(Subst(Map(x.variable -> newVar),
-                                                                    x.sentence),KB))
+        new UniversalQuantifier(x.variable,standardizeQuantifierVariables(x.sentence,KB))
       case x: ExistentialQuantifier =>
-        val newVar = KB.generateVariable(x.variable.symbol)
-        new ExistentialQuantifier(newVar, 
-                                 standardizeQuantifierVariables(Subst(Map(x.variable -> newVar),
-                                                                      x.sentence),KB))
+        new ExistentialQuantifier(x.variable,standardizeQuantifierVariables(x.sentence,KB))
     }
+  }
 
   //remove Existentials
   def removeExistentialQuantifiers(s: Sentence, KB: FOLKnowledgeBase): Sentence = {
@@ -125,9 +173,7 @@ object SentenceToCNF {
           x.conjuncts.flatMap(collectSentenceFreeVariables(vs,_))
         case x: Disjunction =>
           x.disjuncts.flatMap(collectSentenceFreeVariables(vs,_))
-        case x: UniversalQuantifier => //TODO: should we have an abstract Quantifier with same st
-          collectSentenceFreeVariables(vs + x.variable, x.sentence)
-        case x: ExistentialQuantifier =>
+        case x: Quantifier =>
           collectSentenceFreeVariables(vs + x.variable, x.sentence)
       }
 
@@ -161,7 +207,6 @@ object SentenceToCNF {
                 x.sentence)
     }
   }
-      
 
   def removeUniversalQuantifiers(s: Sentence): Sentence =
     s match {
@@ -171,7 +216,7 @@ object SentenceToCNF {
         new Conjunction(x.conjuncts.map(removeUniversalQuantifiers(_)).toList:_*)
       case x: Disjunction =>
         new Disjunction(x.disjuncts.map(removeUniversalQuantifiers(_)).toList:_*)
-      case x: UniversalQuantifier => x.sentence //drop it
+      case x: UniversalQuantifier => removeUniversalQuantifiers(x.sentence) //drop it
     }
 
   //Remove Operators
@@ -182,7 +227,8 @@ object SentenceToCNF {
     
     s match {
       case x: AtomicSentence => Set(new Clause(PositiveLiteral(x)))
-      case x: Negation => Set(new Clause(NegativeLiteral(x.sentence.asInstanceOf[AtomicSentence])))
+      case x: Negation if x.sentence.isInstanceOf[AtomicSentence] =>
+        Set(new Clause(NegativeLiteral(x.sentence.asInstanceOf[AtomicSentence])))
       case x: Conjunction =>
         x.conjuncts.flatMap(removeOperators(_))
       case x: Disjunction =>

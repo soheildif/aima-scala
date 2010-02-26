@@ -183,7 +183,8 @@ class BiConditional(val condition: Sentence, val conclusion: Sentence) extends S
   override def toString = "(" + condition + " <=> " + conclusion + ")"
 }
 
-class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
+abstract class Quantifier(val variable: Variable, val sentence: Sentence) extends Sentence
+class UniversalQuantifier(v: Variable,s: Sentence) extends Quantifier(v,s) {
   override def equals(that: Any) =
     that match {
       case x: UniversalQuantifier =>
@@ -193,8 +194,7 @@ class UniversalQuantifier(val variable: Variable, val sentence: Sentence) extend
 
   override def toString = "(4L " + variable + " " + sentence + ")"
 }
-
-class ExistentialQuantifier(val variable: Variable, val sentence: Sentence) extends Sentence {
+class ExistentialQuantifier(v: Variable, s: Sentence) extends Quantifier(v,s) {
   override def equals(that: Any) =
     that match {
       case x: ExistentialQuantifier =>
