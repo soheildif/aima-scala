@@ -9,8 +9,12 @@ abstract class Literal(val sentence: AtomicSentence) {
   def isPositive = this.isInstanceOf[PositiveLiteral]
   def isNegative = this.isInstanceOf[NegativeLiteral]
 }
-case class PositiveLiteral(s: AtomicSentence) extends Literal(s)
-case class NegativeLiteral(s: AtomicSentence) extends Literal(s)
+case class PositiveLiteral(s: AtomicSentence) extends Literal(s) {
+  override def toString = s.toString
+}
+case class NegativeLiteral(s: AtomicSentence) extends Literal(s) {
+  override def toString = "~" + s.toString
+}
 
 class Clause(ls: Literal *) {
   val literals: Set[Literal] = Set(ls: _*)
@@ -35,12 +39,19 @@ class Clause(ls: Literal *) {
       case _ => throw new IllegalStateException("Not a definite clause.")
     }
   }
+
+  override def toString = "(" + literals.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 
 
 //FOL Definite Clause
 abstract class FOLDefiniteClause
-class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause
-class ImplicationDefiniteClause(val premise: Set[AtomicSentence], 
-                                val conclusion: AtomicSentence) extends FOLDefiniteClause
+class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause {
+  override def toString = literal.toString
+}
 
+class ImplicationDefiniteClause(val premise: Set[AtomicSentence], 
+                                val conclusion: AtomicSentence) extends FOLDefiniteClause {
+  override def toString =
+    "(" + premise.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ") => " + conclusion.toString
+} 
