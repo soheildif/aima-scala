@@ -35,7 +35,7 @@ class Clause(ls: Literal *) {
         if(negativeLiterals != Nil)
           new ImplicationDefiniteClause(
             negativeLiterals.map(_.sentence),pl.sentence)
-        else new SimpleDefiniteClause(pl.sentence)
+        else pl.sentence
       case _ => throw new IllegalStateException("Not a definite clause.")
     }
   }
@@ -45,10 +45,10 @@ class Clause(ls: Literal *) {
 
 
 //FOL Definite Clause
-abstract class FOLDefiniteClause
-class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause {
-  override def toString = literal.toString
-}
+trait FOLDefiniteClause
+//class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause {
+//  override def toString = literal.toString
+//}
 
 class ImplicationDefiniteClause(val premise: Set[AtomicSentence], 
                                 val conclusion: AtomicSentence) extends FOLDefiniteClause {

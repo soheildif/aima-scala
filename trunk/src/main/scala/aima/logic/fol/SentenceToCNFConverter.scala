@@ -240,29 +240,13 @@ object SentenceToCNF {
   //Rename Variables, so that no two clauses have same variables
   def renameClauseVariables(clauses: Set[Clause], KB: FOLKnowledgeBase): Set[Clause] = {
 
-    def collectClauseVariables(clause: Clause): Set[Variable] =
-      clause.literals.flatMap(l => collectAtomicSentenceVariables(l.sentence))
-
-    def collectAtomicSentenceVariables(s: AtomicSentence): Set[Variable] =
-      s match {
-        case x: Predicate =>
-          Set(x.args.flatMap(collectTermVariables(_)):_*)
-        case x: Equal =>
-          collectTermVariables(x.lTerm) ++ collectTermVariables(x.rTerm)
-      }
-
-    def collectTermVariables(t: Term): Set[Variable] =
-      t match {
-        case x: Constant => Set[Variable]()
-        case x: Variable => Set(x)
-        case x: Function => Set(x.args.flatMap(collectTermVariables(_)):_*)
-      }
-
     clauses.map(c =>
-      Subst(Map(collectClauseVariables(c).map(v => v -> KB.generateVariable(v.symbol)).toList:_*),
+      Subst(Map(CollectVariables(c).map(v => v -> KB.generateVariable(v.symbol)).toList:_*),
             c))
   }
   
+
+
   //Returns negation of a sentence
   def negate(s: Sentence): Sentence =
     s match {
