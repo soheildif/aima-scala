@@ -5,70 +5,6 @@ package aima.logic.fol
  *
  * @author Himanshu Gupta
  */
-/*object Subst {
-
-  def apply[T](theta: Map[Variable,Term], alpha: T): T =
-    alpha match {
-      case x: Term = substTerm(theta,x)
-      case x: AtomicSentence = substAtomicSentence(theta,x)
-      case x: Sentence = substSentence(theta,x)
-      case x: Clause = substClause(theta,x)
-      case x: Literal = substLiteral(theta,x)
-    }
-
-  //for Term
-  def apply(theta: Map[Variable,Term], alpha: Term): Term =
-    alpha match {
-      case x: Constant => x
-      case x: Variable =>
-        if(theta.contains(x))
-          theta(x)
-        else x
-      case x: Function => new Function(x.symbol, x.args.map(apply(theta,_)):_*)
-    }
-
-  //for FOL Sentence
-  def apply(theta: Map[Variable,Term], alpha: Sentence): Sentence =
-    alpha match {
-      case x: Predicate => new Predicate(x.symbol, x.args.map(apply(theta,_)):_*)
-      case x: Equal => new Equal(apply(theta,x.lTerm),apply(theta,x.rTerm))
-      case x: Negation =>
-        new Negation(apply(theta,x.sentence))
-      case x: Conjunction =>
-        new Conjunction(x.conjuncts.map(apply(theta,_)).toList:_*)
-      case x: Disjunction =>
-        new Disjunction(x.disjuncts.map(apply(theta,_)).toList:_*)
-      case x: Conditional =>
-        new Conditional(apply(theta,x.premise),apply(theta,x.conclusion))
-      case x: BiConditional =>
-        new BiConditional(apply(theta,x.condition),apply(theta,x.conclusion))
-      case x: UniversalQuantifier =>
-        if(theta.contains(x.variable))
-          throw new IllegalStateException(x.variable + " should not occur in " + theta)
-        else
-          new UniversalQuantifier(x.variable,apply(theta,x.sentence))
-      case x: ExistentialQuantifier =>
-        if(theta.contains(x.variable))
-          throw new IllegalStateException(x.variable + " should not occur in " + theta)
-        else
-          new ExistentialQuantifier(x.variable,apply(theta,x.sentence))
-    }
-
-  //for Positive/Negative Literal
-  def apply(theta: Map[Variable,Term], alpha: Literal): Literal =
-    alpha match {
-      case x: PositiveLiteral => PositiveLiteral(apply(theta,x.sentence).asInstanceOf[AtomicSentence])
-      case x: NegativeLiteral => NegativeLiteral(apply(theta,x.sentence).asInstanceOf[AtomicSentence])
-    }
-
-  //for Clause
-  def apply(theta: Map[Variable,Term], alpha: Clause): Clause =
-    new Clause(alpha.literals.map(apply(theta,_)).toList:_*)
-
-  //for Set[Clause]
-  def apply(theta: Map[Variable,Term], alpha: Set[Clause]): Set[Clause] = alpha.map(apply(theta,_))
-}*/
-
 object Subst {
 
   def apply[T](theta: Map[Variable,Term], alpha: T): T =
@@ -141,6 +77,8 @@ object Subst {
  * @author Himanshu Gupta
  */
 object Unify {
+
+  def apply[T](x: T, y: T): Option[Map[Variable,Term]] = apply(x,y,Some(Map[Variable,Term]()))
 
   def apply[T](x: T, y: T, theta: Option[Map[Variable,Term]]): Option[Map[Variable,Term]] =
     x match {
