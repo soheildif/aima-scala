@@ -7,38 +7,79 @@ package aima.logic.fol
 class FOLKnowledgeBase {
 
   //sentences told so far in original form
-  private var originalSentences = Set[String]()
+  private var _originalSentences = Set[String]()
 
   //sentences in parsed Sentence form
-  private var sentences = Set[Sentence]()
+  private var _sentences = Set[Sentence]()
 
   //sentences in CNF form
-  private var clauses = Set[Clause]()
+  private var _clauses = Set[Clause]()
 
   //all definite clauses
-  private var definiteClauses = Set[FOLDefiniteClause]()
+  private var _definiteClauses = Set[FOLDefiniteClause]()
 
   //all Implication Definite Clauses
-  private var implicationDefiniteClauses = Set[ImplicationDefiniteClause]()
+  private var _implicationDefiniteClauses = Set[ImplicationDefiniteClause]()
 
   //simple definite clauses
-  private var simpleDefiniteClauses = Set[AtomicSentence]()
+  private var _atomicSentences = Set[AtomicSentence]()
 
   //all predicates
-  private var predicates = Map[String,Set[Predicate]]()
+  private var _predicates = Map[String,Set[Predicate]]()
 
   //all equals
-  private var equals = Set[Equal]()
+  private var _equals = Set[Equal]()
 
 
-  //TELL a sentence to this KB
-  def tell(s: String) {
-    originalSentences = originalSentences + s
+  //Getters
+  def definiteClauses = _definiteClauses
+  def implicationDefiniteClauses = _implicationDefiniteClauses
+
+
+  //TELL sentence to this KB
+  def tell(s: String) = {
+    _originalSentences = _originalSentences + s
     store(FOLParser.parse(s))
+    this
+  }
+  def tell(s: Sentence) = { store(s); this }
+  def tell(ss: Set[AtomicSentence]) = { ss.foreach(store(_)); this }
+
+
+  //STORE - described in 1st paragraph, section 9.2.3
+  //
+  //Stores a sentence in KB
+  def store(sentence: Sentence) {
+    //TODO: should we check if the sentence already in KB
+    _sentences = _sentences + sentence
+
+    //convert to CNF form
+    val newClauses = SentenceToCNF(sentence,this)
+    _clauses = _clauses ++ newClauses
+
+    //filter out the definite clauses from newClauses
+    val newDefiniteClauses = newClauses.filter(x => x.isDefiniteClause).map(_.toDefiniteClause)
+    _definiteClauses = _definiteClauses ++ newDefiniteClauses
+
+    //separate the implication definite clauses and simple one(atomic sentence)
+    val newImplications = newDefiniteClauses.filter(_ match {
+      case _: ImplicationDefiniteClause => true
+      case _: AtomicSentence => false
+    }).map(_.asInstanceOf[ImplicationDefiniteClause])
+    _implicationDefiniteClauses = _implicationDefiniteClauses ++ newImplications
+
+    val newAtoms = newDefiniteClauses.filter(_ match {
+      case _: ImplicationDefiniteClause => false
+      case _: AtomicSentence => true
+    }).map(_.asInstanceOf[AtomicSentence])
+    _atomicSentences = _atomicSentences ++ newAtoms
+
+    //index the atomic sentences
+    newAtoms.foreach(indexAtomicSentence(_))
   }
 
-  //index the sentence
-  def indexIt(s: Sentence) =
+  //index the atomic sentence
+  def indexAtomicSentence(s: AtomicSentence) =
     s match {
       case x: Predicate =>
         predicates.get(x.symbol) match {
@@ -48,24 +89,7 @@ class FOLKnowledgeBase {
         }
       case x: Equal =>
         equals = equals + x
-      case _ => ; //do nothing
     }
-
-
-  //STORE - described in 1st paragraph, section 9.2.3
-  //
-  //Stores a sentence in KB
-  def store(sentence: Sentence) {
-    //TODO: should we check if the sentence already in KB
-    sentences = sentences + sentence
-
-    indexIt(sentence) //index the just received sentence
-
-    //convert to CNF form and store
-    val newClauses = SentenceToCNF(sentence,this)
-    clauses = clauses ++ newClauses
-  }
-
 
   //FETCH - described in 1st paragraph, section 9.2.3
   //
@@ -96,7 +120,7 @@ class FOLKnowledgeBase {
 
   //Returns set of unifiers that unifies s with elements in set
   def fetch[T](s: T, set: Set[T]): Set[Map[Variable,Term]] =
-    set.map(Unify(s,_,Some(Map[Variable,Term]())) match {
+    set.map(Unify(s,_) match {
               case None => null
               case Some(x) => x
             }).filter(_ != null)
