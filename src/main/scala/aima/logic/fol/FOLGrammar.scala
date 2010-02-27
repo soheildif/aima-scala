@@ -100,7 +100,7 @@ case class Variable(val symbol: String) extends Term {
 }
 
 //======== Atomic Sentence ============
-abstract class AtomicSentence extends Sentence
+abstract class AtomicSentence extends Sentence with FOLDefiniteClause
 
 class Predicate(val symbol: String, as: Term *) extends AtomicSentence {
   val args = List(as:_*)
@@ -158,6 +158,7 @@ class Disjunction(ds: Sentence *) extends Sentence {
   override def equals(that: Any) =
     that match {
       case x: Disjunction => x.disjuncts == this.disjuncts
+      case _ => false
     }
 
   override def toString = "(" + disjuncts.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
@@ -204,53 +205,3 @@ class ExistentialQuantifier(v: Variable, s: Sentence) extends Quantifier(v,s) {
 
   override def toString = "(3E " + variable + " " + sentence + ")"
 }
-
-/*
-object FOLFCAsk {
-  def apply(KB: Set[FOLDefiniteClause], alpha: AtomicSentence): Option[Map[Variable,Term]] = {
-
-    //separate implication rules and just literal from the KB
-    val rules = KB.filter(_.isRule)
-    val atoms = KB.filter(!_.isRule)
-
-    def loop: Option[Map[Variable,Term]] = {
-
-      def rulesLoop(KB: Set[FOLDefiniteClause], rules: List[FOLDefiniteClause], shouldLoopContinue: Boolean): Option[Map[Variable,Term]] = {
-        rules match {
-          case rule :: rest =>
-            val clause = standardizeVariables(rule) //TODO: define standardizeVariables
-          
-            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[PositiveLiteral]): Option[Map[Variable,Term]] =
-              unifiers match {
-                case unifier :: rest =>
-                  val qPrime = Subst(Set(unifier:_*), clause.conclusion) //TODO: ??
-                  if (Fetch(KB, qPrime).isEmpty && Fetch(neW, qPrime).isEmpty) { //TODO: Fetch?
-                    //add qPrime to new
-                    val phi = Unify(qPrime,alpha) //TODO: Unify for AtomicSentence
-                    if(phi != None) Some(phi)
-                    else unifierLoop(rest,neW + qPrime)
-                  }
-                  else unifierLoop(rest,neW)
-                case Nil => rulesLoop(KB ++ neW,rest, !neW.isEmpty)
-              }
-            unifierLoop(Fetch(KB,clause.premise),Set[FOLDefiniteClause].empty) //TODO
-          case Nil if shouldLoopContinue => loop
-          case _ => None
-        }
-      }
-      rulesLoop(KB,rules,false)
-    }
-
-    loop
-  }
-}
-*/
-
-
-
-
-
-/*
-object FOLBCAsk {
-}
-*/
