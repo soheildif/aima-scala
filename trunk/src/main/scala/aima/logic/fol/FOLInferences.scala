@@ -27,12 +27,12 @@ object FOLFCAsk {
                   else unifierLoop(rest,neW)
                 case Nil => rulesLoop(KB.tell(neW),rest, !neW.isEmpty)
               }
-            unifierLoop(KB.fetch(clause.premise),Set[FOLDefiniteClause]())
+            unifierLoop(KB.fetch(clause.premise).toList,Set[AtomicSentence]())
           case Nil if shouldLoopContinue => loop
           case _ => None
         }
       }
-      rulesLoop(KB,rules,false)
+      rulesLoop(KB,rules.toList,false)
     }
 
     loop
