@@ -82,13 +82,13 @@ class FOLKnowledgeBase {
   def indexAtomicSentence(s: AtomicSentence) =
     s match {
       case x: Predicate =>
-        predicates.get(x.symbol) match {
-          case None => predicates = predicates + (x.symbol -> Set(x))
+        _predicates.get(x.symbol) match {
+          case None => _predicates = _predicates + (x.symbol -> Set(x))
           case Some(ps) =>
-            predicates = predicates + (x.symbol -> (ps + x))
+            _predicates = _predicates + (x.symbol -> (ps + x))
         }
       case x: Equal =>
-        equals = equals + x
+        _equals = _equals + x
     }
 
   //FETCH - described in 1st paragraph, section 9.2.3
@@ -98,11 +98,11 @@ class FOLKnowledgeBase {
   def fetch(s: AtomicSentence): Set[Map[Variable,Term]] = {
     s match {
       case x: Predicate =>
-        predicates.get(x.symbol) match {
+        _predicates.get(x.symbol) match {
           case None => Set[Map[Variable,Term]]()
           case Some(ps) => fetch(x,ps)
         }
-      case x: Equal => fetch(x,equals)
+      case x: Equal => fetch(x,_equals)
     }
   }
 
