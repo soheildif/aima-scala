@@ -59,21 +59,21 @@ class FOLParserTest extends Suite {
     expect(new Conjunction(new Predicate("King",Constant("John")),
                            new Negation(new Equal(new Function("Brother",Constant("Richard")),
                                                 Variable("y"))))
-         )(FOLParser.parse("King(John)/\\ ~Brother(Richard) =y"))
+         )(FOLParser.parse("King(John)& ~Brother(Richard) =y"))
   }
 
   def testComplexConnectedSentence() {
     val expected = new Disjunction(new Conjunction(new Predicate("King",Constant("John")),
                                                    new Negation(new Predicate("King",Constant("Richard")))),
                                    new Predicate("King",Constant("Saladin")))
-    expect(expected)(FOLParser.parse("(King(John) /\\ ~ King(Richard))  \\/King(Saladin)"))
+    expect(expected)(FOLParser.parse("(King(John) & ~ King(Richard))  |King(Saladin)"))
   }
 
   def testComplexConnectedSentence2() {
     expect(new Conjunction(new Predicate("King",Variable("x")),
                            new Equal(new Function("BrotherOf",Variable("x")),
                                      Variable("y")))
-         )(FOLParser.parse("(King(x) /\\ BrotherOf(x) = y)"))
+         )(FOLParser.parse("(King(x) & BrotherOf(x) = y)"))
   }
 
 
@@ -89,7 +89,7 @@ class FOLParserTest extends Suite {
                                                                        new Conjunction(new Predicate("King",Variable("x")),
                                                                                        new Equal(new Function("BrotherOf",Variable("x")),
                                                                                                  Variable("y")))))
-    expect(expected)(FOLParser.parse("3E x,y (King(x) /\\ BrotherOf(x) = y)"))
+    expect(expected)(FOLParser.parse("3E x,y (King(x) & BrotherOf(x) = y)"))
   }
 
   def testQuantifierSentenceWithPathologicalParanthesizing() {
@@ -98,7 +98,7 @@ class FOLParserTest extends Suite {
                                                                        new Conjunction(new Predicate("King",Variable("x")),
                                                                                        new Equal(new Function("BrotherOf",Variable("x")),
                                                                                                  Variable("y")))))
-    expect(expected)(FOLParser.parse("( ( ((4L x,y (King(x) /\\ (BrotherOf(x) = y  ))) )   )    )"))
+    expect(expected)(FOLParser.parse("( ( ((4L x,y (King(x) & (BrotherOf(x) = y  ))) )   )    )"))
   }
 
   def testNestedQuantifier() {
@@ -107,7 +107,7 @@ class FOLParserTest extends Suite {
                                                                        new Conjunction(new Predicate("King",Variable("x")),
                                                                                        new Equal(new Function("BrotherOf",Variable("x")),
                                                                                                  Variable("y")))))
-    expect(expected)(FOLParser.parse("4L x (3E y (King(x) /\\ BrotherOf(x) = y))"))
+    expect(expected)(FOLParser.parse("4L x (3E y (King(x) & BrotherOf(x) = y))"))
   }
 
   def testNestedQuantifier2() {
@@ -116,13 +116,13 @@ class FOLParserTest extends Suite {
                                                                        new Conjunction(new Predicate("King",Variable("x")),
                                                                                        new Equal(new Function("BrotherOf",Variable("x")),
                                                                                                  Variable("y")))))
-    expect(expected)(FOLParser.parse("3E x (4L y (King(x) /\\ BrotherOf(x) = y))"))
+    expect(expected)(FOLParser.parse("3E x (4L y (King(x) & BrotherOf(x) = y))"))
   }
 
   def testImplication() {
     val expected = new Conditional(new Conjunction(new Predicate("Missile",Variable("m")),
                                                    new Predicate("Owns",Variable("m"))),
                                    new Predicate("Sells",Constant("West"),Variable("m"),Constant("Nono")))
-    expect(expected)(FOLParser.parse("(Missile(m) /\\ Owns(m)) => Sells(West,m,Nono)"))
+    expect(expected)(FOLParser.parse("(Missile(m) & Owns(m)) => Sells(West,m,Nono)"))
   }
 }

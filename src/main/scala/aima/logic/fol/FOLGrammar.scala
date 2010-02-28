@@ -8,6 +8,8 @@ import scala.util.parsing.combinator._
 
 //4L stands for FOR-All
 //3E stands for THERE EXISTS
+//& is used for conjunction
+//| is used for disjunction
 
 //Term = Function(Term,Term,...)| Variable | Constant
 
@@ -28,10 +30,10 @@ object FOLParser extends JavaTokenParsers {
   def conditional: Parser[Sentence] = disjunction~opt("=>"~disjunction) ^^
                                       {case premise~None => premise
                                        case premise~Some(_~conclusion) => new Conditional(premise,conclusion) }
-  def disjunction: Parser[Sentence] = conjunction~rep("\\/"~conjunction) ^^
+  def disjunction: Parser[Sentence] = conjunction~rep("|"~conjunction) ^^
                                       {case c~Nil => c
                                        case c~reps => new Disjunction(c :: reps.map(_ match { case _~cond => cond }):_*)}
-  def conjunction: Parser[Sentence] = negation~rep("/\\"~negation) ^^
+  def conjunction: Parser[Sentence] = negation~rep("&"~negation) ^^
                                       {case d~Nil => d
                                        case d~reps => new Conjunction(d :: reps.map(_ match { case _~disj => disj }):_*)}
   

@@ -32,7 +32,7 @@ class Clause(ls: Literal *) {
       case pl :: Nil => //pl is the single positive literal in this clause
         //find set of negative literals, get their positive literal counter part
         val negativeLiterals = literals.filter(_.isNegative)
-        if(negativeLiterals != Nil)
+        if(!negativeLiterals.isEmpty)
           new ImplicationDefiniteClause(
             negativeLiterals.map(_.sentence),pl.sentence)
         else pl.sentence
@@ -53,5 +53,5 @@ trait FOLDefiniteClause
 class ImplicationDefiniteClause(val premise: Set[AtomicSentence], 
                                 val conclusion: AtomicSentence) extends FOLDefiniteClause {
   override def toString =
-    "(" + premise.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ") => " + conclusion.toString
-} 
+    "((" + premise.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ") => " + conclusion.toString + ")"
+}
