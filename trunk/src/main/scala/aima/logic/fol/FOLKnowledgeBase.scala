@@ -111,9 +111,11 @@ class FOLKnowledgeBase {
       
     def converge(s1: Set[Map[Variable,Term]], s2: Set[Map[Variable,Term]]) =
       s1.flatMap(m =>
-        s2.map(Unify.merge(_,m)).filter(_ == None)).map(_.get)
+        s2.map(Unify.merge(_,m)).filter(_ != None)).map(_.get)
 
-    ss.map(fetch(_)).reduceLeft(converge(_,_))    
+    if (ss.isEmpty) Set[Map[Variable,Term]]()
+    else
+      ss.map(fetch(_)).reduceLeft(converge(_,_))
   }
 
   //def fetch(l: Literal): Set[Map[Variable,Term]] = fetch(l.sentence)

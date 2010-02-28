@@ -6,7 +6,9 @@ object FOLFCAsk {
 
     //TODO: check that KB contains Definite Clauses only
 
+    println("Alpha is: " + alpha)
     val rules = KB.implicationDefiniteClauses
+    println("rules: " + rules)
 
     def loop: Option[Map[Variable,Term]] = {
 
@@ -14,8 +16,12 @@ object FOLFCAsk {
         rules match {
           case rule :: rest =>
             val clause = standardizeVariables(rule,KB)
+            println("rules are: " + rules)
+            println("standardized rule is: " + clause)
           
-            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Option[Map[Variable,Term]] =
+            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Option[Map[Variable,Term]] = {
+              println("Unifiers are: " + unifiers)
+              println("new: " + neW)
               unifiers match {
                 case unifier :: rest =>
                   val qPrime = Subst(unifier, clause.conclusion)
@@ -26,7 +32,7 @@ object FOLFCAsk {
                   }
                   else unifierLoop(rest,neW)
                 case Nil => rulesLoop(KB.tell(neW),rest, !neW.isEmpty)
-              }
+              }}
             unifierLoop(KB.fetch(clause.premise).toList,Set[AtomicSentence]())
           case Nil if shouldLoopContinue => loop
           case _ => None
