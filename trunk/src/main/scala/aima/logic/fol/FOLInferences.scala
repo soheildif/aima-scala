@@ -2,24 +2,33 @@ package aima.logic.fol
 
 
 object FOLFCAsk {
-  def apply(KB: FOLKnowledgeBase, alpha: AtomicSentence): Option[Map[Variable,Term]] = {
+  def apply(KB: FOLKnowledgeBase, alpha: AtomicSentence): Option[Set[Map[Variable,Term]]] = {
 
     //TODO: check that KB contains Definite Clauses only
+
+    //As explained in section 9.4.1, a query like Person(x) can be proved with
+    //multiple substitutions like x -> John and x -> Richard
+    //so the result is a Set of all substitutions possible
+    var result = Set[Map[Variable,Term]]()
+
+    //Add already alpha matching sentences from KB
+    //to the result set
+    result = result ++ KB.fetch(alpha)
 
     println("Alpha is: " + alpha)
     val rules = KB.implicationDefiniteClauses
     println("rules: " + rules)
 
-    def loop: Option[Map[Variable,Term]] = {
+    def loop: Option[Set[Map[Variable,Term]]] = {
 
-      def rulesLoop(KB: FOLKnowledgeBase, rules: List[ImplicationDefiniteClause], shouldLoopContinue: Boolean): Option[Map[Variable,Term]] = {
+      def rulesLoop(KB: FOLKnowledgeBase, rules: List[ImplicationDefiniteClause], shouldLoopContinue: Boolean): Option[Set[Map[Variable,Term]]] = {
         rules match {
           case rule :: rest =>
             val clause = standardizeVariables(rule,KB)
             println("rules are: " + rules)
             println("standardized rule is: " + clause)
           
-            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Option[Map[Variable,Term]] = {
+            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Option[Set[Map[Variable,Term]]] = {
               println("Unifiers are: " + unifiers)
               println("new: " + neW)
               unifiers match {
@@ -27,15 +36,17 @@ object FOLFCAsk {
                   val qPrime = Subst(unifier, clause.conclusion)
                   if (KB.fetch(qPrime).isEmpty && KB.fetch(qPrime,neW).isEmpty) {
                     val phi = Unify(qPrime,alpha)
-                    if(phi != None) phi
-                    else unifierLoop(rest,neW + qPrime)
+                    if(phi != None)
+                      result = result + phi.get
+                    unifierLoop(rest,neW + qPrime)
                   }
                   else unifierLoop(rest,neW)
                 case Nil => rulesLoop(KB.tell(neW),rest, !neW.isEmpty)
               }}
             unifierLoop(KB.fetch(clause.premise).toList,Set[AtomicSentence]())
           case Nil if shouldLoopContinue => loop
-          case _ => None
+          case Nil if result.isEmpty => None
+          case Nil => Some(result)
         }
       }
       rulesLoop(KB,rules.toList,false)

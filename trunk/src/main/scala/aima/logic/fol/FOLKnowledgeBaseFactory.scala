@@ -1,8 +1,8 @@
 package aima.logic.fol
 
-object WeaponsKnowledgeKB {
+object KBFactory {
   
-  def apply = {
+  def weaponsKB = {
     val kb = new FOLKnowledgeBase
     kb.tell("American(x) & Weapon(y) & Sells(x,y,z) & Hostile(z) => Criminal(x)")
     kb.tell("Owns(Nono, M1)")
@@ -12,6 +12,15 @@ object WeaponsKnowledgeKB {
     kb.tell("Enemy(x,America) => Hostile(x)")
     kb.tell("American(West)")
     kb.tell("Enemy(Nono,America)")
+    kb
+  }
+
+  def kingsKB = {
+    val kb = new FOLKnowledgeBase
+    kb.tell("((King(x) & Greedy(x)) => Evil(x))")
+    kb.tell("King(John)");
+    kb.tell("King(Richard)");
+    kb.tell("Greedy(John)");
     kb
   }
 }
