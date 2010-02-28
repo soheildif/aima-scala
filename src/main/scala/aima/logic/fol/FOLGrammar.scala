@@ -2,17 +2,24 @@ package aima.logic.fol
 
 import scala.util.parsing.combinator._
 
-/** Grammar for FOL logic */
+// =========  Grammar for FOL logic =========
 
-//AtomicSentence := Predicate(Term, Term, ...) | Term = Term
 
-//4L stands for FOR-All
-//3E stands for THERE EXISTS
-//& is used for conjunction
-//| is used for disjunction
-
-//Term = Function(Term,Term,...)| Variable | Constant
-
+/** Parser for parsing FOL logic sentences
+ *
+ * Things to notice:
+ *  ~ is used for negation
+ *  & is used for conjunction(/\)
+ *  | is used for disjunction(\/)
+ *  =>,<=> are used for conditional and biconditional
+ *  4L is used for "For All"
+ *  3E is used for "There Exists"
+ *
+ *  Constant/Function/Predicate symbol are like [A-Z][a-zA-Z0-9]*
+ *  Variable symbol is like [a-z][a-zA-Z0-9]*
+ * 
+ * @author Himanshu Gupta
+ */
 object FOLParser extends JavaTokenParsers {
 
   def sentence: Parser[Sentence] = (
@@ -71,15 +78,18 @@ object FOLParser extends JavaTokenParsers {
 
 
 
-//TODO:Sentence equality should work
+//----------------------- FOL Sentence AST -------------------------------
 abstract class Sentence
 
-//Term
+//--------- Term ---------
 abstract class Term
+
+//Constant
 case class Constant(val symbol: String) extends Term {
   override def toString = symbol
 }
 
+//Function
 class Function(val symbol:String, as: Term *) extends Term {
   val args = List(as:_*)
 
@@ -97,13 +107,15 @@ class Function(val symbol:String, as: Term *) extends Term {
       symbol + "(" + args.map(_.toString).reduceLeft(_ + "," + _) + ")"
 }
 
+//Variable
 case class Variable(val symbol: String) extends Term {
   override def toString = symbol
 }
 
-//======== Atomic Sentence ============
+//================= Atomic Sentence ============
 abstract class AtomicSentence extends Sentence with FOLDefiniteClause
 
+//Predicate
 class Predicate(val symbol: String, as: Term *) extends AtomicSentence {
   val args = List(as:_*)
 
@@ -121,6 +133,7 @@ class Predicate(val symbol: String, as: Term *) extends AtomicSentence {
       symbol + "(" + args.map(_.toString).reduceLeft(_ + "," + _) + ")"
 }
 
+//Equal
 class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence {
   override def equals(that: Any) =
     that match {
@@ -131,7 +144,9 @@ class Equal(val lTerm: Term, val rTerm: Term) extends AtomicSentence {
   override def toString = "(" + lTerm + " = " + rTerm + ")"
 }
 
-//========= Complex Sentence =========
+//=============== Complex Sentence ==============
+
+//Negation
 class Negation(val sentence: Sentence) extends Sentence {
   override def equals(that: Any) =
     that match {
@@ -142,6 +157,7 @@ class Negation(val sentence: Sentence) extends Sentence {
   override def toString = "~" + sentence
 }
 
+//Conjunction
 class Conjunction(cs: Sentence *) extends Sentence {
   val conjuncts: Set[Sentence] = Set(cs: _*)
 
@@ -154,6 +170,7 @@ class Conjunction(cs: Sentence *) extends Sentence {
   override def toString = "(" + conjuncts.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ")"
 }
 
+//Disjunction
 class Disjunction(ds: Sentence *) extends Sentence {
   val disjuncts: Set[Sentence] = Set(ds: _*)
 
@@ -166,6 +183,7 @@ class Disjunction(ds: Sentence *) extends Sentence {
   override def toString = "(" + disjuncts.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 
+//Conditional(or Implication)
 class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sentence {
   override def equals(that: Any) =
     that match {
@@ -176,6 +194,7 @@ class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sente
   override def toString = "(" + premise + " => " + conclusion + ")"
 }
 
+//BiConditional
 class BiConditional(val condition: Sentence, val conclusion: Sentence) extends Sentence {
   override def equals(that: Any) =
     that match {
@@ -186,6 +205,7 @@ class BiConditional(val condition: Sentence, val conclusion: Sentence) extends S
   override def toString = "(" + condition + " <=> " + conclusion + ")"
 }
 
+// Quantifiers
 abstract class Quantifier(val variable: Variable, val sentence: Sentence) extends Sentence
 class UniversalQuantifier(v: Variable,s: Sentence) extends Quantifier(v,s) {
   override def equals(that: Any) =

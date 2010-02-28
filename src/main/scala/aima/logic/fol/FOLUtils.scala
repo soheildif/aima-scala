@@ -155,8 +155,9 @@ object Unify {
 }
 
 
-
 /** Collects all variables from given sentence/term/clause..
+ *
+ * @author Himanshu Gupta
  */
 object CollectVariables {
 
