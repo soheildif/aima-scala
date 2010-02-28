@@ -1,26 +1,28 @@
 package aima.logic.fol
 
-/** Converts a sentence to CNF Clause Set
+/** Converts a sentence to CNF Clause Set, it is based on
+ * the description given in
+ * http://logic.stanford.edu/classes/cs157/2008/lectures/lecture09.pdf
  *
  * @author Himanshu Gupta
  */
 object SentenceToCNF {
   def apply(s: Sentence, KB: FOLKnowledgeBase) : Set[Clause] = {
 
-    //step-1, Implications out, eliminate all the occurences of
+    //Implications out, eliminate all the occurences of
     //=> and <=> ops
     var result = removeImplications(s)
 
-    //step-2, Negations In, negations are distributed over other
+    //Negations In, negations are distributed over other
     //logical operators untill each negation applies only to
     //single Atomic Sentence
     result = negationsIn(result)
 
-    //step-3, Standardize-Variables, rename variables so that each
+    //Standardize-Variables, rename variables so that each
     //quantifier has a unique variable
     result = standardizeQuantifierVariables(result,KB)
 
-    //step-4, Existentials out,
+    //Existentials out,
     //case-1, if there are no free variables then replace quantifier var with
     //skolem constant, a brand new constant symbol
     //case-2, if there are free variables then replace quantifier var with
@@ -28,14 +30,14 @@ object SentenceToCNF {
     //as its arguments
     result = removeExistentialQuantifiers(result,KB)
 
-    //step-5, Drop Universal Quatifiers
+    //Drop Universal Quatifiers
     result = removeUniversalQuantifiers(result)
 
-    //step-6, Operators Out,distribute \/ and /\ so that sentence becomes
+    //Operators Out,distribute \/ and /\ so that sentence becomes
     //conjunction of disjunctions and then return Set[Clause]
     var clauses = removeOperators(result)
 
-    //step-7, Rename Variables so that no variable appears in more than one clause
+    //Rename Variables so that no variable appears in more than one clause
     clauses = renameClauseVariables(clauses,KB)
 
     //return the Clauses

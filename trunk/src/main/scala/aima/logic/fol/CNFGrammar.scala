@@ -46,10 +46,9 @@ class Clause(ls: Literal *) {
 
 //FOL Definite Clause
 trait FOLDefiniteClause
-//class SimpleDefiniteClause(val literal: AtomicSentence) extends FOLDefiniteClause {
-//  override def toString = literal.toString
-//}
 
+//AtomicSentence is non-implication FOL Definite clause and here is the
+//implication one
 class ImplicationDefiniteClause(val premise: Set[AtomicSentence], 
                                 val conclusion: AtomicSentence) extends FOLDefiniteClause {
   override def toString =

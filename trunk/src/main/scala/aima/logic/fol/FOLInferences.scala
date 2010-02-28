@@ -63,7 +63,79 @@ object FOLFCAsk {
   }
 }
 
-/*
+
 object FOLBCAsk {
+  
+  private type Result = Set[Map[Variable,Term]]
+  
+  def apply(KB: FOLKnowledgeBase, query: AtomicSentence): Option[Result] =
+    FOLBCOr(KB,query,empty)
+
+  def FOLBCOr(KB: FOLKnowledgeBase, goal: AtomicSentence, theta: Option[Result]): Option[Result] = {
+    
+    var result = Set[Map[Variable,Term]]()
+
+    val rules = FetchRulesForGoal(KB,goal)
+    for(rule <- rules) {
+      val stRule = standardizeVariables(rule);
+      val (lhs,rhs) = stRule match {
+        case x: AtomicSentence => (Nil,x)
+        case x: ImplicationDefiniteClause => (x.premise.toList,x.conclusion)
+      }
+
+      FOLBCAnd(KB,lhs,Unify(rhs,goal,theta)) match {
+        case Some(s) => result = result ++ s
+        case None => ; //do nothing
+      }
+    }
+
+    if(result.isEmpty) None
+    else Some(result)
+  }
+
+  def FOLBCAnd(KB: FOLKnowledgeBase, goals: List[AtomicSentence], theta: Option[Map[Variable,Term]]) =
+    if(theta == None) None
+    else {
+      if(goals.isEmpty) theta
+      else {
+        var result = Set[Map[Variable,Term]]()
+        val first :: rest = goals
+
+        FOLBCOr(KB, first, theta) match {
+          case None => None
+          case Some(s) =>
+            def iter(s: List[Map[Variable,Term]], result: Set[Map[Variable,Term]]) =
+              s match {
+                case m :: restM =>
+                  FOLBCAnd(KB, rest, m) match {
+                    case None => None
+                    case Some(x) =>
+                      iter(restM,x.map(Unify.merge(_,m)).filter(_ != None) ++ result)
+                  }
+                case Nil => Some(result)
+              }
+          iter(s,Set())
+      }
+    }
+  }
+
+  def FetchRulesForGoal(KB: FOLKnowledgeBase,goal: AtomicSentence): Set[FOLDefiniteClause] =
+    KB.definiteClauses.filter(
+      _ match {
+        case x: AtomicSentence => Unify(x,goal) != None
+        case x: ImplicationDefiniteClause => Unify(x.conclusion,goal) != None
+      })
+
+  def standardizeVariables(c: FOLDefiniteClause, KB: FOLKnowledgeBase): FOLDefiniteClause =
+    c match {
+      case x: AtomicSentence =>
+        Subst(Map(CollectVariables(x).map(
+          v => v -> KB.generateVariable(v.symbol)).toList:_*),x)
+      case x: ImplicationDefiniteClause =>
+        val theta = Map(CollectVariables(c).map(
+          v => v -> KB.generateVariable(v.symbol)).toList:_*)
+        new ImplicationDefiniteClause(
+        Subst(theta,c.premise), Subst(theta,c.conclusion))
+    }
 }
-*/
+

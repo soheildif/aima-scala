@@ -91,6 +91,7 @@ class FOLKnowledgeBase {
         _equals = _equals + x
     }
 
+
   //FETCH - described in 1st paragraph, section 9.2.3
   //
   //Returns list of all unifiers that unifies input sentence
@@ -129,7 +130,7 @@ class FOLKnowledgeBase {
 
   
 
-  //Generators for unique(for this KB) constant, 
+  //Generators for unique(for this KB) Constant, 
   //Variable and Function
   private var seqConstant = 0
   private var seqVariable = 0

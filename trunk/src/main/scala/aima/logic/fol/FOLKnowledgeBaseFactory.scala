@@ -1,5 +1,9 @@
 package aima.logic.fol
 
+/** Factory for creating various example FOL KB
+ *
+ * @author Himanshu Gupta
+ */
 object KBFactory {
   
   def weaponsKB = {
