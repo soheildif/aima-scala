@@ -7,44 +7,53 @@ import scala.collection.immutable.{Set}
  *
  * @author Himanshu Gupta
  */
-class FOLACAskTest extends Suite {
+class FOLFCAskTest extends Suite {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
-    expect(Set(Map()))(FOLFCAsk(KBFactory.weaponsKB,query))
+    assert(FOLFCAsk(KBFactory.weaponsKB,query).size == 1)
   }
 
   def testWeaponsKBCriminalXReturnsWest() {
     val query = FOLParser.parse("Criminal(x)").asInstanceOf[AtomicSentence]
-
-    expect(Set(Map(Variable("x") -> Constant("West"))))(FOLFCAsk(KBFactory.weaponsKB,query))
+    val result = FOLFCAsk(KBFactory.weaponsKB,query)
+    assert(result.size == 1)
+    
+    val expectedPair = Variable("x") -> Constant("West")
+    assert(result.exists( _.exists(_ == expectedPair)))
   }
 
   def testKingsKBRichardEvilFalse() {
     val query = FOLParser.parse("Evil(Richard)").asInstanceOf[AtomicSentence]
-    expect(Set())(FOLFCAsk(KBFactory.kingsKB,query))
+    assert(FOLFCAsk(KBFactory.kingsKB,query).isEmpty)
   }
 
   def testKingsKBJohnEvilSuccess() {
     val query = FOLParser.parse("Evil(John)").asInstanceOf[AtomicSentence]
-    expect(Set(Map()))(FOLFCAsk(KBFactory.kingsKB,query))
+    assert(FOLFCAsk(KBFactory.kingsKB,query).size == 1)
   }
 
   def testKingsKBEvilXReturnsJohn() {
     val query = FOLParser.parse("Evil(x)").asInstanceOf[AtomicSentence]
-    expect(
-      Set(
-        Map(Variable("x")->Constant("John")))
-         )(FOLFCAsk(KBFactory.kingsKB,query))
+
+    val result = FOLFCAsk(KBFactory.kingsKB,query)
+    assert(result.size == 1)
+
+    val expectedPair = Variable("x")->Constant("John")
+    assert(result.exists(_.exists(_ == expectedPair)))
   }
 
   def testKingsKBKingXReturnsJohnAndRichard() {
     val query = FOLParser.parse("King(x)").asInstanceOf[AtomicSentence]
-    expect(
-      Set(
-        Map(Variable("x")->Constant("John")),
-        Map(Variable("x")->Constant("Richard")))
-         )(FOLFCAsk(KBFactory.kingsKB,query))
+
+    val result = FOLFCAsk(KBFactory.kingsKB,query)
+    assert(result.size == 2)
+
+    val ep1 = Variable("x")->Constant("John")
+    val ep2 = Variable("x")->Constant("Richard")
+
+    assert(result.exists(_.exists(_ == ep1)))
+    assert(result.exists(_.exists(_ == ep2)))
   }
 }
 
@@ -57,39 +66,48 @@ class FOLBCAskTest extends Suite {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
-    expect(Set(Map()))(FOLBCAsk(KBFactory.weaponsKB,query))
+    assert(FOLBCAsk(KBFactory.weaponsKB,query).size == 1)
   }
 
   def testWeaponsKBCriminalXReturnsWest() {
     val query = FOLParser.parse("Criminal(x)").asInstanceOf[AtomicSentence]
-
-    expect(Set(Map(Variable("x") -> Constant("West"))))(FOLBCAsk(KBFactory.weaponsKB,query))
+    val result = FOLBCAsk(KBFactory.weaponsKB,query)
+    assert(result.size == 1)
+    
+    val expectedPair = Variable("x") -> Constant("West")
+    assert(result.exists( _.exists(_ == expectedPair)))
   }
 
   def testKingsKBRichardEvilFalse() {
     val query = FOLParser.parse("Evil(Richard)").asInstanceOf[AtomicSentence]
-    expect(Set())(FOLBCAsk(KBFactory.kingsKB,query))
+    assert(FOLBCAsk(KBFactory.kingsKB,query).isEmpty)
   }
 
   def testKingsKBJohnEvilSuccess() {
     val query = FOLParser.parse("Evil(John)").asInstanceOf[AtomicSentence]
-    expect(Set(Map()))(FOLBCAsk(KBFactory.kingsKB,query))
+    assert(FOLBCAsk(KBFactory.kingsKB,query).size == 1)
   }
 
   def testKingsKBEvilXReturnsJohn() {
     val query = FOLParser.parse("Evil(x)").asInstanceOf[AtomicSentence]
-    expect(
-      Set(
-        Map(Variable("x")->Constant("John")))
-         )(FOLBCAsk(KBFactory.kingsKB,query))
+
+    val result = FOLBCAsk(KBFactory.kingsKB,query)
+    assert(result.size == 1)
+
+    val expectedPair = Variable("x")->Constant("John")
+    assert(result.exists(_.exists(_ == expectedPair)))
   }
 
   def testKingsKBKingXReturnsJohnAndRichard() {
     val query = FOLParser.parse("King(x)").asInstanceOf[AtomicSentence]
-    expect(
-      Set(
-        Map(Variable("x")->Constant("John")),
-        Map(Variable("x")->Constant("Richard")))
-         )(FOLBCAsk(KBFactory.kingsKB,query))
+
+    val result = FOLBCAsk(KBFactory.kingsKB,query)
+    assert(result.size == 2)
+
+    val ep1 = Variable("x")->Constant("John")
+    val ep2 = Variable("x")->Constant("Richard")
+
+    assert(result.exists(_.exists(_ == ep1)))
+    assert(result.exists(_.exists(_ == ep2)))
   }
 }
