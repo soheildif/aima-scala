@@ -66,58 +66,39 @@ object FOLFCAsk {
 
 object FOLBCAsk {
   
-  private type Result = Set[Map[Variable,Term]]
-  
-  def apply(KB: FOLKnowledgeBase, query: AtomicSentence): Option[Result] =
-    FOLBCOr(KB,query,empty)
+  //Empty set returned means failure
+  def apply(KB: FOLKnowledgeBase, query: AtomicSentence): Set[Map[Variable,Term]] =
+    FOLBCOr(KB,query,Some(Map()))
 
-  def FOLBCOr(KB: FOLKnowledgeBase, goal: AtomicSentence, theta: Option[Result]): Option[Result] = {
-    
+  def FOLBCOr(KB: FOLKnowledgeBase, goal: AtomicSentence, theta: Option[Map[Variable,Term]]): Set[Map[Variable,Term]] = {    
     var result = Set[Map[Variable,Term]]()
 
     val rules = FetchRulesForGoal(KB,goal)
     for(rule <- rules) {
-      val stRule = standardizeVariables(rule);
+      val stRule = standardizeVariables(rule,KB)
       val (lhs,rhs) = stRule match {
         case x: AtomicSentence => (Nil,x)
         case x: ImplicationDefiniteClause => (x.premise.toList,x.conclusion)
       }
-
-      FOLBCAnd(KB,lhs,Unify(rhs,goal,theta)) match {
-        case Some(s) => result = result ++ s
-        case None => ; //do nothing
-      }
+      result = result ++ FOLBCAnd(KB,lhs,Unify(rhs,goal,theta))
     }
-
-    if(result.isEmpty) None
-    else Some(result)
+    result
   }
 
-  def FOLBCAnd(KB: FOLKnowledgeBase, goals: List[AtomicSentence], theta: Option[Map[Variable,Term]]) =
-    if(theta == None) None
+  def FOLBCAnd(KB: FOLKnowledgeBase, goals: List[AtomicSentence], theta: Option[Map[Variable,Term]]): Set[Map[Variable,Term]] =
+    if(theta == None) Set()
     else {
-      if(goals.isEmpty) theta
+      if(goals.isEmpty) Set(theta.get)
       else {
-        var result = Set[Map[Variable,Term]]()
         val first :: rest = goals
 
-        FOLBCOr(KB, first, theta) match {
-          case None => None
-          case Some(s) =>
-            def iter(s: List[Map[Variable,Term]], result: Set[Map[Variable,Term]]) =
-              s match {
-                case m :: restM =>
-                  FOLBCAnd(KB, rest, m) match {
-                    case None => None
-                    case Some(x) =>
-                      iter(restM,x.map(Unify.merge(_,m)).filter(_ != None) ++ result)
-                  }
-                case Nil => Some(result)
-              }
-          iter(s,Set())
+        val firstResults = FOLBCOr(KB, first, theta)
+        val restResults = FOLBCAnd(KB, rest, theta)
+
+        firstResults.flatMap(m =>
+          restResults.map(Unify.merge(_,m)).filter(_ != None)).map(_.get)
       }
     }
-  }
 
   def FetchRulesForGoal(KB: FOLKnowledgeBase,goal: AtomicSentence): Set[FOLDefiniteClause] =
     KB.definiteClauses.filter(
@@ -132,10 +113,10 @@ object FOLBCAsk {
         Subst(Map(CollectVariables(x).map(
           v => v -> KB.generateVariable(v.symbol)).toList:_*),x)
       case x: ImplicationDefiniteClause =>
-        val theta = Map(CollectVariables(c).map(
+        val theta = Map(CollectVariables(x).map(
           v => v -> KB.generateVariable(v.symbol)).toList:_*)
         new ImplicationDefiniteClause(
-        Subst(theta,c.premise), Subst(theta,c.conclusion))
+        Subst(theta,x.premise), Subst(theta,x.conclusion))
     }
 }
 
