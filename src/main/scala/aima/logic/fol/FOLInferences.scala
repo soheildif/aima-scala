@@ -2,7 +2,8 @@ package aima.logic.fol
 
 
 object FOLFCAsk {
-  def apply(KB: FOLKnowledgeBase, alpha: AtomicSentence): Option[Set[Map[Variable,Term]]] = {
+  //Empty set returned means failure
+  def apply(KB: FOLKnowledgeBase, alpha: AtomicSentence): Set[Map[Variable,Term]] = {
 
     //TODO: check that KB contains Definite Clauses only
 
@@ -19,16 +20,16 @@ object FOLFCAsk {
     val rules = KB.implicationDefiniteClauses
     println("rules: " + rules)
 
-    def loop: Option[Set[Map[Variable,Term]]] = {
+    def loop: Set[Map[Variable,Term]] = {
 
-      def rulesLoop(KB: FOLKnowledgeBase, rules: List[ImplicationDefiniteClause], shouldLoopContinue: Boolean): Option[Set[Map[Variable,Term]]] = {
+      def rulesLoop(KB: FOLKnowledgeBase, rules: List[ImplicationDefiniteClause], shouldLoopContinue: Boolean): Set[Map[Variable,Term]] = {
         rules match {
           case rule :: rest =>
             val clause = standardizeVariables(rule,KB)
             println("rules are: " + rules)
             println("standardized rule is: " + clause)
           
-            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Option[Set[Map[Variable,Term]]] = {
+            def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Set[Map[Variable,Term]] = {
               println("Unifiers are: " + unifiers)
               println("new: " + neW)
               unifiers match {
@@ -45,8 +46,7 @@ object FOLFCAsk {
               }}
             unifierLoop(KB.fetch(clause.premise).toList,Set[AtomicSentence]())
           case Nil if shouldLoopContinue => loop
-          case Nil if result.isEmpty => None
-          case Nil => Some(result)
+          case Nil => result
         }
       }
       rulesLoop(KB,rules.toList,false)

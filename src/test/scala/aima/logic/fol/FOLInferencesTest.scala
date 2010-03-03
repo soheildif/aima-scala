@@ -7,46 +7,47 @@ import scala.collection.immutable.{Set}
  *
  * @author Himanshu Gupta
  */
-class FOLFCAskTest extends Suite {
+class FOLACAskTest extends Suite {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
-    expect(Some(Set(Map())))(FOLFCAsk(KBFactory.weaponsKB,query))
+    expect(Set(Map()))(FOLFCAsk(KBFactory.weaponsKB,query))
   }
 
   def testWeaponsKBCriminalXReturnsWest() {
     val query = FOLParser.parse("Criminal(x)").asInstanceOf[AtomicSentence]
 
-    expect(Some(Set(Map(Variable("x") -> Constant("West")))))(FOLFCAsk(KBFactory.weaponsKB,query))
+    expect(Set(Map(Variable("x") -> Constant("West"))))(FOLFCAsk(KBFactory.weaponsKB,query))
   }
 
   def testKingsKBRichardEvilFalse() {
     val query = FOLParser.parse("Evil(Richard)").asInstanceOf[AtomicSentence]
-    expect(None)(FOLFCAsk(KBFactory.kingsKB,query))
+    expect(Set())(FOLFCAsk(KBFactory.kingsKB,query))
   }
 
   def testKingsKBJohnEvilSuccess() {
     val query = FOLParser.parse("Evil(John)").asInstanceOf[AtomicSentence]
-    expect(Some(Set(Map())))(FOLFCAsk(KBFactory.kingsKB,query))
+    expect(Set(Map()))(FOLFCAsk(KBFactory.kingsKB,query))
   }
 
   def testKingsKBEvilXReturnsJohn() {
     val query = FOLParser.parse("Evil(x)").asInstanceOf[AtomicSentence]
     expect(
-      Some(Set(
-        Map(Variable("x")->Constant("John"))))
+      Set(
+        Map(Variable("x")->Constant("John")))
          )(FOLFCAsk(KBFactory.kingsKB,query))
   }
 
   def testKingsKBKingXReturnsJohnAndRichard() {
     val query = FOLParser.parse("King(x)").asInstanceOf[AtomicSentence]
     expect(
-      Some(Set(
+      Set(
         Map(Variable("x")->Constant("John")),
-        Map(Variable("x")->Constant("Richard"))))
+        Map(Variable("x")->Constant("Richard")))
          )(FOLFCAsk(KBFactory.kingsKB,query))
   }
 }
+
 
 /** Tests for FOL-BC-ASK
  *
