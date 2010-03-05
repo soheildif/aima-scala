@@ -34,6 +34,7 @@ class FOLKnowledgeBase {
   //Getters
   def definiteClauses = _definiteClauses
   def implicationDefiniteClauses = _implicationDefiniteClauses
+  def clauses = _clauses
 
 
   //TELL sentence to this KB

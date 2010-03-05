@@ -120,3 +120,60 @@ object FOLBCAsk {
     }
 }
 
+/** Resolution with Two-Finger-Method
+ *
+ * @author Himanshu Gupta
+ */
+object FOLResolution {
+
+  def apply(KB: FOLKnowledgeBase, query: Sentence) = {
+    //KB /\ ~query
+    KB.tell(new Negation(query))
+    tfm(KB.clauses)
+  }
+
+  def tfm(clauses: Set[Clause]) = {
+    
+    def iter(delta: Set[Clause], fast: List[Clause], slow: List[Clause]) =
+      slow match {
+        case Nil => failure
+        case sx :: restS => {
+          val newDelta = delta ++ resolve(fast.head,slow.head)
+          if(newDelta.exists(_.isEmpty)) newDelta
+          else {
+            if(fast == slow)
+              iter(newDelta, newDelta.toList,slow.rest)
+            else
+              iter(newDelta, fast.rest,slow)
+          }
+        }
+    }
+
+
+    val l = clauses.toList
+    iter(clauses,l,l)
+  }
+
+  def resolve(c1: Clause, c2: Clause) = {
+    def loop(ls: List[Literal], result: Set[Clause]): Set[Clause] =
+      ls match {
+        case (l:PositiveLiteral) :: rest =>
+          //See if negation of a literal in c2 unifies with l
+          
+
+          if(c2.literals.exists(_ == NegativeLiteral(l.symbol)))
+            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - NegativeLiteral(l.symbol))).toList:_*))
+          else
+            loop(rest,result)
+        case (l:NegativeLiteral) :: rest =>
+          if(c2.literals.exists(_ == PositiveLiteral(l.symbol)))
+            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - PositiveLiteral(l.symbol))).toList:_*))
+          else
+            loop(rest,result)
+        case Nil => result
+      }
+
+    loop(c1.literals.toList,Set.empty)
+  }
+}
+    
