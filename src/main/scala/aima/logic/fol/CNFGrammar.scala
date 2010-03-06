@@ -40,6 +40,12 @@ class Clause(ls: Literal *) {
     }
   }
 
+  override def equals(that: Any) =
+    that match {
+      case x: Clause => x.literals == literals
+      case _ => false
+    }
+
   override def toString = "(" + literals.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 

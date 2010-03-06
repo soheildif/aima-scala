@@ -52,7 +52,7 @@ object SentenceToCNF {
       case x: Conjunction =>
         new Conjunction(x.conjuncts.map(removeImplications(_)).toList:_*)
       case x: Disjunction =>
-        new Conjunction(x.disjuncts.map(removeImplications(_)).toList:_*)
+        new Disjunction(x.disjuncts.map(removeImplications(_)).toList:_*)
       case x: Conditional =>
         new Disjunction(new Negation(x.premise),x.conclusion)
       case x: BiConditional =>
@@ -130,10 +130,10 @@ object SentenceToCNF {
              val newVar = KB.generateVariable(x.variable.symbol)
              x match {
                case _: UniversalQuantifier =>
-                 new UniversalQuantifier(newVar, Subst(Map(newVar -> x.variable),
+                 new UniversalQuantifier(newVar, Subst(Map(x.variable -> newVar),
                                                        x.sentence))
                case _: ExistentialQuantifier =>
-                 new ExistentialQuantifier(newVar, Subst(Map(newVar -> x.variable),
+                 new ExistentialQuantifier(newVar, Subst(Map(x.variable -> newVar),
                                                          x.sentence))
              }})
          )
@@ -200,7 +200,6 @@ object SentenceToCNF {
         new UniversalQuantifier(x.variable,removeExistentialQuantifiers(x.sentence,KB))
       case x: ExistentialQuantifier =>
         val freeVars = collectSentenceFreeVariables(Set[Variable](),x)
-
         if(freeVars.isEmpty) //case1 -> free variables don't exist
           Subst(Map(x.variable -> KB.generateConstant),
                 x.sentence)
