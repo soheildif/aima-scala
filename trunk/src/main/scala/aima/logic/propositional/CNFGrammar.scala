@@ -88,40 +88,93 @@ case class NegativeLiteral(s: PropositionSymbol) extends Literal(s) {
   override def toString = "~" + symbol.toString
 }
 
-// Propositional Logic sentence to CNF sentence converter
+// Propositional Logic sentence to CNF sentence converter based on
+//INDO method described in
+//http://logic.stanford.edu/classes/cs157/2009/lectures/lecture04.pdf
 object SentenceToCNF {
   def apply(s: Sentence) : CNFSentence =
     new CNFSentence(convert(s,false))
 
-  private def convert(s: Sentence, isNegated: Boolean): Set[Clause] =
+  def convert(s: Sentence, isNegated: Boolean): Set[Clause] = {
+        //Implications out, eliminate all the occurences of
+    //=> and <=> ops
+    var result = removeImplications(s)
+
+    //Negations In, negations are distributed over other
+    //logical operators untill each negation applies only to
+    //single Atomic Sentence
+    result = negationsIn(result)
+
+    //Operators Out,distribute \/ and /\ so that sentence becomes
+    //conjunction of disjunctions and then return Set[Clause]
+    removeOperators(result)
+  }
+
+  def removeImplications(s: Sentence): Sentence =
     s match {
-      case x: PropositionSymbol if isNegated => 
-        Set(new Clause(NegativeLiteral(x)))
-      case x: PropositionSymbol if !isNegated => 
-        Set(new Clause(PositiveLiteral(x)))
-      case x: Negation if isNegated =>
-        convert(x.s,false)
-      case x: Negation if !isNegated =>
-        convert(x.s,true)
-      case x: Conjunction if isNegated =>
-        convert(new Disjunction(x.conjuncts.map(new Negation(_)).toList:_*),false)
-      case x: Conjunction if !isNegated =>
-        x.conjuncts.flatMap(convert(_,false))
-      case x: Disjunction if isNegated =>
-        convert(new Conjunction(x.disjuncts.map(new Negation(_)).toList:_*),false)
-      case x: Disjunction if !isNegated =>
-        x.disjuncts.map(convert(_,false)).reduceLeft(unionOfTwoClauseSets(_,_))
-      case x: Conditional if isNegated =>
-        convert(new Conjunction(x.premise, new Negation(x.conclusion)),false)
-      case x: Conditional if !isNegated =>
-        convert(new Disjunction(new Negation(x.premise),x.conclusion),false)
-      case x: BiConditional if isNegated =>
-        convert(new Disjunction(new Conjunction(x.condition,new Negation(x.conclusion)),
-                                new Conjunction(x.conclusion,new Negation(x.condition))),false)
-      case x: BiConditional if !isNegated =>
-        convert(new Conjunction(new Disjunction(new Negation(x.condition),x.conclusion),
-                                new Disjunction(x.condition, new Negation(x.conclusion))),false)
-      case _ => throw new IllegalStateException("Sentence " + s + " could not be converted to CNF.")
+      case x: PropositionSymbol => x
+      case x: Negation =>
+        new Negation(removeImplications(x.s))
+      case x: Conjunction =>
+        new Conjunction(x.conjuncts.map(removeImplications(_)).toList:_*)
+      case x: Disjunction =>
+        new Disjunction(x.disjuncts.map(removeImplications(_)).toList:_*)
+      case x: Conditional =>
+        new Disjunction(new Negation(x.premise),x.conclusion)
+      case x: BiConditional =>
+        new Conjunction(
+          new Disjunction(new Negation(x.condition),x.conclusion),
+          new Disjunction(x.condition,new Negation(x.conclusion)))
+    }
+
+  def negationsIn(s: Sentence) = {
+
+    def negationsIn(s:Sentence, shouldNegate: Boolean): Sentence =
+      if(shouldNegate) negationsIn(negate(s),false)
+      else {
+        s match {
+          case x: PropositionSymbol => x
+          case x: Negation =>
+            x.s match {
+              case _: PropositionSymbol => x
+              case _ => negationsIn(x.s,true)
+            }
+          case x: Conjunction =>
+            new Conjunction(x.conjuncts.map(negationsIn(_,false)).toList:_*)
+          case x: Disjunction =>
+            new Disjunction(x.disjuncts.map(negationsIn(_,false)).toList:_*)
+        }
+      }
+    negationsIn(s,false)
+  }
+
+  //Remove Operators
+  def removeOperators(s: Sentence): Set[Clause] =
+    s match {
+      case x: PropositionSymbol => Set(new Clause(PositiveLiteral(x)))
+      case x: Negation if x.s.isInstanceOf[PropositionSymbol] =>
+        Set(new Clause(NegativeLiteral(x.s.asInstanceOf[PropositionSymbol])))
+      case x: Conjunction =>
+        x.conjuncts.flatMap(removeOperators(_))
+      case x: Disjunction =>
+        x.disjuncts.map(removeOperators(_)).reduceLeft(unionOfTwoClauseSets(_,_))
+    }
+
+  //Returns negation of a sentence
+  def negate(s: Sentence): Sentence =
+    s match {
+      case x: PropositionSymbol => new Negation(x)
+      case x: Negation => x.s
+      case x: Conjunction =>
+        new Disjunction(x.conjuncts.map(new Negation(_)).toList:_*)
+      case x: Disjunction =>
+        new Conjunction(x.disjuncts.map(new Negation(_)).toList:_*)
+      case x: Conditional =>
+        new Conjunction(x.premise,new Negation(x.conclusion))
+      case x: BiConditional =>
+        new Disjunction(
+          new Conjunction(x.condition, new Negation(x.conclusion)),
+          new Conjunction(new Negation(x.condition),x.conclusion))
     }
 
   /** Union of two sets of clauses:
