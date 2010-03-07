@@ -13,17 +13,17 @@ import scala.collection.immutable.{Set,Map}
 class TTEntailsTest extends Suite {
 
   def test1() {
-    val KB = new TTEntailsBasedKB("A/\\B")
+    val KB = new TTEntailsBasedKB("A&B")
     assert(KB.ask("A"))
   }
 
   def test2() {
-    val KB = new TTEntailsBasedKB("A\\/B")
+    val KB = new TTEntailsBasedKB("A|B")
     assert(!KB.ask("A"))
   }
 
   def test3() {
-    val KB = new TTEntailsBasedKB("(A => B) /\\ B")
+    val KB = new TTEntailsBasedKB("(A => B) & B")
     assert(!KB.ask("A"))
   }
 
@@ -33,7 +33,7 @@ class TTEntailsTest extends Suite {
   }
 
   def test5() {
-    val KB = new TTEntailsBasedKB("(A => B) /\\ B")
+    val KB = new TTEntailsBasedKB("(A => B) & B")
     assert(!KB.ask("X"))
   }
 
@@ -44,10 +44,10 @@ class TTEntailsTest extends Suite {
 
   def test7() {
     val KB = new TTEntailsBasedKB()
-    KB.tell("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")
-    KB.tell("(B21 <=> (P20 \\/ (P22 \\/ (P31 \\/ P11))))")
-    KB.tell("(B01 <=> (P00 \\/ (P02 \\/ P11)))")
-    KB.tell("(B10 <=> (P11 \\/ (P20 \\/ P00)))")
+    KB.tell("(B12 <=> (P11 | (P13 | (P22 | P02))))")
+    KB.tell("(B21 <=> (P20 | (P22 | (P31 | P11))))")
+    KB.tell("(B01 <=> (P00 | (P02 | P11)))")
+    KB.tell("(B10 <=> (P11 | (P20 | P00)))")
     KB.tell("(~ B21)")
     KB.tell("(~B12)")
     KB.tell("(B10)")
@@ -59,9 +59,9 @@ class TTEntailsTest extends Suite {
   /** A test based on example described in Fig 7.13 */
   def testFig7_13() {
     val KB = new PLResolutionBasedKB()
-    KB.tell("~P12 \\/ B11")
-    KB.tell("~B11 \\/ P12 \\/ P21")
-    KB.tell("~P12 \\/ B11")
+    KB.tell("~P12 | B11")
+    KB.tell("~B11 | P12 | P21")
+    KB.tell("~P12 | B11")
     KB.tell("~B11")
     assert(KB.ask("~ P12"))
   }
@@ -71,8 +71,8 @@ class TTEntailsTest extends Suite {
    */
   def testSec7_4_3() {
     val R1 = "~P11"
-    val R2 = "B11 <=> (P12 \\/ P21)"
-    val R3 = "B21 <=> (P11 \\/ P22 \\/ P31)"
+    val R2 = "B11 <=> (P12 | P21)"
+    val R3 = "B21 <=> (P11 | P22 | P31)"
     val R4 = "~B11"
     val R5 = "B21"
 
@@ -86,17 +86,17 @@ class TTEntailsTest extends Suite {
 class PLResolutionTest extends Suite {
 
   def test1() {
-    val KB = new PLResolutionBasedKB("A/\\B")
+    val KB = new PLResolutionBasedKB("A&B")
     assert(KB.ask("A"))
   }
 
   def test2() {
-    val KB = new PLResolutionBasedKB("A\\/B")
+    val KB = new PLResolutionBasedKB("A|B")
     assert(!KB.ask("A"))
   }
 
   def test3() {
-    val KB = new PLResolutionBasedKB("(A => B) /\\ B")
+    val KB = new PLResolutionBasedKB("(A => B) & B")
     assert(!KB.ask("A"))
   }
 
@@ -106,7 +106,7 @@ class PLResolutionTest extends Suite {
   }
 
   def test5() {
-    val KB = new PLResolutionBasedKB("(A => B) /\\ B")
+    val KB = new PLResolutionBasedKB("(A => B) & B")
     assert(!KB.ask("X"))
   }
 
@@ -123,10 +123,10 @@ class PLResolutionTest extends Suite {
    */
 /*  def test7() {
     val KB = new PLResolutionBasedKB()
-    KB.tell("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")
-    KB.tell("(B21 <=> (P20 \\/ (P22 \\/ (P31 \\/ P11))))")
-    KB.tell("(B01 <=> (P00 \\/ (P02 \\/ P11)))")
-    KB.tell("(B10 <=> (P11 \\/ (P20 \\/ P00)))")
+    KB.tell("(B12 <=> (P11 | (P13 | (P22 | P02))))")
+    KB.tell("(B21 <=> (P20 | (P22 | (P31 | P11))))")
+    KB.tell("(B01 <=> (P00 | (P02 | P11)))")
+    KB.tell("(B10 <=> (P11 | (P20 | P00)))")
     KB.tell("(~ B21)")
     KB.tell("(~B12)")
     KB.tell("(B10)")
@@ -137,8 +137,8 @@ class PLResolutionTest extends Suite {
 
   //Testing resoution function
   def test8() {
-    val c1 = SentenceToCNF(PropositionalLogicParser.parse("~P12 \\/ B11")).clauses.toList(0)
-    val c2 = SentenceToCNF(PropositionalLogicParser.parse("~B11 \\/ P12 \\/ P21")).clauses.toList(0)
+    val c1 = SentenceToCNF(PropositionalLogicParser.parse("~P12 | B11")).clauses.toList(0)
+    val c2 = SentenceToCNF(PropositionalLogicParser.parse("~B11 | P12 | P21")).clauses.toList(0)
     val resolvents = PLResolution.plResolve(c1,c2)
     assert(resolvents.size == 0)
   }
@@ -146,9 +146,9 @@ class PLResolutionTest extends Suite {
   /** A test based on example described in Fig 7.13 */
   def testFig7_13() {
     val KB = new PLResolutionBasedKB()
-    KB.tell("~P12 \\/ B11")
-    KB.tell("~B11 \\/ P12 \\/ P21")
-    KB.tell("~P12 \\/ B11")
+    KB.tell("~P12 | B11")
+    KB.tell("~B11 | P12 | P21")
+    KB.tell("~P12 | B11")
     KB.tell("~B11")
     assert(KB.ask("~ P12"))
   }
@@ -158,8 +158,8 @@ class PLResolutionTest extends Suite {
    */
   def testSec7_4_3() {
     val R1 = "~P11"
-    val R2 = "B11 <=> (P12 \\/ P21)"
-    val R3 = "B21 <=> (P11 \\/ P22 \\/ P31)"
+    val R2 = "B11 <=> (P12 | P21)"
+    val R3 = "B21 <=> (P11 | P22 | P31)"
     val R4 = "~B11"
     val R5 = "B21"
 
@@ -197,7 +197,7 @@ class PLFCEntailsTest extends Suite {
 class DPLLSatisfiableTest extends Suite {
 
   def testDPLLReturnsTrueWhenAllClausesTrueInModel() {
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A /\\ B) /\\ (A \\/ B)")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A & B) & (A & B)")).clauses
     val symbols = clauses.flatMap(_.symbols)
 
     val A = PropositionSymbol("A")
@@ -207,7 +207,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def testDPLLReturnsFalseWhenOneClauseFalseInModel() {
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A \\/ B) /\\ (A => B)")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A | B) & (A => B)")).clauses
     val symbols = clauses.flatMap(_.symbols)
 
     val A = PropositionSymbol("A")
@@ -217,7 +217,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def testDPLLFindsPurePositiveLiteralsWhenTheyExist() {
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A /\\ B) /\\ (B /\\ C) /\\ (~C \\/ A)")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A & B) & (B & C) & (~C | A)")).clauses
 
     val A = PropositionSymbol("A")
     val B = PropositionSymbol("B")
@@ -230,7 +230,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def testDPLLFindsPureNegativeLiteralsWhenTheyExist() {
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A /\\ B) /\\ (B /\\ ~C) /\\ (C \\/ A)")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A & B) & (B & ~C) & (C | A)")).clauses
 
     val A = PropositionSymbol("A")
     val C = PropositionSymbol("C")
@@ -240,7 +240,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def testFindUnitClause() {
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("A \\/ B \\/ ~C")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("A | B | ~C")).clauses
 
     val A = PropositionSymbol("A")
     val B = PropositionSymbol("B")
@@ -252,17 +252,17 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def test1() {
-    val KB = new DPLLBasedKB("A/\\B")
+    val KB = new DPLLBasedKB("A&B")
     assert(KB.ask("A"))
   }
 
   def test2() {
-    val KB = new DPLLBasedKB("A\\/B")
+    val KB = new DPLLBasedKB("A|B")
     assert(!KB.ask("A"))
   }
 
   def test3() {
-    val KB = new DPLLBasedKB("(A => B) /\\ B")
+    val KB = new DPLLBasedKB("(A => B) & B")
     assert(!KB.ask("A"))
   }
 
@@ -272,7 +272,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def test5() {
-    val KB = new DPLLBasedKB("(A => B) /\\ B")
+    val KB = new DPLLBasedKB("(A => B) & B")
     assert(!KB.ask("X"))
   }
 
@@ -283,10 +283,10 @@ class DPLLSatisfiableTest extends Suite {
 
   def test7() {
     val KB = new TTEntailsBasedKB()
-    KB.tell("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")
-    KB.tell("(B21 <=> (P20 \\/ (P22 \\/ (P31 \\/ P11))))")
-    KB.tell("(B01 <=> (P00 \\/ (P02 \\/ P11)))")
-    KB.tell("(B10 <=> (P11 \\/ (P20 \\/ P00)))")
+    KB.tell("(B12 <=> (P11 | (P13 | (P22 | P02))))")
+    KB.tell("(B21 <=> (P20 | (P22 | (P31 | P11))))")
+    KB.tell("(B01 <=> (P00 | (P02 | P11)))")
+    KB.tell("(B10 <=> (P11 | (P20 | P00)))")
     KB.tell("(~ B21)")
     KB.tell("(~B12)")
     KB.tell("(B10)")
@@ -296,7 +296,7 @@ class DPLLSatisfiableTest extends Suite {
   }
 
   def test8() {
-    assert(DPLLSatisfiable(PropositionalLogicParser.parse("((A \\/ ~A) /\\ (A \\/ B))")))
+    assert(DPLLSatisfiable(PropositionalLogicParser.parse("((A | ~A) & (A | B))")))
   }
 
   /**
@@ -304,8 +304,8 @@ class DPLLSatisfiableTest extends Suite {
    */
   def testSec7_4_3() {
     val R1 = "~P11"
-    val R2 = "B11 <=> (P12 \\/ P21)"
-    val R3 = "B21 <=> (P11 \\/ P22 \\/ P31)"
+    val R2 = "B11 <=> (P12 | P21)"
+    val R3 = "B21 <=> (P11 | P22 | P31)"
     val R4 = "~B11"
     val R5 = "B21"
 
@@ -319,7 +319,7 @@ class DPLLSatisfiableTest extends Suite {
 class WalkSatTest extends Suite {
 
   def testIt(){
-    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A <=> (B \\/ (C \\/ (D \\/ E))))")).clauses
+    val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A <=> (B | (C | (D | E))))")).clauses
     //clauses are
     //Set((E \/ ~A \/ B \/ C \/ D), (A \/ ~B), (A \/ ~D), (A \/ ~E), (A \/ ~C))
     WalkSat(clauses,0.5,10000) //result will change from one run to another
