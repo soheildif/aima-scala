@@ -13,25 +13,112 @@ class CNFGrammarTest extends Suite {
   
   private val PLP = PropositionalLogicParser
 
-  def testIt() {
+  //some proposition symbols
+  private val A = PropositionSymbol("A")
+  private val B = PropositionSymbol("B")
+  private val C = PropositionSymbol("C")
+  private val D = PropositionSymbol("D")
+  private val S = PropositionSymbol("S")
+  private val T = PropositionSymbol("T")
 
-    expect("((A))")(SentenceToCNF(PLP.parse("A")).toString)
-    expect("((AIMA))")(SentenceToCNF(PLP.parse("AIMA")).toString)
-    expect("((True))")(SentenceToCNF(PLP.parse("True")).toString)
-    expect("((False))")(SentenceToCNF(PLP.parse("False")).toString)
-    expect("((~A12))")(SentenceToCNF(PLP.parse("~ A12")).toString)
-    expect("((A \\/ B))")(SentenceToCNF(PLP.parse("A\\/B")).toString)
-    expect("((A) /\\ (B) /\\ (C))")(SentenceToCNF(PLP.parse("A /\\ B /\\ C")).toString)
-    expect("((A \\/ B \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B \\/ C")).toString)
-    expect("((A \\/ B) /\\ (A \\/ C))")(SentenceToCNF(PLP.parse("A \\/ B /\\ C")).toString)
-    expect("((A \\/ ~B) /\\ (A \\/ C))")(SentenceToCNF(PLP.parse("A \\/ ~ B /\\ C")).toString)
-    expect("((~A \\/ ~B \\/ C))")(SentenceToCNF(PLP.parse("A /\\ B => C")).toString)
-    expect("((A \\/ B) /\\ (A \\/ C) /\\ (~A \\/ ~B \\/ ~C))")(SentenceToCNF(PLP.parse("~A <=> (B /\\ C)")).toString)
-    expect("((A \\/ B) /\\ (A \\/ C) /\\ (~A \\/ ~B \\/ ~C))")(SentenceToCNF(PLP.parse("~A <=>   B /\\ C")).toString)
-    expect("((A \\/ ~B \\/ S) /\\ (A \\/ ~B \\/ T))")(SentenceToCNF(PLP.parse("~ A /\\ B => S /\\ T")).toString)
-    expect("((A \\/ S) /\\ (A \\/ T) /\\ (~B \\/ S) /\\ (~B \\/ T))")(SentenceToCNF(PLP.parse("~ A \\/ B => S /\\ T")).toString)
-    expect("((~A \\/ ~B \\/ C) /\\ (~A \\/ D))")(SentenceToCNF(PLP.parse("~ A \\/ (B => C) /\\ D")).toString)
-    expect("((norvig \\/ aima \\/ lisp) /\\ (~lisp \\/ cool))")(SentenceToCNF(PLP.parse("( norvig \\/ aima \\/ lisp ) /\\ (lisp => cool)")).toString)
-    expect("""((B12 \/ ~P02) /\ (~B12 \/ P22 \/ P11 \/ P02 \/ P13) /\ (B12 \/ ~P22) /\ (B12 \/ ~P13) /\ (B12 \/ ~P11))""".mkString)(SentenceToCNF(PLP.parse("(B12 <=> (P11 \\/ (P13 \\/ (P22 \\/ P02))))")).toString)
+  private val norvig = PropositionSymbol("norvig")
+  private val aima = PropositionSymbol("aima")
+  private val lisp = PropositionSymbol("lisp")
+  private val cool = PropositionSymbol("cool")
+
+  def testIt() {
+    expect(new CNFSentence(Set(new Clause(PositiveLiteral(A)))))(SentenceToCNF(PLP.parse("A")))
+    expect(new CNFSentence(Set(new Clause(NegativeLiteral(A)))))(SentenceToCNF(PLP.parse("~ A")))
+
+    expect(new CNFSentence(Set(new Clause(
+      PositiveLiteral(A),
+      PositiveLiteral(B)))))(SentenceToCNF(PLP.parse("A | B")))
+
+    expect(new CNFSentence(Set(
+      new Clause(PositiveLiteral(A)),
+      new Clause(PositiveLiteral(B)),
+      new Clause(PositiveLiteral(C))))
+         )(SentenceToCNF(PLP.parse("A & B & C")))
+
+    expect(new CNFSentence(Set(
+      new Clause(
+        PositiveLiteral(A),
+        PositiveLiteral(B),
+        PositiveLiteral(C))))
+         )(SentenceToCNF(PLP.parse("A | B | C")))
+
+    expect(new CNFSentence(Set(
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(B)),
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(C))))
+         )(SentenceToCNF(PLP.parse("A | B & C")))
+
+    expect(new CNFSentence(Set(
+      new Clause(PositiveLiteral(A),
+                 NegativeLiteral(B)),
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(C))))
+         )(SentenceToCNF(PLP.parse("A | ~ B & C")))
+    
+    expect(new CNFSentence(Set(
+      new Clause(
+        NegativeLiteral(A),
+        NegativeLiteral(B),
+        PositiveLiteral(C))))
+         )(SentenceToCNF(PLP.parse("A & B => C")))
+
+    expect(new CNFSentence(Set(
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(B)),
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(C)),
+      new Clause(
+        NegativeLiteral(A),
+        NegativeLiteral(B),
+        NegativeLiteral(C))))
+           )(SentenceToCNF(PLP.parse("~A <=> (B & C)")))
+
+    expect(new CNFSentence(Set(
+      new Clause(
+        PositiveLiteral(A),
+        NegativeLiteral(B),
+        PositiveLiteral(S)),
+      new Clause(
+        PositiveLiteral(A),
+        NegativeLiteral(B),
+        PositiveLiteral(T))))
+           )(SentenceToCNF(PLP.parse("~A & B => S & T")))
+
+    expect(new CNFSentence(Set(
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(S)),
+      new Clause(PositiveLiteral(A),
+                 PositiveLiteral(T)),
+      new Clause(NegativeLiteral(B),
+                 PositiveLiteral(S)),
+      new Clause(NegativeLiteral(B),
+                 PositiveLiteral(T))))
+         )(SentenceToCNF(PLP.parse("~ A | B => S & T")))
+
+    expect(new CNFSentence(Set(
+      new Clause(
+        NegativeLiteral(A),
+        NegativeLiteral(B),
+        PositiveLiteral(C)),
+      new Clause(
+        NegativeLiteral(A),
+        PositiveLiteral(D))))
+           )(SentenceToCNF(PLP.parse("~ A | (B => C) & D")))
+
+    expect(new CNFSentence(Set(
+      new Clause(
+        PositiveLiteral(norvig),
+        PositiveLiteral(aima),
+        PositiveLiteral(lisp)),
+      new Clause(
+        NegativeLiteral(lisp),
+        PositiveLiteral(cool))))
+           )(SentenceToCNF(PLP.parse("( norvig | aima | lisp ) & (lisp => cool)")))
   }
 }
