@@ -111,3 +111,26 @@ class FOLBCAskTest extends Suite {
     assert(result.exists(_.exists(_ == ep2)))
   }
 }
+
+/** Tests for FOL Resolution
+ *
+ * @author Himanshu Gupta
+ */
+class FOLResolutionTest extends Suite {
+
+  def testCuriosityKillsTunaSucceeds() {
+    assert(FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Curiosity,Tuna)")))
+  }
+/* TODO: work on it
+  def testJackKillsTunaFails() {
+    assert(!FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Jack,Tuna)")))
+  }
+*/
+  def testEqualityAxiomsKBabcAEqualsCSucceeds() {
+    assert(FOLResolution(KBFactory.aBCEqualityKB(true),FOLParser.parse("A = C")))
+  }
+
+  def testEqualityNoAxiomsKBabcAEqualsCFails() {
+    assert(!FOLResolution(KBFactory.aBCEqualityKB(false),FOLParser.parse("A = C")))
+  }
+}

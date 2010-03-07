@@ -1,5 +1,6 @@
 package aima.logic.fol
 
+import aima.commons.Utils
 
 object FOLFCAsk {
   //Empty set returned means failure
@@ -125,7 +126,41 @@ object FOLBCAsk {
  * @author Himanshu Gupta
  */
 object FOLResolution {
+  def apply(KB: FOLKnowledgeBase, alpha: Sentence): Boolean = {
+    val clauses = KB.tell(new Negation(alpha)).clauses
+    println("The clauses are: " + clauses)
 
+    def loop(clauses: Set[Clause], newSet: Set[Clause]):Boolean = {
+      //println("clauses " + (clauses ++ newSet))
+      loopIn(makePairs(clauses, newSet),Set.empty[Clause]) match {
+        case None => true //Empty clause found, return true
+        case Some(s) =>
+          //println("newSet " + s)
+          val oldClauses = clauses ++ newSet
+          if (s.subsetOf(oldClauses)) false
+          else loop(oldClauses,s)
+      }}
+
+    def loopIn(pairs: List[(Clause,Clause)], newSet: Set[Clause]): Option[Set[Clause]] =
+      pairs match {
+        case (c1,c2) :: rest =>
+          val resolvents = resolve(c1,c2)
+        if(resolvents.exists(_.isEmpty)) None //Empty clause found
+        else loopIn(rest,newSet ++ resolvents)
+        case Nil => Some(newSet)
+      }
+
+    /** Returns result of pairing each clause in "clauses" with each in "newSet"
+     * plus the pairs made by combining clause in "newSet" with each other
+     */
+    def makePairs(clauses: Set[Clause], newSet: Set[Clause]): List[(Clause,Clause)] = {
+      (for(ci <- clauses; cj <- newSet) yield (ci,cj)).toList ++ Utils.pairs(newSet.toList)
+    }
+
+    loop(Set.empty[Clause],clauses)
+  }
+
+/*
   def apply(KB: FOLKnowledgeBase, query: Sentence) = {
     //KB /\ ~query
     KB.tell(new Negation(query))
@@ -134,43 +169,63 @@ object FOLResolution {
 
   def tfm(clauses: Set[Clause]) = {
     
-    def iter(delta: Set[Clause], fast: List[Clause], slow: List[Clause]) =
+    def iter(delta: Set[Clause], fast: List[Clause], slow: List[Clause]): Option[Set[Clause]] = {
+      println("Fast: " + fast)
+      println("Slow: " + slow)
+      println("====================================\n")
       slow match {
-        case Nil => failure
+        case Nil => None
         case sx :: restS => {
-          val newDelta = delta ++ resolve(fast.head,slow.head)
-          if(newDelta.exists(_.isEmpty)) newDelta
+          val newDelta = delta ++ resolve(fast.head,sx)
+          if(newDelta.exists(_.isEmpty)) Some(newDelta)
           else {
             if(fast == slow)
-              iter(newDelta, newDelta.toList,slow.rest)
+              iter(newDelta, newDelta.toList,restS)
             else
-              iter(newDelta, fast.rest,slow)
+              iter(newDelta, fast.tail,slow)
           }
         }
+      }
     }
 
 
     val l = clauses.toList
     iter(clauses,l,l)
   }
+*/
+
 
   def resolve(c1: Clause, c2: Clause) = {
+
+    val c2Literals = c2.literals.toList
+
     def loop(ls: List[Literal], result: Set[Clause]): Set[Clause] =
       ls match {
-        case (l:PositiveLiteral) :: rest =>
-          //See if negation of a literal in c2 unifies with l
-          
-
-          if(c2.literals.exists(_ == NegativeLiteral(l.symbol)))
-            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - NegativeLiteral(l.symbol))).toList:_*))
-          else
-            loop(rest,result)
-        case (l:NegativeLiteral) :: rest =>
-          if(c2.literals.exists(_ == PositiveLiteral(l.symbol)))
-            loop(rest,result + new Clause(((c1.literals - l) ++ (c2.literals - PositiveLiteral(l.symbol))).toList:_*))
-          else
-            loop(rest,result)
+        case l :: rest =>
+          findComplimentary(l, c2Literals) match {
+            case None =>
+              loop(rest, result)
+            case Some((x,m)) =>
+              println("Just resolved: " + l + " and " + x)
+              println("A Unifier found is: " + m)
+              loop(rest, result + Subst(m,new Clause(((c1.literals - l) ++ (c2.literals - x)).toList:_*)))
+          }
         case Nil => result
+      }
+
+    //Find complimentary literal of l if it exists in ls
+    def findComplimentary(l: Literal, ls: List[Literal]) : Option[(Literal,Map[Variable,Term])] =
+      ls match {
+        case x :: rest =>
+          if((l.isPositive && x.isNegative) || (l.isNegative && x.isPositive)) {
+            val unifier = Unify(l.sentence, x.sentence)
+            unifier match {
+              case None => findComplimentary(l,rest)
+              case Some(m) => Some(x,m)
+            }
+          }
+          else findComplimentary(l,rest)
+        case Nil => None
       }
 
     loop(c1.literals.toList,Set.empty)
