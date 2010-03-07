@@ -6,18 +6,11 @@ import scala.collection.immutable.{Map,Set}
 /** Parser for Propositional Logic Grammar
  * described in Fig 7.7
  *
- * An Informal Description:
- *
- * Sentene := AtomicSentence | ComplexSentence
- * AtomicSentence := any-valid-scala-identifier
- * ComplexSentence := "(" Sentence ")" | 
- *                    "~" Sentence     |
- *                    Sentence "/\" Sentence |
- *                    Sentence "\/" Sentence |
- *                    Sentence "=>" Sentence |
- *                    Sentence "<=>" Sentence
- *
- * OPERATOR PRECEDENCE : ~ /\ \/ => <=>
+ * Things to notice:
+ * ~ is used for negation
+ * & is used for conjunction(/\)
+ * | is used for disjunction(\/)
+ * =>,<=> are used for conditional,biconditional respectively
  * 
  * @author Himanshu Gupta
  */
@@ -30,10 +23,10 @@ object PropositionalLogicParser extends JavaTokenParsers {
   def conditional: Parser[Sentence] = disjunction~opt("=>"~disjunction) ^^
                                       {case premise~None => premise
                                        case premise~Some(_~conclusion) => new Conditional(premise,conclusion) }
-  def disjunction: Parser[Sentence] = conjunction~rep("\\/"~conjunction) ^^
+  def disjunction: Parser[Sentence] = conjunction~rep("|"~conjunction) ^^
                                       {case c~Nil => c
                                        case c~reps => new Disjunction(c :: reps.map(_ match { case _~cond => cond }):_*)}
-  def conjunction: Parser[Sentence] = negation~rep("/\\"~negation) ^^
+  def conjunction: Parser[Sentence] = negation~rep("&"~negation) ^^
                                       {case d~Nil => d
                                        case d~reps => new Conjunction(d :: reps.map(_ match { case _~disj => disj }):_*)}
   def negation: Parser[Sentence] = rep("~")~term ^^
@@ -126,6 +119,12 @@ class Negation(val s: Sentence) extends Sentence {
 
   def symbols = s.symbols
 
+  override def equals(that: Any) =
+    that match {
+      case x: Negation => x.s == s
+      case _ => false
+    }
+
   override def toString = "~" + s
 }
 
@@ -145,6 +144,12 @@ class Conjunction(cs: Sentence *) extends Sentence {
   }
 
   def symbols = conjuncts.flatMap(_.symbols)
+
+  override def equals(that: Any) =
+    that match {
+      case x: Conjunction => x.conjuncts == conjuncts
+      case _ => false
+    }
 
   override def toString = "(" + conjuncts.map(_.toString).reduceLeft(_ + " /\\ " + _)  + ")"
 }
@@ -166,6 +171,12 @@ class Disjunction(ds: Sentence *) extends Sentence {
 
   def symbols = disjuncts.flatMap(_.symbols)
 
+  override def equals(that: Any) =
+    that match {
+      case x: Disjunction => x.disjuncts == disjuncts
+      case _ => false
+    }
+
   override def toString = "(" + disjuncts.map(_.toString).reduceLeft(_ + " \\/ " + _)  + ")"
 }
 
@@ -181,6 +192,12 @@ class Conditional(val premise: Sentence, val conclusion: Sentence) extends Sente
     }
 
   def symbols = premise.symbols ++ conclusion.symbols
+
+  override def equals(that: Any) =
+    that match {
+      case x: Conditional => (x.premise == premise) && (x.conclusion == conclusion)
+      case _ => false
+    }
 
   override def toString = "(" + premise + " => " + conclusion + ")"
 }
@@ -198,6 +215,12 @@ class BiConditional(val condition: Sentence, val conclusion: Sentence) extends S
     }
 
   def symbols = condition.symbols ++ conclusion.symbols
+
+  override def equals(that: Any) =
+    that match {
+      case x: BiConditional => (x.condition == condition) && (x.conclusion == conclusion)
+      case _ => false
+    }
 
   override def toString = "(" + condition + " <=> " + conclusion + ")"
 }
