@@ -13,17 +13,17 @@ class PropositionalLogicParserTest extends Suite {
 
 
   //some proposition symbols
-  val A = PropositionSymbol("A")
-  val B = PropositionSymbol("B")
-  val C = PropositionSymbol("C")
-  val D = PropositionSymbol("D")
-  val S = PropositionSymbol("S")
-  val T = PropositionSymbol("T")
+  private val A = PropositionSymbol("A")
+  private val B = PropositionSymbol("B")
+  private val C = PropositionSymbol("C")
+  private val D = PropositionSymbol("D")
+  private val S = PropositionSymbol("S")
+  private val T = PropositionSymbol("T")
 
-  val norvig = PropositionSymbol("norvig")
-  val aima = PropositionSymbol("aima")
-  val lisp = PropositionSymbol("lisp")
-  val cool = PropositionSymbol("cool")
+  private val norvig = PropositionSymbol("norvig")
+  private val aima = PropositionSymbol("aima")
+  private val lisp = PropositionSymbol("lisp")
+  private val cool = PropositionSymbol("cool")
 
   def testParser() {
 

@@ -19,6 +19,12 @@ class CNFSentence(val clauses: Set[Clause]) {
     }
   }
 
+  override def equals(that: Any) =
+    that match {
+      case x: CNFSentence => x.clauses == clauses
+      case _ => false
+    }
+
   override def toString =
     clauses.size match {
       case 0 => "()"
