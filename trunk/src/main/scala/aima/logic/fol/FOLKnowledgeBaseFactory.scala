@@ -42,4 +42,20 @@ object KBFactory {
     kb.tell("4L x Cat(x) => Animal(x)")
     kb
   }
+
+  // Note: see -
+  // http://logic.stanford.edu/classes/cs157/2008/lectures/lecture15.pdf
+  // slide 12 for where this test example was taken from.
+  def aBCEqualityKB(includeEqualityAxioms: Boolean) = {
+    val kb = new FOLKnowledgeBase
+    kb.tell("B = A");
+    kb.tell("B = C");
+
+    if (includeEqualityAxioms) {
+      kb.tell("x = x")                        // Reflexivity Axiom
+      kb.tell("(x = y => y = x)")             // Symmetry Axiom
+      kb.tell("((x = y & y = z) => x = z)")   // Transitivity Axiom
+    }
+    kb
+  }
 }
