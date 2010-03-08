@@ -121,7 +121,7 @@ object FOLBCAsk {
     }
 }
 
-/** Resolution with Two-Finger-Method
+/** Resolution that answers true/false queries
  *
  * @author Himanshu Gupta
  */
