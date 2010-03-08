@@ -17,9 +17,9 @@ object FOLFCAsk {
     //to the result set
     result = result ++ KB.fetch(alpha)
 
-    println("Alpha is: " + alpha)
+    //println("Alpha is: " + alpha)
     val rules = KB.implicationDefiniteClauses
-    println("rules: " + rules)
+    //println("rules: " + rules)
 
     def loop: Set[Map[Variable,Term]] = {
 
@@ -27,12 +27,12 @@ object FOLFCAsk {
         rules match {
           case rule :: rest =>
             val clause = standardizeVariables(rule,KB)
-            println("rules are: " + rules)
-            println("standardized rule is: " + clause)
+            //println("rules are: " + rules)
+            //println("standardized rule is: " + clause)
           
             def unifierLoop(unifiers: List[Map[Variable,Term]],neW: Set[AtomicSentence]): Set[Map[Variable,Term]] = {
-              println("Unifiers are: " + unifiers)
-              println("new: " + neW)
+              //println("Unifiers are: " + unifiers)
+              //println("new: " + neW)
               unifiers match {
                 case unifier :: rest =>
                   val qPrime = Subst(unifier, clause.conclusion)
@@ -128,7 +128,7 @@ object FOLBCAsk {
 object FOLResolution {
   def apply(KB: FOLKnowledgeBase, alpha: Sentence): Boolean = {
     val clauses = KB.tell(new Negation(alpha)).clauses
-    println("The clauses are: " + clauses)
+    //println("The clauses are: " + clauses)
 
     def loop(clauses: Set[Clause], newSet: Set[Clause]):Boolean = {
       //println("clauses " + (clauses ++ newSet))
@@ -160,41 +160,6 @@ object FOLResolution {
     loop(Set.empty[Clause],clauses)
   }
 
-/*
-  def apply(KB: FOLKnowledgeBase, query: Sentence) = {
-    //KB /\ ~query
-    KB.tell(new Negation(query))
-    tfm(KB.clauses)
-  }
-
-  def tfm(clauses: Set[Clause]) = {
-    
-    def iter(delta: Set[Clause], fast: List[Clause], slow: List[Clause]): Option[Set[Clause]] = {
-      println("Fast: " + fast)
-      println("Slow: " + slow)
-      println("====================================\n")
-      slow match {
-        case Nil => None
-        case sx :: restS => {
-          val newDelta = delta ++ resolve(fast.head,sx)
-          if(newDelta.exists(_.isEmpty)) Some(newDelta)
-          else {
-            if(fast == slow)
-              iter(newDelta, newDelta.toList,restS)
-            else
-              iter(newDelta, fast.tail,slow)
-          }
-        }
-      }
-    }
-
-
-    val l = clauses.toList
-    iter(clauses,l,l)
-  }
-*/
-
-
   def resolve(c1: Clause, c2: Clause) = {
 
     val c2Literals = c2.literals.toList
@@ -206,8 +171,8 @@ object FOLResolution {
             case None =>
               loop(rest, result)
             case Some((x,m)) =>
-              println("Just resolved: " + l + " and " + x)
-              println("A Unifier found is: " + m)
+              //println("Just resolved: " + l + " and " + x)
+              //println("A Unifier found is: " + m)
               loop(rest, result + Subst(m,new Clause(((c1.literals - l) ++ (c2.literals - x)).toList:_*)))
           }
         case Nil => result
