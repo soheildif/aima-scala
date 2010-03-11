@@ -128,36 +128,38 @@ object FOLBCAsk {
 object FOLResolution {
   def apply(KB: FOLKnowledgeBase, alpha: Sentence): Boolean = {
     val clauses = KB.tell(new Negation(alpha)).clauses
-    //println("The clauses are: " + clauses)
 
-    def loop(clauses: Set[Clause], newSet: Set[Clause]):Boolean = {
-      //println("clauses " + (clauses ++ newSet))
-      loopIn(makePairs(clauses, newSet),Set.empty[Clause]) match {
-        case None => true //Empty clause found, return true
-        case Some(s) =>
-          //println("newSet " + s)
-          val oldClauses = clauses ++ newSet
-          if (s.subsetOf(oldClauses)) false
-          else loop(oldClauses,s)
-      }}
+    def loop1(clauses: Set[Clause]):Boolean = {
+      println("Clauses " + clauses)
+      println("========================\n\n===========================")
+      //sort clauses according to # of literals it contains, basically
+      //we give preference to clauses containing smaller # of literals
+      //that automatically brings in unit clause preference also
+      val list = clauses.toList.sort(_.literals.size < _.literals.size)
 
-    def loopIn(pairs: List[(Clause,Clause)], newSet: Set[Clause]): Option[Set[Clause]] =
-      pairs match {
-        case (c1,c2) :: rest =>
-          val resolvents = resolve(c1,c2)
-        if(resolvents.exists(_.isEmpty)) None //Empty clause found
-        else loopIn(rest,newSet ++ resolvents)
-        case Nil => Some(newSet)
+      //if loop2 returns None, that means an empty clause is found in the
+      //resolvents
+      def loop2(list: List[Clause], newSet: Set[Clause]): Option[Set[Clause]] =
+        list match {
+          case x :: rest =>
+            var tmp = Set[Clause]()
+            for(y <- rest) {
+              val resolvents = resolve(x,y)
+              if(resolvents.exists(_.isEmpty)) return None
+              else tmp = tmp ++ resolvents
+            }
+            loop2(rest, newSet ++ tmp)
+          case Nil => Some(newSet)
+        }
+
+      loop2(list,Set[Clause]()) match {
+        case None => true
+        case Some(s) if s.subsetOf(clauses) => false
+        case Some(s) => loop1(clauses ++ s)
       }
-
-    /** Returns result of pairing each clause in "clauses" with each in "newSet"
-     * plus the pairs made by combining clause in "newSet" with each other
-     */
-    def makePairs(clauses: Set[Clause], newSet: Set[Clause]): List[(Clause,Clause)] = {
-      (for(ci <- clauses; cj <- newSet) yield (ci,cj)).toList ++ Utils.pairs(newSet.toList)
     }
 
-    loop(Set.empty[Clause],clauses)
+    loop1(clauses)
   }
 
   def resolve(c1: Clause, c2: Clause) = {
@@ -171,8 +173,8 @@ object FOLResolution {
             case None =>
               loop(rest, result)
             case Some((x,m)) =>
-              //println("Just resolved: " + l + " and " + x)
-              //println("A Unifier found is: " + m)
+              println("Just resolved: " + l + " and " + x)
+              println("A Unifier found is: " + m)
               loop(rest, result + Subst(m,new Clause(((c1.literals - l) ++ (c2.literals - x)).toList:_*)))
           }
         case Nil => result
