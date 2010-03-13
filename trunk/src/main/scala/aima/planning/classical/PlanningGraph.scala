@@ -7,13 +7,14 @@ package aima.planning.classical
 class PlanningGraph(problem: ClassicalPlanningProblem) {
 
   private var _currStateLevel = 0 //max current state level up
+  init //create S0 level
 
-  var stateLevels = Map[Int,StateLevel]()
-  var actionLevels = Map[Int,ActionLevel]()
+  private var stateLevels = Map[Int,StateLevel]()
+  private var actionLevels = Map[Int,ActionLevel]()
 
-  def init {
+  private def init {
     //create Level S0
-    val allPositives = collectPositiveLiterals(actionSchema)
+    val allPositives = collectPositiveLiterals(problem.actions)
     val literals = problem.initState ++ (allPositives - problem.initState).map(_.makeNegative)
     val mutexes = getLiteralMutexes(literals, None)
     stateLevels = Map(0 -> new StateLevel(literals,mutexes))
@@ -21,7 +22,8 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
 
   def expandGraph = {
     //generate next action level
-    val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel)))
+    val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel))) ++
+      stateLevels(_currStateLevel).items.map(getNoOp(_)) //No-Ops
     actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions,stateLevels(_currStateLevel))))
 
     //generate next state level
@@ -35,9 +37,18 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
     this
   }
     
+  def stateLevel(n: Int) = stateLevels(n)
+  def actionLevel(n: Int) = actionLevels(n)
 
-  def getLiteralMutexes(literals: Set[Literal], prevLevel: Option[ActionLevel]): Set[(Literal,Literal)]
-  def getActionMutexes(actions: Set[Action], prevLevel: StateLevel): Set[(Action,Action)]
+  def isLeveledOff: Boolean =
+    if(_currStateLevel == 0) false
+    else stateLevels(_currStateLevel) == stateLevels(_currStateLevel - 1)
+
+  private def getLiteralMutexes(literals: Set[Literal], prevLevel: Option[ActionLevel]): Set[(Literal,Literal)]
+  private def getActionMutexes(actions: Set[Action], prevLevel: StateLevel): Set[(Action,Action)]
+  private def getNoOp(literal: Literal): Action
+  private def collectPositiveLiterals(Set[Action]) : Set[Literal]
+  private def makeNegative(l: Literal): NegativeLiteral
 }
 
 class Level[A](val items: Set[A], val mutexes: Set[(A,A)]) {

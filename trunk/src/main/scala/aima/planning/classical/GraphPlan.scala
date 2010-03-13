@@ -19,7 +19,7 @@ object GraphPlan {
       else loop(tl+1, graph.expandGraph)
     }
 
-    loop(0,new PlanningGraph(problem)) //TODO
+    loop(0,new PlanningGraph(problem))
   }
 
   def extractSolution(graph: PlanningGraph, cpp: ClassicalPlanningProblem, n: Int) =
