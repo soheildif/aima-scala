@@ -1,17 +1,20 @@
+package aima.planning.classical
+
 /** GRAPHPLAN algorithm, described in Fig 10.9
  *
  * @author Himanshu Gupta
  */
 object GraphPlan {
   def apply(problem: ClassicalPlanningProblem): Option[Sol] = {
-    val graph = initPlanningGraph(problem)
-    val goals = problem.goal.conjuncts
+    val graph = new PlanningGraph(problem.initState, problem.actions)
+    val goals = problem.goals
     val noGoods = Map()
     
     def loop(tl: Int, graph: PlanningGraph): Option[Sol] = {
-      if goals.subsetOf(graph.sLevel(tl).nonMutexes) {
-        val sol = extractSolution(graph,goals,graph.numLevels,nogoods)
+      if goals.subsetOf(graph.stateLevel(tl).freeLiterals) {
+        val sol = extractSolution(graph,goals,nogoods)
         if(sol != None) sol
+        
       }
 
       if (graph.isLeveledOff && nogoods.isLeveledOff) None
@@ -45,7 +48,7 @@ object GraphPlan {
   }
 }
 
-class PlanningGraph(initState: Set[Literal], goal: Set[Literal], actionSchema: Set[Action]) {
+class PlanningGraph(initState: Set[Literal], actionSchema: Set[Action]) {
 
   private currLevel = -1
 
@@ -71,13 +74,3 @@ class PlanningGraph(initState: Set[Literal], goal: Set[Literal], actionSchema: S
   def getLiteralMutexes(literals: Set[Literal], prevLevel: Option[ActionLevel]): Set[(Literal,Literal)]
   def getActionMutexes(actions: Set[Action], prevLevel: StateLevel): Set[(Action,Action)]
 }
-
-abstract class Level[A] {
-  val items: Set[A]
-  val mutexes: Set[(A,A)]
-}
-class StateLevel extends Level[Literal]  //Si
-class ActionLevel extends Level[Action]  //Ai
-  
-        
-        
