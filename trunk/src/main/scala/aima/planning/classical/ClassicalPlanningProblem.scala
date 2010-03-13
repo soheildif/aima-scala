@@ -1,5 +1,10 @@
 package aima.planning.classical
 
+/** Propositional Planning Problems representation(ones with no variables),
+ * that Planning Graphs work with, described in section 10.3, 3rd paragraph
+ *
+ * @author Himanshu Gupta
+ */
 class ClassicalPlanningProblem(initState: Set[Literal], goals: Set[Literal], actions: Action *)
 
 
@@ -14,7 +19,7 @@ class Action(val symbol: Atom, val preconditions: Set[Literal], val effects: Set
 
 //Used to represent a predicate( e.g. Have(Cake))
 //as well as an action name(e.g. Eat(Cake))
-class Atom(val symbol: String, val args: Set[String]) {
+class Atom(val symbol: String, val args: List[String]) {
 
   override def equals(that: Any) =
     that match {
