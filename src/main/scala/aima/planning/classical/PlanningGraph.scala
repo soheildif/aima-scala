@@ -4,34 +4,48 @@ package aima.planning.classical
  *
  * @author Himanshu Gupta
  */
-class PlanningGraph(initState: Set[Literal], actionSchema: Set[Action]) {
+class PlanningGraph(problem: ClassicalPlanningProblem) {
 
-  private currLevel = -1
+  private var _currStateLevel = 0 //max current state level up
 
-  var stateLevels: List[StateLevel]
-  var actionLevels: List[ActionLevel]
+  var stateLevels = Map[Int,StateLevel]()
+  var actionLevels = Map[Int,ActionLevel]()
 
   def init {
     //create Level S0
     val allPositives = collectPositiveLiterals(actionSchema)
-    val literals = initState ++ (allPositives - initState).map(_.makeNegative) :: statelevels
-    val mutexes = getMutexes(literals, prevLevel: Option[ActionLevel])
-    stateLevels = new StateLevel(literals,mutexes) :: stateLevels
+    val literals = problem.initState ++ (allPositives - problem.initState).map(_.makeNegative)
+    val mutexes = getLiteralMutexes(literals, None)
+    stateLevels = Map(0 -> new StateLevel(literals,mutexes))
   }
 
-  def createNextLevel {
-    actionLevels = getNextActionLevel() :: actionLevels
-    stateLevels = getNextStateLevel
-  }
+  def expandGraph = {
+    //generate next action level
+    val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel)))
+    actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions,stateLevels(_currStateLevel))))
 
-  def getNextStateLevel(prevActionLevel: ActionLevel): StateLevel
-  def getNextActionLevel(prevStateLevel: StateLevel) : ActionLevel
+    //generate next state level
+    val literals = stateLevels(_currStateLevel) ++ actions.flatMap(_.effects)
+    stateLevels = stateLevels + (_currStateLevel+1 ->
+                                   new StateLevel(literals, getLiteralMutexes(literals,actionLevels(_currStateLevel))))
+
+    //increment currStateLevel
+    _currStateLevel = _currStateLevel + 1
+    
+    this
+  }
+    
 
   def getLiteralMutexes(literals: Set[Literal], prevLevel: Option[ActionLevel]): Set[(Literal,Literal)]
   def getActionMutexes(actions: Set[Action], prevLevel: StateLevel): Set[(Action,Action)]
 }
 
-class Level[A](val items: Set[A], val mutexes: Set[(A,A)])
+class Level[A](val items: Set[A], val mutexes: Set[(A,A)]) {
+
+  //Returns the ones which are not part of any mutex pair
+  def freeItems: Set[A] = {
+    items.filter( //TODO
+}
 class StateLevel(literals: Set[Literal], ms: Set[(Literal,Literal)]) extends Level[Literal](literals,ms)
 class ActionLevel(actions: Set[Action], ms: Set[(Action,Action)]) extends Level[Action](actions,ms)
-  
+
