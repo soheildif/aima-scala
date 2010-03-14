@@ -54,25 +54,36 @@ class PlanningGraphTest extends Suite {
 
     pGraph = pGraph.expandGraph //A1 and S2 generated
     val a1 = pGraph.actionLevel(1)
-    expect(Set(eatCakeA,bakeCakeA
+    expect(Set(eatCakeA,bakeCakeA,
                Action.noOp(PositiveLiteral(haveCake)),
                Action.noOp(NegativeLiteral(haveCake)),
                Action.noOp(PositiveLiteral(eatenCake)),
                Action.noOp(NegativeLiteral(eatenCake)))
          )(a1.items)
     assert(matchUnorderedPairs(a1.mutexes,
-                               Set((Action.noOp(PositiveLiteral(haveCake)),eatCakeA),
+                               Set((Action.noOp(NegativeLiteral(haveCake)),bakeCakeA),
+                                   (Action.noOp(PositiveLiteral(haveCake)),bakeCakeA),
+                                   (bakeCakeA,eatCakeA),
+                                   (Action.noOp(PositiveLiteral(haveCake)),Action.noOp(NegativeLiteral(haveCake))),
+                                   (Action.noOp(PositiveLiteral(eatenCake)),Action.noOp(NegativeLiteral(eatenCake))),
+                                   (Action.noOp(PositiveLiteral(haveCake)),eatCakeA),
+                                   (Action.noOp(NegativeLiteral(haveCake)),eatCakeA),
                                    (Action.noOp(NegativeLiteral(eatenCake)),eatCakeA))))
-    /*
+
+    val s2 = pGraph.stateLevel(2)
+    expect(Set(PositiveLiteral(haveCake),
+               NegativeLiteral(haveCake),
+               PositiveLiteral(eatenCake),
+               NegativeLiteral(eatenCake))
+         )(s2.items)  
     assert(matchUnorderedPairs(s2.mutexes,
                                Set((NegativeLiteral(eatenCake).asInstanceOf[Literal],PositiveLiteral(eatenCake).asInstanceOf[Literal]),
-                                   (NegativeLiteral(haveCake).asInstanceOf[Literal],PositiveLiteral(haveCake).asInstanceOf[Literal]),
-                                   (NegativeLiteral(haveCake).asInstanceOf[Literal],NegativeLiteral(eatenCake).asInstanceOf[Literal]))))*/
+                                   (NegativeLiteral(haveCake).asInstanceOf[Literal],PositiveLiteral(haveCake).asInstanceOf[Literal]))))
   }
 
   private def matchUnorderedPairs[A](p1: Set[(A,A)],p2: Set[(A,A)]): Boolean = {
-    println("expected are: " + p2)
-    println("actuals are: " + p1)
+    println("Expected: " + p2)
+    println("Actual: " + p1)
     p1.forall(
       _ match {
         case (p1x,p1y) =>
