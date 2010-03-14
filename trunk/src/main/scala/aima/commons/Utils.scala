@@ -29,14 +29,13 @@ object Utils {
    * Returns all the subsets of a given set.
    */
   def subsets[A](ss: Set[A]): Set[Set[A]] = {
-    def loop(ls: List[A]): Set[Set[A]] =
+    def loop(ls: List[A], result: Set[Set[A]]): Set[Set[A]] =
       ls match {
         case x :: rest =>
-          val tmp = loop(rest)
-          tmp ++ tmp.map(_ + x)
-        case Nil => Set(Set()) 
+          loop(rest,result ++ result.map(_ + x))
+        case Nil => result
       }
-    loop(ss.toList)
+    loop(ss.toList,Set(Set()))
   }
 
   /**
