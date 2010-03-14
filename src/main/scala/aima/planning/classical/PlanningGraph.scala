@@ -17,7 +17,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
     //generate next action level
     val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel).items)) ++
       stateLevels(_currStateLevel).items.map(Action.noOp(_)) //No-Ops
-    actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions)))
+    actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions,stateLevels(_currStateLevel))))
 
     //generate next state level
     val literals = stateLevels(_currStateLevel).items ++ actions.flatMap(_.effects)
@@ -80,15 +80,16 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
     Utils.pairs(literals,isMutex)
   }
 
-  private def getActionMutexes(actions: Set[Action]): Set[(Action,Action)] = {
+  private def getActionMutexes(actions: Set[Action], prevLevel: StateLevel): Set[(Action,Action)] = {
     
     def isMutex(x: Action, y: Action): Boolean = {
       isInconsistent(x.effects,y.effects) ||             //Inconsistent effects
       isInconsistent(x.preconditions,y.effects) ||       //Interference
       isInconsistent(x.effects,y.preconditions) ||       //Interference
-      isInconsistent(x.preconditions,y.preconditions)    //Competing Needs
+      competingNeeds(x.preconditions,y.preconditions,prevLevel)    //Competing Needs
     }
 
+    //Returns true if two sets contain complimentary literals
     def isInconsistent(xs: Set[Literal], ys: Set[Literal]): Boolean =
       xs.exists(x =>
         ys.exists(y =>
@@ -97,6 +98,14 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
             case (_:NegativeLiteral,_:PositiveLiteral) => x.sentence == y.sentence
             case _ => false
           }))
+
+    def competingNeeds(xs: Set[Literal], ys: Set[Literal], prevLevel: StateLevel): Boolean =
+      xs.exists(x =>
+        ys.exists(y =>
+          prevLevel.mutexes.exists(
+            _ match {
+              case (a,b) => ((a == x) && (b == y)) || ((a == y) && (b == x))
+            })))
 
     Utils.pairs(actions,isMutex)
   }
