@@ -1,5 +1,7 @@
 package aima.planning.classical
 
+import scala.util.parsing.combinator._
+
 /** Propositional Planning Problems representation(ones with no variables),
  * that Planning Graphs work with, described in section 10.3, 3rd paragraph
  *
@@ -24,7 +26,7 @@ class Action(val symbol: Atom, val preconditions: Set[Literal], val effects: Set
       case _ => false
     }
 
-  override def hashcode = symbol.hashcode
+  override def hashCode = symbol.hashCode
   
   override def toString = symbol.toString
 }
@@ -50,11 +52,11 @@ class Atom(val symbol: String, val args: List[String]) extends Sentence {
       case _ => false
     }
 
-  override def hashcode = toString.hashcode
+  override def hashCode = toString.hashCode
 
   override def toString = {
     symbol +
-    if(args.size == 0) "()" else "(" + args.reduceLeft(_ + "," + _) + ")"
+    (if(args.size == 0) "()" else "(" + args.reduceLeft(_ + "," + _) + ")")
   }
 }
 
@@ -64,16 +66,16 @@ class Conjunction(val conjuncts: Set[Sentence]) extends Sentence
 //Positive and Negative Literals
 sealed class Literal(val sentence: Atom) {
 
-  def isPositive(l: Literal) =
-    l match {
+  def isPositive =
+    this match {
       case _: PositiveLiteral => true
       case _: NegativeLiteral => false
     }
 
-  def isNegative(l: Literal) = !isPositive(l)
+  def isNegative = !isPositive
 
   override def toString =
-    (if(isNegative(this)) "~" else "") + sentence.toString
+    (if(isNegative) "~" else "") + sentence.toString
 }
 case class PositiveLiteral(s: Atom) extends Literal(s)
 case class NegativeLiteral(s: Atom) extends Literal(s)
@@ -85,7 +87,7 @@ object CPSentenceParser extends JavaTokenParsers {
 
   def sentence: Parser[Sentence] = negation~rep("&"~negation) ^^
                                       {case d~Nil => d
-                                       case d~reps => new Conjunction(d :: reps.map(_ match { case _~disj => disj }))}
+                                       case d~reps => new Conjunction(Set((d :: reps.map(_ match { case _~disj => disj })):_*))}
   
 
   def negation: Parser[Sentence] = opt("~")~atom ^^
@@ -102,15 +104,15 @@ object CPSentenceParser extends JavaTokenParsers {
   def parseSet(in: String): Set[Literal] =
     parseAll(sentence,in).get match {
       case x: Atom => Set(PositiveLiteral(x))
-      case x: Negation => Set(NegatveLiteral(x.sentence))
+      case x: Negation => Set(NegativeLiteral(x.sentence))
       case x: Conjunction =>
         x.conjuncts.map(
           _ match {
-            case y: Atom => Set(PositiveLiteral(y))
-            case y: Negation => Set(NegativeLiteral(y.sentence))
+            case y: Atom => PositiveLiteral(y)
+            case y: Negation => NegativeLiteral(y.sentence)
           })
     }
 
   def parseAtom(in: String): Atom =
-    parseAll(atom,in)
+    parseAll(atom,in).get
 }
