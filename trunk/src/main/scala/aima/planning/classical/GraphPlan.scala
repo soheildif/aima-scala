@@ -1,33 +1,39 @@
 package aima.planning.classical
 
+import aima.search.uninformed.DepthFirstTreeSearch
+import aima.search.Success
+
 /** GRAPHPLAN algorithm, described in Fig 10.9
  *
  * @author Himanshu Gupta
  */
 object GraphPlan {
   def apply(problem: ClassicalPlanningProblem) = {
-    val graph = new PlanningGraph(problem.initState, problem.actions)
     
-    def loop(tl: Int, graph: PlanningGraph): Option[List[Set[Action]]] = {
-      if goals.subsetOf(graph.stateLevel(tl).freeItems) { //TODO
+    def loop(tl: Int, graph: PlanningGraph): Option[List[Set[Action]]] =
+      if (goals.subsetOf(graph.stateLevel(tl).freeItems)) {
         val sol = extractSolution(graph,problem)
         if(sol != None) sol
-        
+        else {
+          if (graph.isLeveledOff) None
+          else loop(tl+1, graph.expandGraph)
+        }
       }
-
-      if (graph.isLeveledOff) None
-      else loop(tl+1, graph.expandGraph)
-    }
+      else {
+        if (graph.isLeveledOff) None
+        else loop(tl+1, graph.expandGraph)
+      }
 
     loop(0,new PlanningGraph(problem))
   }
 
-  def extractSolution(graph: PlanningGraph, cpp: ClassicalPlanningProblem, n: Int) =
+  def extractSolution(graph: PlanningGraph, cpp: ClassicalPlanningProblem, n: Int) = {
     //Formulate as Search Problem
-    val sp = new SearchProblem(graph,
-    BacktrackingSearch(createCSP(graph)) match {
-      case None => None
-      case Some(m) => //convert to list of actions, return it
+    val sp = new SearchProblem(graph,cpp,n)
+    DepthFirstTreeSearch(sp) match {
+      case Success(result) => Some(result)
+      case _ => None
+    }
   }
 }
 
@@ -44,9 +50,9 @@ extends aima.search.Problem[(Set[Literal],Int),Set[Action]] {
     s match {
       case (literals,n) if n > 0 =>
         //Find Set of Actions from An-1
-        val actionLevel = planningGraph.getActionLevel(n-1) //TODO
+        val actionLevel = planningGraph.actionLevel(n-1)
         //Find non-conflicting set of actions
-        var as = actionLevel.freeItems //TODO
+        var as = actionLevel.freeItems
         //Find the subset, whose effects cover the literals
         //take the only actions whose effects contribute to
         //literals
