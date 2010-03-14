@@ -14,14 +14,14 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
 
   def expandGraph = {
     //generate next action level
-    val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel))) ++
+    val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel).items)) ++
       stateLevels(_currStateLevel).items.map(getNoOp(_)) //No-Ops
-    actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions,stateLevels(_currStateLevel))))
+    actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions)))
 
     //generate next state level
-    val literals = stateLevels(_currStateLevel) ++ actions.flatMap(_.effects)
+    val literals = stateLevels(_currStateLevel).items ++ actions.flatMap(_.effects)
     stateLevels = stateLevels + (_currStateLevel+1 ->
-                                   new StateLevel(literals, getLiteralMutexes(literals,actionLevels(_currStateLevel))))
+                                   new StateLevel(literals, getLiteralMutexes(literals,Some(actionLevels(_currStateLevel)))))
 
     //increment currStateLevel
     _currStateLevel = _currStateLevel + 1
@@ -39,7 +39,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
   private def init {
     //create Level S0
     val allPositives = collectPositiveLiterals(problem.actions)
-    val literals = problem.initState ++ (allPositives - problem.initState).map(_.makeNegative)
+    val literals = problem.initState ++ (allPositives -- problem.initState).map(makeNegative(_))
     val mutexes = getLiteralMutexes(literals, None)
     stateLevels = Map(0 -> new StateLevel(literals,mutexes))
   }
@@ -111,26 +111,29 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
         case x :: rest =>
           var tmp = Set[(A,A)]()
           for(y <- rest) {
-            if(pred(x,y)) tmp = tmp + (x,y)
+            if(pred(x,y)) tmp = tmp + ((x,y))
           }
           loop(rest,result ++ tmp)
         case Nil => result
       }
 
-    loop(items.toList)
+    loop(items.toList,Set.empty)
   }
 
 
   private def getNoOp(literal: Literal): Action =
-    new Action(new Atom("$NoOp:" + literal.toString + "$",Set.empty),Set(literal),Set(literal))
+    new Action(new Atom("$NoOp:" + literal.toString + "$",Nil),
+               Set(literal),Set(literal))
 
   private def collectPositiveLiterals(actions: Set[Action]) : Set[Literal] =
     actions.flatMap(a =>
       a.preconditions.filter(_.isPositive) ++ a.effects.filter(_.isPositive))
 
   private def makeNegative(l: Literal): NegativeLiteral =
-    if(l.isNegative) l
-    else NegativeLiteral(l.sentence)
+    l match {
+      case x: PositiveLiteral => NegativeLiteral(x.sentence)
+      case x: NegativeLiteral => x
+    }
 }
 
 class Level[A](val items: Set[A], val mutexes: Set[(A,A)]) {

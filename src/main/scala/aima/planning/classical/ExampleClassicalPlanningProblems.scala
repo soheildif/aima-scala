@@ -9,15 +9,15 @@ object ClassicalPlanningProblems {
    * @author Himanshu Gupta
    */
   def haveCakeAndEatCakeToo =
-    new ClassicalPlanningProblem(
+    ClassicalPlanningProblem(
       "Have(Cake)",
       "Have(Cake) & Eaten(Cake)",
-      new Action(
+      Action(
         "Eat(Cake)",
         "Have(Cake)",
         "~Have(Cake) & Eaten(Cake)"
       ),
-      new Action(
+      Action(
         "Bake(Cake)",
         "~Have(Cake)",
         "Have(Cake)"
