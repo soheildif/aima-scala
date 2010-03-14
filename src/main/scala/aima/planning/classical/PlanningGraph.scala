@@ -1,5 +1,7 @@
 package aima.planning.classical
 
+import aima.commons.Utils
+
 /** PLANNING-GRAPH, described in section 10.3
  *
  * @author Himanshu Gupta
@@ -63,7 +65,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
                 (p.effects.exists(_ == y) && q.effects.exists(_ == x))
               }
 
-              val ps = getPairsSatisfyingPredicate(alevel.items,doAchieveXY)
+              val ps = Utils.pairs(alevel.items,doAchieveXY)
               //see if all pairs above are mutex
               ps.filter(
                 _ match {
@@ -77,7 +79,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
           }
       }
 
-    getPairsSatisfyingPredicate(literals,isMutex)
+    Utils.pairs(literals,isMutex)
   }
 
   private def getActionMutexes(actions: Set[Action]): Set[(Action,Action)] = {
@@ -98,28 +100,8 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
             case _ => false
           }))
 
-    getPairsSatisfyingPredicate(actions,isMutex)
+    Utils.pairs(actions,isMutex)
   }
-
-
-  //Returns all pairs from elements in "items" that satisfy
-  //the give "pred" condition
-  private def getPairsSatisfyingPredicate[A](items: Set[A], pred: (A,A)=>Boolean): Set[(A,A)] = {
-    
-    def loop(items: List[A], result: Set[(A,A)]): Set[(A,A)] =
-      items match {
-        case x :: rest =>
-          var tmp = Set[(A,A)]()
-          for(y <- rest) {
-            if(pred(x,y)) tmp = tmp + ((x,y))
-          }
-          loop(rest,result ++ tmp)
-        case Nil => result
-      }
-
-    loop(items.toList,Set.empty)
-  }
-
 
   private def getNoOp(literal: Literal): Action =
     new Action(new Atom("$NoOp:" + literal.toString + "$",Nil),

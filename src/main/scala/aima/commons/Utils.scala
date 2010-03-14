@@ -24,4 +24,38 @@ object Utils {
 
     oLoop(list,Nil)
   }
+
+  /**
+   * Returns all the subsets of a given set.
+   */
+  def subsets[A](ss: Set[A]): Set[Set[A]] = {
+    def loop(ls: List[A]): Set[Set[A]] =
+      ls match {
+        case x :: rest =>
+          val tmp = loop(rest)
+          tmp ++ tmp.map(_ + x)
+        case Nil => Set(Set()) 
+      }
+    loop(ss.toList)
+  }
+
+  /**
+   * Returns all pairs from elements in "items" that satisfy
+   * the give "pred" condition
+   */
+  def pairs[A](items: Set[A], pred: (A,A)=>Boolean): Set[(A,A)] = {
+    
+    def loop(items: List[A], result: Set[(A,A)]): Set[(A,A)] =
+      items match {
+        case x :: rest =>
+          var tmp = Set[(A,A)]()
+          for(y <- rest) {
+            if(pred(x,y)) tmp = tmp + ((x,y))
+          }
+          loop(rest,result ++ tmp)
+        case Nil => result
+      }
+
+    loop(items.toList,Set.empty)
+  }
 }
