@@ -1,5 +1,6 @@
 package aima.planning.classical
 
+import aima.commons.Utils
 import aima.search.uninformed.DepthFirstTreeSearch
 import aima.search.Success
 
@@ -11,8 +12,8 @@ object GraphPlan {
   def apply(problem: ClassicalPlanningProblem) = {
     
     def loop(tl: Int, graph: PlanningGraph): Option[List[Set[Action]]] =
-      if (goals.subsetOf(graph.stateLevel(tl).freeItems)) {
-        val sol = extractSolution(graph,problem)
+      if (problem.goals.subsetOf(graph.stateLevel(tl).freeItems)) {
+        val sol = extractSolution(graph,problem,tl)
         if(sol != None) sol
         else {
           if (graph.isLeveledOff) None
@@ -56,21 +57,21 @@ extends aima.search.Problem[(Set[Literal],Int),Set[Action]] {
         //Find the subset, whose effects cover the literals
         //take the only actions whose effects contribute to
         //literals
-        as = as.filter(!(_.effects ** literals).isEmpty)
+        as = as.filter(a => !(a.effects ** literals).isEmpty)
 
         //find all subsets of above and filter the ones those
         //not satisfying the literals
-        getAllSubsetsOf(as).filter( //TODO
-          ts =>
-            if(ts.isEmpty) false
-            else ts.flatMap(_.effects) == literals
+        Utils.subsets(as).filter(s =>
+            literals.subsetOf(s.flatMap(_.effects))
         ).toList
         
       case _ => Nil
   }
 
   override def result(s: (Set[Literal],Int), a: Set[Action]) = (a.flatMap(_.preconditions),s._2 - 1)
-  
+    
+  override def stepCost(from: (Set[Literal],Int), action: Set[Action], to: (Set[Literal],Int)): Double = 0.0
+  override def estimatedCostToGoal(from: (Set[Literal],Int)): Double = 0.0
 }
   
   
