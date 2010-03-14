@@ -9,15 +9,14 @@ import aima.commons.Utils
 class PlanningGraph(problem: ClassicalPlanningProblem) {
 
   private var _currStateLevel = 0 //max current state level up
-  init //create S0 level
 
-  private var stateLevels = Map[Int,StateLevel]()
+  private var stateLevels = initStateLevel0
   private var actionLevels = Map[Int,ActionLevel]()
 
   def expandGraph = {
     //generate next action level
     val actions = problem.actions.filter(_.preconditions.subsetOf(stateLevels(_currStateLevel).items)) ++
-      stateLevels(_currStateLevel).items.map(getNoOp(_)) //No-Ops
+      stateLevels(_currStateLevel).items.map(Action.noOp(_)) //No-Ops
     actionLevels = actionLevels + (_currStateLevel -> new ActionLevel(actions,getActionMutexes(actions)))
 
     //generate next state level
@@ -38,12 +37,11 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
     if(_currStateLevel == 0) false
     else stateLevels(_currStateLevel) == stateLevels(_currStateLevel - 1)
 
-  private def init {
-    //create Level S0
+  private def initStateLevel0 = {
     val allPositives = collectPositiveLiterals(problem.actions)
     val literals = problem.initState ++ (allPositives -- problem.initState).map(makeNegative(_))
     val mutexes = getLiteralMutexes(literals, None)
-    stateLevels = Map(0 -> new StateLevel(literals,mutexes))
+    Map[Int,StateLevel](0 -> new StateLevel(literals,mutexes))
   }
 
   private def getLiteralMutexes(literals: Set[Literal], prevLevel: Option[ActionLevel]): Set[(Literal,Literal)] = {
@@ -66,7 +64,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
               }
 
               val ps = Utils.pairs(alevel.items,doAchieveXY)
-              //see if all pairs above are mutex
+              !ps.isEmpty &&
               ps.filter(
                 _ match {
                   case (a1,a2) =>
@@ -102,10 +100,6 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
 
     Utils.pairs(actions,isMutex)
   }
-
-  private def getNoOp(literal: Literal): Action =
-    new Action(new Atom("$NoOp:" + literal.toString + "$",Nil),
-               Set(literal),Set(literal))
 
   private def collectPositiveLiterals(actions: Set[Action]) : Set[Literal] =
     actions.flatMap(a =>
