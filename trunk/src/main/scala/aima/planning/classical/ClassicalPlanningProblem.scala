@@ -36,6 +36,10 @@ object Action {
       CPSentenceParser.parseAtom(symbol),
       CPSentenceParser.parseSet(preconds),
       CPSentenceParser.parseSet(effects))
+
+  def noOp(l: Literal) =
+    new Action(new Atom("$NoOp:" + l.toString + "$",Nil),
+               Set(l),Set(l))
 }
 
 //---------- AST for Classical Planning Variable Free Sentence ---------

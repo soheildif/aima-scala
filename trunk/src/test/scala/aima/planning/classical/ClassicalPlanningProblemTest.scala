@@ -12,19 +12,21 @@ class ClassicalPlanningProblemTest extends Suite {
     val eatCake = new Atom("Eat",List("Cake"))
     val bakeCake = new Atom("Bake",List("Cake"))
 
+    //actions
+    val eatCakeA = new Action(eatCake,
+                              Set(PositiveLiteral(haveCake)),
+                              Set(NegativeLiteral(haveCake),PositiveLiteral(eatenCake)))
+
+    val bakeCakeA = new Action(bakeCake,
+                               Set(NegativeLiteral(haveCake)),
+                               Set(PositiveLiteral(haveCake)))
+
     val p = ClassicalPlanningProblems.haveCakeAndEatCakeToo
 
     expect(Set(PositiveLiteral(haveCake)))(p.initState)
     expect(Set(PositiveLiteral(haveCake),
                PositiveLiteral(eatenCake))
          )(p.goals)
-    expect(Set(
-      new Action(eatCake,
-                 Set(PositiveLiteral(haveCake)),
-                 Set(NegativeLiteral(haveCake),PositiveLiteral(eatenCake))),
-      new Action(bakeCake,
-                 Set(NegativeLiteral(haveCake)),
-                 Set(PositiveLiteral(haveCake))))
-         )(p.actions)
+    expect(Set(eatCakeA,bakeCakeA))(p.actions)
   }
 }
