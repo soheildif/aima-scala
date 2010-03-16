@@ -25,9 +25,11 @@ aima-scala
           search         //Code for Chapter 3-6
     test                 //Tests for above code
       scala
-        basic
-        logic
-        search
+        aima
+          basic
+          logic
+          planning
+          search
 }}}
 Best place to start to understand the code is to start with reading the tests for same.
 
