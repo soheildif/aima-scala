@@ -30,15 +30,12 @@ object GraphPlan {
   }
 
   def extractSolution(graph: PlanningGraph, cpp: ClassicalPlanningProblem, n: Int) = {
-    println("EXTRACT-SOLUTION started")
     //Formulate as Search Problem
     val sp = new SearchProblem(graph,cpp,n)
-    val s = DepthFirstTreeSearch(sp) match {
+    DepthFirstTreeSearch(sp) match {
       case Success(result) => Some(result.reverse)
       case _ => None
     }
-    println("EXTRACT-SOLUTION finished")
-    s
   }
 }
 
@@ -51,8 +48,8 @@ extends aima.search.Problem[(Set[Literal],Int),Set[Action]] {
   override def goalTest(s: (Set[Literal],Int)) =
     s._1.filter(_.isPositive).subsetOf(planningProblem.initState)
 
-  override def actions(s: (Set[Literal],Int)) = {
-    val asses = s match {
+  override def actions(s: (Set[Literal],Int)) =
+    s match {
       case (literals,n) if n > 0 =>
         //Find Set of Actions from An-1
         val actionLevel = planningGraph.actionLevel(n-1)
@@ -71,9 +68,6 @@ extends aima.search.Problem[(Set[Literal],Int),Set[Action]] {
             actionLevel.isConflictFree(s)
         ).toList
     }
-    println("ACTIONS: " + s + " := " + asses)
-    asses
-  }
 
   override def result(s: (Set[Literal],Int), a: Set[Action]) = (a.flatMap(_.preconditions),s._2 - 1)
     
