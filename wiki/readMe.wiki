@@ -20,7 +20,8 @@ aima-scala
         aima
           basic          //Code for Chapter 2
           commons        //Common code used by all
-          logic          //Code for Chapter 7-
+          logic          //Code for Chapter 7-9
+          planning       //Code for Chapter 10-11
           search         //Code for Chapter 3-6
     test                 //Tests for above code
       scala
