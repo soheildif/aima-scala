@@ -5,20 +5,30 @@ import scala.util.parsing.combinator._
 /** Propositional Planning Problems representation(ones with no variables),
  * that Planning Graphs work with, described in section 10.3, 3rd paragraph
  *
+ * To, instantiate, one should use ClassicalPlanningProblem(String,String,Action*)
+ * Strings format is two type only:
+ * 1. "Have(Cake)" OR "~Have(Cake)" for +ve/-ve literals respectively
+ * 2. "Have(Cake) & ~Eaten(Cake)": notice '&' is used for conjunction
+ * All constants are alphanumerics only and have to start with a capital letter(A-Z)
+ * 
  * @author Himanshu Gupta
  */
-class ClassicalPlanningProblem(val initState: Set[Literal], val goals: Set[Literal],
+class ClassicalPlanningProblem private(val initState: Set[Literal], val goals: Set[Literal],
                                val actions: Set[Action])
 object ClassicalPlanningProblem {
   def apply(initState: String, goals: String, actions: Action *) =
     new ClassicalPlanningProblem(
-      CPSentenceParser.parseSet(initState),
-      CPSentenceParser.parseSet(goals),
+      if(!initState.trim.isEmpty) CPSentenceParser.parseSet(initState) else Set.empty,
+      if(!goals.trim.isEmpty) CPSentenceParser.parseSet(goals) else Set.empty,
       Set(actions:_*))
 }
 
 
-class Action(val symbol: Atom, val preconditions: Set[Literal], val effects: Set[Literal]) {
+//Action -
+//Notice, two Actions are equal as long as their symbols are equal, even if they
+//have different preconditions and/or effects. That is "overloading" is not
+//supported
+class Action private(val symbol: Atom, val preconditions: Set[Literal], val effects: Set[Literal]) {
 
   override def equals(that: Any) =
     that match {
@@ -34,8 +44,8 @@ object Action {
   def apply(symbol: String, preconds: String, effects: String) =
     new Action(
       CPSentenceParser.parseAtom(symbol),
-      CPSentenceParser.parseSet(preconds),
-      CPSentenceParser.parseSet(effects))
+      if(!preconds.trim.isEmpty) CPSentenceParser.parseSet(preconds) else Set.empty,
+      if(!effects.trim.isEmpty) CPSentenceParser.parseSet(effects) else Set.empty)
 
   def noOp(l: Literal) =
     new Action(new Atom("$NoOp:" + l.toString + "$",Nil),
@@ -99,8 +109,11 @@ object CPSentenceParser extends JavaTokenParsers {
                                      case Some(_)~as => new Negation(as)}
 
   def atom: Parser[Atom] = (
-    constant~"("~repsep(constant,",")~")" ^^
-    {case s~"("~ts~")" => new Atom(s,ts)}
+    constant~opt("("~repsep(constant,",")~")") ^^
+    {case c~None => new Atom(c,Nil)
+     case c~Some("("~ts~")") => new Atom(c,ts)}
+    //constant~"("~repsep(constant,",")~")" ^^
+    //{case s~"("~ts~")" => new Atom(s,ts)}
   )
                                          
   def constant = """[A-Z][a-z0-9A-Z]*""".r
