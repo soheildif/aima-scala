@@ -146,4 +146,3 @@ class Level[A](val items: Set[A], val mutexes: Set[(A,A)]) {
 }
 class StateLevel(literals: Set[Literal], ms: Set[(Literal,Literal)]) extends Level[Literal](literals,ms)
 class ActionLevel(actions: Set[Action], ms: Set[(Action,Action)]) extends Level[Action](actions,ms)
-

@@ -53,7 +53,6 @@ extends aima.search.Problem[(Set[Literal],Int),Set[Action]] {
       case (literals,n) if n > 0 =>
         //Find Set of Actions from An-1
         val actionLevel = planningGraph.actionLevel(n-1)
-        //Find non-conflicting set of actions
         var as = actionLevel.items
         //Find the subset, whose effects cover the literals
         //take the only actions whose effects contribute to
