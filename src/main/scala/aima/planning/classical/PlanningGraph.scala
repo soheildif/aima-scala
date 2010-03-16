@@ -123,13 +123,26 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
 
 class Level[A](val items: Set[A], val mutexes: Set[(A,A)]) {
 
-  //Returns the ones which are not part of any mutex pair
-  def freeItems: Set[A] =
-    items.filter(
-      a => !mutexes.exists(
-        _ match {
-          case (x,y) => (x == a) || (y == a)
-        }))
+  //Checks that no two elements of given set are mutex
+  def isConflictFree(that: Set[A]): Boolean = {
+    def loop(that: List[A]): Boolean =
+      that match {
+        case x :: rest =>
+          if(rest.exists(y =>
+              mutexes.exists(m => (m == (x,y)) || (m == (y,x)))))
+            false
+          else loop(rest)
+        case Nil => true
+      }
+    loop(that.toList)
+  }
+    
+
+  override def equals(that: Any) =
+    that match {
+      case x: Level[A] => this.items == x.items
+      case _ => false
+    }
 }
 class StateLevel(literals: Set[Literal], ms: Set[(Literal,Literal)]) extends Level[Literal](literals,ms)
 class ActionLevel(actions: Set[Action], ms: Set[(Action,Action)]) extends Level[Action](actions,ms)
