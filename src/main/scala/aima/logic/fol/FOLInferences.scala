@@ -130,8 +130,8 @@ object FOLResolution {
     val clauses = KB.tell(new Negation(alpha)).clauses
 
     def loop1(clauses: Set[Clause]):Boolean = {
-      println("Clauses " + clauses)
-      println("========================\n\n===========================")
+      //println("Clauses " + clauses)
+      //println("========================\n\n===========================")
       //sort clauses according to # of literals it contains, basically
       //we give preference to clauses containing smaller # of literals
       //that automatically brings in unit clause preference also
@@ -173,8 +173,8 @@ object FOLResolution {
             case None =>
               loop(rest, result)
             case Some((x,m)) =>
-              println("Just resolved: " + l + " and " + x)
-              println("A Unifier found is: " + m)
+              //println("Just resolved: " + l + " and " + x)
+              //println("A Unifier found is: " + m)
               loop(rest, result + Subst(m,new Clause(((c1.literals - l) ++ (c2.literals - x)).toList:_*)))
           }
         case Nil => result
