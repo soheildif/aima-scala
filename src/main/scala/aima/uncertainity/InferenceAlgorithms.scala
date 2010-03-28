@@ -24,25 +24,53 @@ object EnumerationAsk {
     }
 }
 
-/*      
-//Fig 14.11, VariableElimination Algorithm
-object EnumerationAsk {
-  def apply(query: RandomVariable, e: Map<RandomVariable,String>, bn: BayesNet): ProbabilityDistribution = {
 
-    var factors = Nil
-    for(x <- order(bn.variables)) {
-      factors = new Factor(x,e) :: factors
-      if(x-is-a-hidden-variable)
-        factors = sumOut(x,factors)
-    }
+//Fig 14.11, VariableElimination Algorithm
+object EnumerationAskWithVariableElimination {
+
+  type Factor = (RandomVariable,Map[RandomVariable,String]) //(X,evidence)
+
+  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
+
+    def hidden(x: RandomVariable) = x != X && !e.contains(x)
+
+    var factors = collectFactors(e,bn)
+//    for(x <- order(bn.variables)) {
+//      factors = new Factor(x,e) :: factors
+//      if(hidden(x))
+//        factors = sumOut(x,factors)
+//    }
+    //get factors after summing 
     normalize(pointwiseProduct(factors))
   }
 
+  private def order(variables: List[Variable]) = variables
 
-  class Factor
+  private def collectFactors(e: Map[RandomVariable,String], bn: BayesNet) =
+    Set(Set(bn.variables.map(x => new AtomFactor(x,e)):_*))
+
+  private def pointwiseProduct(f1: Factor, f2: Factor): Factor = {
+    //find common set of variables
+    val cmns = f1 ** f2
+  }
+    
+  private def sumOut(x: RandomVariable, factors: Set[Factor]): Set[Factor] = {
+    //take the relevant ones
+    val relevants = factors.filter(_.variables.exists(x == _))
+
+    val others = factors - relevants
+
+    
+    
+    
 }
 
+class Factor(variables: Set[RandomVariable], ptable: Map[Set[(RandomVariable,String)],Double])
 
+
+
+
+/*
 //Fig 14.13
 object PriorSample {
   //todo: how do we fix a topology
