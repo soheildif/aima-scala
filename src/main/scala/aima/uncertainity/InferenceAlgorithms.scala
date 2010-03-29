@@ -28,44 +28,97 @@ object EnumerationAsk {
 //Fig 14.11, VariableElimination Algorithm
 object EnumerationAskWithVariableElimination {
 
-  type Factor = (RandomVariable,Map[RandomVariable,String]) //(X,evidence)
+ // type Factor = (RandomVariable,Map[RandomVariable,String]) //(X,evidence)
 
-  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
+//  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
 
-    def hidden(x: RandomVariable) = x != X && !e.contains(x)
+//    def hidden(x: RandomVariable) = x != X && !e.contains(x)
 
-    var factors = collectFactors(e,bn)
+//    var factors = collectFactors(e,bn)
 //    for(x <- order(bn.variables)) {
 //      factors = new Factor(x,e) :: factors
 //      if(hidden(x))
 //        factors = sumOut(x,factors)
 //    }
     //get factors after summing 
-    normalize(pointwiseProduct(factors))
-  }
+//    normalize(pointwiseProduct(factors))
+//  }
 
-  private def order(variables: List[Variable]) = variables
+  private def order(variables: List[RandomVariable]) = variables
 
-  private def collectFactors(e: Map[RandomVariable,String], bn: BayesNet) =
-    Set(Set(bn.variables.map(x => new AtomFactor(x,e)):_*))
+//  private def collectFactors(e: Map[RandomVariable,String], bn: BayesNet) =
+//    Set(Set(bn.variables.map(x => new AtomFactor(x,e)):_*))
 
-  private def pointwiseProduct(f1: Factor, f2: Factor): Factor = {
-    //find common set of variables
-    val cmns = f1 ** f2
+  def pointwiseProduct(f1: Factor, f2: Factor): Factor = {
+    //find union of variables in f1 and f2
+    val allVars = f1.variables ++ f2.variables
+    val size = allVars.size
+
+    val ptbl1 = f1.ptable
+    val ptbl2 = f2.ptable
+
+    val ptbl = ptbl1.keySet.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+      (m,pk1) => {
+        ptbl2.keySet.foldLeft(m)(
+          (m,pk2) => {
+            val k = pk1 ++ pk2
+            if(k.size == size)
+              m + (k -> ptbl1(pk1)*ptbl2(pk2))
+            else m
+          })})
+
+    new Factor(allVars,ptbl)
   }
     
   private def sumOut(x: RandomVariable, factors: Set[Factor]): Set[Factor] = {
     //take the relevant ones
     val relevants = factors.filter(_.variables.exists(x == _))
 
-    val others = factors - relevants
+    if(relevants.size > 0) {
+      val factor = relevants.reduceLeft(pointwiseProduct(_,_))
+      (factors -- relevants) + sumOutAFactor(x,factor)
+    }
+    else factors
+  }
 
+  //Sums out given Random variable from a Factor and returns the
+  //new Factor
+  def sumOutAFactor(x: RandomVariable, factor: Factor): Factor = {
+    val otherVars = factor.variables - x
+    val allKeys = allCombinations(otherVars)
     
-    
-    
+    val oldPtbl = factor.ptable
+
+    val newPtbl = allKeys.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+      (m,a) => m + (a -> oldPtbl.keySet.foldLeft(0.0)(
+        (p,k) =>
+          if(a.subsetOf(k)) p+oldPtbl(k)
+          else p)))
+
+    new Factor(otherVars,newPtbl)
+  }
+
+  //Given a set of variables, it returns all possible combinations for probability
+  //distribution
+  //For example, if we give variables = Set(RandomVariable(A),RandomVariable(B))
+  //It returns Set(Set((A,true), (B,true)), 
+  //               Set((A,true), (B,false)),
+  //               Set((A,false), (B,true)),
+  //               Set((A,false), (B,false)))
+  def allCombinations(variables: Set[RandomVariable]) = {
+    def loop(variables: List[RandomVariable], result: Set[Set[(RandomVariable,String)]]): Set[Set[(RandomVariable,String)]] =
+      variables match {
+        case Nil => result
+        case x :: rest =>
+          loop(rest,result.flatMap(s => x.domain.map((v:String) => s + ((x,v)))))
+      }
+
+    loop(variables.toList,Set(Set.empty))
+  } 
 }
 
-class Factor(variables: Set[RandomVariable], ptable: Map[Set[(RandomVariable,String)],Double])
+class Factor(val variables: Set[RandomVariable],
+             val ptable: Map[Set[(RandomVariable,String)],Double])
 
 
 
