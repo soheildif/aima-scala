@@ -30,3 +30,4 @@ object RandomVariable {
 
   def apply(name: String, domain: Set[String]) = new RandomVariable(name,domain)
 }
+

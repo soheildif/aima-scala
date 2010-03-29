@@ -30,11 +30,15 @@ class BayesNet {
   //topologically sorted list of variables
   def variables = _variables
 
-  def add(variable: RandomVariable, parents: Set[RandomVariable], pd: Map[Set[(RandomVariable,String)],Double]) = {
-    val node = new Node(variable,parents.map(findNode(_)),pd)
-    _nodesMap = _nodesMap + (variable -> node)
-    _variables = _variables ::: List(variable)
-    this
+  def add(variable: RandomVariable, parents: Set[RandomVariable], cpt: Map[Set[(RandomVariable,String)],Double]): BayesNet = {
+    //make sure this variable is not already added
+    if(!_nodesMap.contains(variable)) {
+      val node = new Node(variable,parents.map(findNode(_)),cpt)
+      _nodesMap = _nodesMap + (variable -> node)
+      _variables = _variables ::: List(variable)
+      this
+    }
+    else  throw new RuntimeException(variable + " has already been added to this Bayes net")
   }
 }
 
