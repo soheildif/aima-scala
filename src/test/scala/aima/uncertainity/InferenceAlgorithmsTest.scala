@@ -1,35 +1,48 @@
 package aima.uncertainity
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
 
-class EnumerationAskTest extends Suite {
+//common enumeration ask algorithms tests
+object CommonAskTest {
 
-  def testEnumerationAskAimaExample() {
-    val result = EnumerationAsk(RandomVariable("Burglary"),
-                                Map(RandomVariable("JohnCalls") -> RandomVariable.True,
-                                    RandomVariable("MaryCalls") -> RandomVariable.True),
-                                ExampleBayesNet.burglaryNetwork)
-    assert(result.size == 2)
-    assert(0.284 < result(RandomVariable.True) && result(RandomVariable.True) < 0.285)
-    assert(0.715 < result(RandomVariable.False) && result(RandomVariable.False) < 0.716)
+  def testEnumerationAskAimaExample(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
+    val result = ask(RandomVariable("Burglary"),
+                     Map(RandomVariable("JohnCalls") -> RandomVariable.True,
+                         RandomVariable("MaryCalls") -> RandomVariable.True),
+                     ExampleBayesNet.burglaryNetwork)
+    assertEquals(2,result.size)
+    assertEquals(0.284,result(RandomVariable.True),0.001)
+    assertEquals(0.715,result(RandomVariable.False),0.001)
   }
 
-  def testEnumerationAllVariablesExcludingQueryKnown() {
-    val result = EnumerationAsk(RandomVariable("Alarm"),
-                                Map(RandomVariable("Burglary") -> RandomVariable.False,
-                                    RandomVariable("EarthQuake") -> RandomVariable.False,
-                                    RandomVariable("JohnCalls") -> RandomVariable.True,
-                                    RandomVariable("MaryCalls") -> RandomVariable.True),
-                                ExampleBayesNet.burglaryNetwork)
+  def testEnumerationAllVariablesExcludingQueryKnown(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
+    val result = ask(RandomVariable("Alarm"),
+                     Map(RandomVariable("Burglary") -> RandomVariable.False,
+                         RandomVariable("EarthQuake") -> RandomVariable.False,
+                         RandomVariable("JohnCalls") -> RandomVariable.True,
+                         RandomVariable("MaryCalls") -> RandomVariable.True),
+                     ExampleBayesNet.burglaryNetwork)
 
-    assert(result.size == 2)
-    assert(0.557 < result(RandomVariable.True) && result(RandomVariable.True) < 0.558)
-    assert(0.442 < result(RandomVariable.False) && result(RandomVariable.False) < 0.443)
+    assertEquals(2,result.size)
+    assertEquals(0.557,result(RandomVariable.True),0.001)
+    assertEquals(0.442,result(RandomVariable.False),0.001)
+  }
+}
+
+class EnumerationAskTest extends TestCase {
+
+  def testEnumerationAskAimaExample() {
+    CommonAskTest.testEnumerationAskAimaExample(EnumerationAsk.apply)
+  }
+  
+  def testEnumerationAllVariablesExcludingQueryKnown() {
+    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EnumerationAsk.apply)
   }
 }
 
 
-class EnumerationAskWithVariableEliminationTest extends Suite {
+class EnumerationAskWithVariableEliminationTest extends TestCase {
   private val True = RandomVariable.True
   private val False = RandomVariable.False
 
@@ -54,63 +67,62 @@ class EnumerationAskWithVariableEliminationTest extends Suite {
   def testPointwiseProduct() {
     
     var tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,f0)
-    expect(Set.empty)(tmp.variables)
-    expect(Map(Set.empty -> 1.0))(tmp.ptable)
+    assertEquals(Set.empty,tmp.variables)
+    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,fA)
-    expect(Set(A))(tmp.variables)
-    expect(Map(Set((A,True)) -> 0.6,
-               Set((A,False)) -> 0.4))(tmp.ptable)
+    assertEquals(Set(A),tmp.variables)
+    assertEquals(Map(Set((A,True)) -> 0.6,
+                     Set((A,False)) -> 0.4),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fA)
-    expect(Set(A))(tmp.variables)
-    expect(Map(Set((A,RandomVariable.True)) -> 0.36,
-               Set((A,RandomVariable.False)) -> 0.16000000000000003))(tmp.ptable) //should be 0.16
+    assertEquals(Set(A),tmp.variables)
+    assertEquals(0.36, tmp.ptable(Set((A,True))), 0.001)
+    assertEquals(0.16, tmp.ptable(Set((A,False))), 0.001)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fB)
-    expect(Set(A,B))(tmp.variables)
-    expect(Map(Set((A,True),(B,True)) -> 0.42,
-               Set((A,True),(B,False)) -> 0.18,
-               Set((A,False),(B,True)) ->  0.27999999999999997, //it should be 0.28 but 0.7*0.4 is not 0.28 for whatever reason
-               Set((A,False),(B,False)) -> 0.12))(tmp.ptable)
+    assertEquals(Set(A,B),tmp.variables)
+    assertEquals(0.42,tmp.ptable(Set((A,True),(B,True))),0.001)
+    assertEquals(0.18,tmp.ptable(Set((A,True),(B,False))),0.001)
+    assertEquals(0.28,tmp.ptable(Set((A,False),(B,True))),0.001)
+    assertEquals(0.12,tmp.ptable(Set((A,False),(B,False))),0.001)
 
 
     //example given in Fig 14.10 in AIMA3e
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fAB,fBC)
-    expect(Set(A,B,C))(tmp.variables)
-    expect(Map(Set((A,True),(B,True),(C,True)) -> 0.06,
-               Set((A,True),(B,True),(C,False)) -> 0.24,
-               Set((A,True),(B,False),(C,True)) -> 0.42,
-               Set((A,True),(B,False),(C,False)) -> 0.27999999999999997, //should be 0.28
-               Set((A,False),(B,True),(C,True)) -> 0.18000000000000002, //should be 0.18
-               Set((A,False),(B,True),(C,False)) -> 0.7200000000000001, //should be 0.72
-               Set((A,False),(B,False),(C,True)) -> 0.06,
-               Set((A,False),(B,False),(C,False)) -> 0.04000000000000001))(tmp.ptable) //should be 0.04
+    assertEquals(Set(A,B,C),tmp.variables)
+    assertEquals(0.06,tmp.ptable(Set((A,True),(B,True),(C,True))),0.001)
+    assertEquals(0.24,tmp.ptable(Set((A,True),(B,True),(C,False))),0.001)
+    assertEquals(0.42,tmp.ptable(Set((A,True),(B,False),(C,True))),0.001)
+    assertEquals(0.28,tmp.ptable(Set((A,True),(B,False),(C,False))),0.001)
+    assertEquals(0.18,tmp.ptable(Set((A,False),(B,True),(C,True))),0.001)
+    assertEquals(0.72,tmp.ptable(Set((A,False),(B,True),(C,False))),0.001)
+    assertEquals(0.06,tmp.ptable(Set((A,False),(B,False),(C,True))),0.001)
+    assertEquals(0.04,tmp.ptable(Set((A,False),(B,False),(C,False))),0.001)
   }
 
   def testSumOutAFactor() {
     var tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,f0)
-    expect(Set.empty)(tmp.variables)
-    expect(Map(Set.empty -> 1.0))(tmp.ptable)
+    assertEquals(Set.empty,tmp.variables)
+    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(B,fA)
-    expect(fA.variables)(tmp.variables)
-    expect(fA.ptable)(tmp.ptable)
+    assertEquals(fA.variables,tmp.variables)
+    assertEquals(fA.ptable,tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fA)
-    expect(Set.empty)(tmp.variables)
-    expect(Map(Set.empty -> 1.0))(tmp.ptable)
+    assertEquals(Set.empty,tmp.variables)
+    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fAB)
-    expect(Set(B))(tmp.variables)
-                                                        //should be 0.7+0.1 is not 0.8 for whatever reason
-    expect(Map(Set((B,True)) -> 1.2, Set((B,False)) -> 0.7999999999999999))(tmp.ptable)
+    assertEquals(Set(B),tmp.variables)
+    assertEquals(1.2,tmp.ptable(Set((B,True))),0.001)
+    assertEquals(0.8,tmp.ptable(Set((B,False))),0.001)
   }
 }
-    
