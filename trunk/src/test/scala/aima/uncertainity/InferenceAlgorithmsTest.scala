@@ -12,7 +12,7 @@ object CommonAskTest {
                          RandomVariable("MaryCalls") -> RandomVariable.True),
                      ExampleBayesNet.burglaryNetwork)
     assertEquals(2,result.size)
-    //assertEquals(0.284,result(RandomVariable.True),0.001)
+    assertEquals(0.284,result(RandomVariable.True),0.001)
     assertEquals(0.715,result(RandomVariable.False),0.001)
   }
 

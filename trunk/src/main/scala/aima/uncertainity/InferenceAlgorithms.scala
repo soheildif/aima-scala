@@ -9,6 +9,7 @@ object EnumerationAsk {
 
     val q = X.domain.map(x => (x -> enumerateAll(bn.variables, e + (X -> x),bn))).
       foldLeft(Map[String,Double]())(_ + _)
+    //normalize
     val alpha = 1/q.values.reduceLeft(_ + _) //normalization constant
     q.transform((_,v) => alpha*v)
   }
@@ -45,10 +46,13 @@ object EnumerationAskWithVariableElimination {
     if(factor.variables != Set(X))
       throw new RuntimeException("Variables in final factor " + factor.variables + " not matching with " + X)
     else {
-      factor.ptable.keySet.foldLeft(Map[String,Double]())(
+      val q = factor.ptable.keySet.foldLeft(Map[String,Double]())(
         (m,k) => {
           val Some((r,s)) = k.find(_._1 == X)
           m + (s -> factor.ptable(k))})
+      //normalize
+      val alpha = 1/q.values.reduceLeft(_ + _) //normalization constant
+      q.transform((_,v) => alpha*v)
     }
   }
 
