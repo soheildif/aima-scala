@@ -28,26 +28,61 @@ object EnumerationAsk {
 //Fig 14.11, VariableElimination Algorithm
 object EnumerationAskWithVariableElimination {
 
- // type Factor = (RandomVariable,Map[RandomVariable,String]) //(X,evidence)
+  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
 
-//  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
+    def hidden(x: RandomVariable) = x != X && !e.contains(x)
 
-//    def hidden(x: RandomVariable) = x != X && !e.contains(x)
+    var factors = collectFactors(e,bn)
 
-//    var factors = collectFactors(e,bn)
-//    for(x <- order(bn.variables)) {
-//      factors = new Factor(x,e) :: factors
-//      if(hidden(x))
-//        factors = sumOut(x,factors)
-//    }
-    //get factors after summing 
-//    normalize(pointwiseProduct(factors))
-//  }
+    for(x <- order(bn.variables)) {
+      if(hidden(x))
+        factors = sumOut(x,factors)
+    }
+
+    val factor = factors.reduceLeft(pointwiseProduct(_,_))
+
+    //now the factor should only contain the query variable
+    if(factor.variables != Set(X))
+      throw new RuntimeException("Variables in final factor " + factor.variables + " not matching with " + X)
+    else {
+      factor.ptable.keySet.foldLeft(Map[String,Double]())(
+        (m,k) => {
+          val Some((r,s)) = k.find(_._1 == X)
+          m + (s -> factor.ptable(k))})
+    }
+  }
 
   private def order(variables: List[RandomVariable]) = variables
 
-//  private def collectFactors(e: Map[RandomVariable,String], bn: BayesNet) =
-//    Set(Set(bn.variables.map(x => new AtomFactor(x,e)):_*))
+  private def collectFactors(e: Map[RandomVariable,String], bn: BayesNet): Set[Factor] =
+    Set(bn.variables.map(makeFactor(_,e,bn)):_*)
+
+  private def makeFactor(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet) = {
+    val parentsX = bn.parents(x)
+    val vars = parentsX + x
+
+    //for all variables in vars, make a set of (RandomVariable,String)
+    //which exists in evidence e
+    val varsInE = vars.foldLeft(Set[(RandomVariable,String)]())(
+      (s,v) =>
+        e.get(v) match {
+          case None => s
+          case Some(str) => s + ((v,str))
+        })
+
+    if(varsInE.isEmpty) new Factor(vars,bn.cpt(x))
+    else {
+      var cpt = bn.cpt(x)
+      //whatever is in the evidence, remove it from cpt keys
+      //keep the one that agrees with evidence
+      cpt = cpt.keySet.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+        (m,k) =>
+          if(varsInE.subsetOf(k))
+            m + ((k -- varsInE) -> cpt(k))
+          else m)
+      new Factor(vars.filter(!e.contains(_)),cpt)
+    }
+  }
 
   def pointwiseProduct(f1: Factor, f2: Factor): Factor = {
     //find union of variables in f1 and f2
@@ -70,7 +105,7 @@ object EnumerationAskWithVariableElimination {
     new Factor(allVars,ptbl)
   }
     
-  private def sumOut(x: RandomVariable, factors: Set[Factor]): Set[Factor] = {
+  def sumOut(x: RandomVariable, factors: Set[Factor]): Set[Factor] = {
     //take the relevant ones
     val relevants = factors.filter(_.variables.exists(x == _))
 

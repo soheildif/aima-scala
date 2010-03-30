@@ -25,6 +25,9 @@ class BayesNet {
         throw new IllegalArgumentException("Could not find posterior probability for " + X + " = " + x + " with conditions " + conditions)
     }
 
+  //Returns CPT of a node
+  def cpt(X: RandomVariable) = findNode(X).cpt
+ 
   def parents(X: RandomVariable): Set[RandomVariable] = findNode(X).parents.map(_.variable)
 
   //topologically sorted list of variables

@@ -12,7 +12,7 @@ object CommonAskTest {
                          RandomVariable("MaryCalls") -> RandomVariable.True),
                      ExampleBayesNet.burglaryNetwork)
     assertEquals(2,result.size)
-    assertEquals(0.284,result(RandomVariable.True),0.001)
+    //assertEquals(0.284,result(RandomVariable.True),0.001)
     assertEquals(0.715,result(RandomVariable.False),0.001)
   }
 
@@ -124,5 +124,13 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
     assertEquals(Set(B),tmp.variables)
     assertEquals(1.2,tmp.ptable(Set((B,True))),0.001)
     assertEquals(0.8,tmp.ptable(Set((B,False))),0.001)
+  }
+
+  def testEnumerationAskAimaExample() {
+    CommonAskTest.testEnumerationAskAimaExample(EnumerationAskWithVariableElimination.apply)
+  }
+  
+  def testEnumerationAllVariablesExcludingQueryKnown() {
+    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EnumerationAskWithVariableElimination.apply)
   }
 }
