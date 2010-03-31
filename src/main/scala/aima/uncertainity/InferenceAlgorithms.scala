@@ -26,7 +26,10 @@ object EnumerationAsk {
 }
 
 
-//Fig 14.11, VariableElimination Algorithm
+/** ENUMERATION-ASK with Variable elimination, described in Fig 14.11
+ *
+ * @author Himanshu Gupta
+ */
 object EnumerationAskWithVariableElimination {
 
   def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
@@ -162,18 +165,34 @@ class Factor(val variables: Set[RandomVariable],
 
 
 
-/*
+
 //Fig 14.13
 object PriorSample {
-  //todo: how do we fix a topology
-  def apply(bn: BayesNet): List[String] =
-    bn.variables.map(x => randomSample(x,bn.getProbability(x,parents)))
+  def apply(bn: BayesNet): Map[RandomVariable,String] =
+    bn.variables.foldLeft(Map[RandomVariable,String]())(
+      (m,x) => m + (x -> randomSample(x,m,bn)))
 
   //Returns one value from domain of x, as per given probability
-  def randomSample(x: RandomVariable, prob: List[Double]) = {
+  def randomSample(x: RandomVariable, parentX: Map[RandomVariable,String], bn: BayesNet) = {
+    val pd = bn.getProbabilityDistribution(x,parentX)
+    
+    val keys = pd.keySet.toList                                   //e.g. (true,false)
+    val values = keys.map(pd(_))                                  //e.g. (0.7,0.3)
+    val intervals = values.foldLeft(List[Double]())(
+      (l,v) => l match {
+        case Nil => v :: l
+        case x :: _ => (v + x) :: l
+      }).reverse                                                  //e.g. (0.7,1.0)
+
+    //select a random # between 0.0 and 1.0, look at the interval
+    //it falls in and return that string from the keys
+    val rand = Math.random
+    val index = intervals.findIndexOf(rand < _)
+    if(index < 0) keys.last else keys(index)
   }
 }
 
+/*
 //Fig 14.14
 object RejectionSampling {
   def apply(query: RandomVariable, e: Map<RandomVariable,String>, bn: BayesNet, n: Int): Double = {
