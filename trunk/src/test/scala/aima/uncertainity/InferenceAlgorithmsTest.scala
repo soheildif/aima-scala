@@ -146,3 +146,20 @@ class PriorSampleTest extends TestCase {
     assertTrue(true)
   }
 }
+
+
+class RejectionSamplingTest extends TestCase {
+  
+  //we can't really write a unit test for it, as result will
+  //be random, we're doing this just to see that no exceptions
+  //are raised
+  //if you print the result, they are quite close
+  def testEnumerationAskAimaExample() {
+    val result = RejectionSampling(RandomVariable("Burglary"),
+                                   Map(RandomVariable("JohnCalls") -> RandomVariable.True,
+                                       RandomVariable("MaryCalls") -> RandomVariable.True),
+                                   ExampleBayesNet.burglaryNetwork,100000)
+    //println(result)
+    assertTrue(true)
+  }
+}

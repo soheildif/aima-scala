@@ -188,22 +188,35 @@ object PriorSample {
   }
 }
 
-/*
-//Fig 14.14
+
+/** REJECTION-SAMPLING, described in Fig 14.14
+ *
+ * @author Himanshu Gupta
+ */
 object RejectionSampling {
-  def apply(query: RandomVariable, e: Map<RandomVariable,String>, bn: BayesNet, n: Int): Double = {
+  def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
     
-    def loop(n: Int, sample: List<Int>): List<Int> =
+    def loop(n: Int, samples: Map[String,Int]): Map[String,Int] =
       if(n > 0) {
         val event = PriorSample(bn)
         if(isConsistent(event,e)){
           //find value of query variable in it and add to sample
-          loop(n-1,sample)
-        } 
+          val str = event(x)
+          loop(n-1,samples + (str -> (samples(str)+1)))
+        }
+        else loop(n-1,samples)
       }
-      else sample
+      else samples
 
-    normalize(loop(n, list-of-zeros))
+    val q = loop(n, x.domain.foldLeft(Map[String,Int]())(
+      (m,d) => m + (d -> 0)))
+    //normalize
+    val alpha = 1.0/q.values.reduceLeft(_ + _) //normalization constant
+    q.transform((_,v) => alpha*v)
+                 
   }
+
+  def isConsistent(event: Map[RandomVariable,String], evidence: Map[RandomVariable,String]) =
+    evidence.forall((x:(RandomVariable,String)) => event(x._1) == x._2)
 }
-*/
+
