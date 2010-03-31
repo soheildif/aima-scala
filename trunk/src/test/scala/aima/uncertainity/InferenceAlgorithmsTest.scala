@@ -50,64 +50,64 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
   private val B = RandomVariable("B")
   private val C = RandomVariable("C")
 
-  private val f0 = new Factor(Set.empty,Map(Set.empty -> 1.0)) //no variables  
-  private val fA = new Factor(Set(A),Map(Set((A,True)) -> 0.6,
-                                         Set((A,False)) -> 0.4))
-  private val fB = new Factor(Set(B),Map(Set((B,True)) -> 0.7,
-                                         Set((B,False)) -> 0.3))
-  private val fAB = new Factor(Set(A,B),Map(Set((A,True),(B,True)) -> 0.3,
-                                           Set((A,True),(B,False)) -> 0.7,
-                                           Set((A,False),(B,True)) -> 0.9,
-                                           Set((A,False),(B,False)) -> 0.1))
-  private val fBC = new Factor(Set(B,C),Map(Set((B,True),(C,True)) -> 0.2,
-                                           Set((B,True),(C,False)) -> 0.8,
-                                           Set((B,False),(C,True)) -> 0.6,
-                                           Set((B,False),(C,False)) -> 0.4))
+  private val f0 = new Factor(Set.empty,Map(Map.empty -> 1.0)) //no variables  
+  private val fA = new Factor(Set(A),Map(Map((A,True)) -> 0.6,
+                                         Map((A,False)) -> 0.4))
+  private val fB = new Factor(Set(B),Map(Map((B,True)) -> 0.7,
+                                         Map((B,False)) -> 0.3))
+  private val fAB = new Factor(Set(A,B),Map(Map((A,True),(B,True)) -> 0.3,
+                                           Map((A,True),(B,False)) -> 0.7,
+                                           Map((A,False),(B,True)) -> 0.9,
+                                           Map((A,False),(B,False)) -> 0.1))
+  private val fBC = new Factor(Set(B,C),Map(Map((B,True),(C,True)) -> 0.2,
+                                           Map((B,True),(C,False)) -> 0.8,
+                                           Map((B,False),(C,True)) -> 0.6,
+                                           Map((B,False),(C,False)) -> 0.4))
   
   def testPointwiseProduct() {
     
     var tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,f0)
     assertEquals(Set.empty,tmp.variables)
-    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
+    assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,fA)
     assertEquals(Set(A),tmp.variables)
-    assertEquals(Map(Set((A,True)) -> 0.6,
-                     Set((A,False)) -> 0.4),tmp.ptable)
+    assertEquals(Map(Map((A,True)) -> 0.6,
+                     Map((A,False)) -> 0.4),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fA)
     assertEquals(Set(A),tmp.variables)
-    assertEquals(0.36, tmp.ptable(Set((A,True))), 0.001)
-    assertEquals(0.16, tmp.ptable(Set((A,False))), 0.001)
+    assertEquals(0.36, tmp.ptable(Map((A,True))), 0.001)
+    assertEquals(0.16, tmp.ptable(Map((A,False))), 0.001)
 
 
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fB)
     assertEquals(Set(A,B),tmp.variables)
-    assertEquals(0.42,tmp.ptable(Set((A,True),(B,True))),0.001)
-    assertEquals(0.18,tmp.ptable(Set((A,True),(B,False))),0.001)
-    assertEquals(0.28,tmp.ptable(Set((A,False),(B,True))),0.001)
-    assertEquals(0.12,tmp.ptable(Set((A,False),(B,False))),0.001)
+    assertEquals(0.42,tmp.ptable(Map((A,True),(B,True))),0.001)
+    assertEquals(0.18,tmp.ptable(Map((A,True),(B,False))),0.001)
+    assertEquals(0.28,tmp.ptable(Map((A,False),(B,True))),0.001)
+    assertEquals(0.12,tmp.ptable(Map((A,False),(B,False))),0.001)
 
 
     //example given in Fig 14.10 in AIMA3e
     tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fAB,fBC)
     assertEquals(Set(A,B,C),tmp.variables)
-    assertEquals(0.06,tmp.ptable(Set((A,True),(B,True),(C,True))),0.001)
-    assertEquals(0.24,tmp.ptable(Set((A,True),(B,True),(C,False))),0.001)
-    assertEquals(0.42,tmp.ptable(Set((A,True),(B,False),(C,True))),0.001)
-    assertEquals(0.28,tmp.ptable(Set((A,True),(B,False),(C,False))),0.001)
-    assertEquals(0.18,tmp.ptable(Set((A,False),(B,True),(C,True))),0.001)
-    assertEquals(0.72,tmp.ptable(Set((A,False),(B,True),(C,False))),0.001)
-    assertEquals(0.06,tmp.ptable(Set((A,False),(B,False),(C,True))),0.001)
-    assertEquals(0.04,tmp.ptable(Set((A,False),(B,False),(C,False))),0.001)
+    assertEquals(0.06,tmp.ptable(Map((A,True),(B,True),(C,True))),0.001)
+    assertEquals(0.24,tmp.ptable(Map((A,True),(B,True),(C,False))),0.001)
+    assertEquals(0.42,tmp.ptable(Map((A,True),(B,False),(C,True))),0.001)
+    assertEquals(0.28,tmp.ptable(Map((A,True),(B,False),(C,False))),0.001)
+    assertEquals(0.18,tmp.ptable(Map((A,False),(B,True),(C,True))),0.001)
+    assertEquals(0.72,tmp.ptable(Map((A,False),(B,True),(C,False))),0.001)
+    assertEquals(0.06,tmp.ptable(Map((A,False),(B,False),(C,True))),0.001)
+    assertEquals(0.04,tmp.ptable(Map((A,False),(B,False),(C,False))),0.001)
   }
 
   def testSumOutAFactor() {
     var tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,f0)
     assertEquals(Set.empty,tmp.variables)
-    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
+    assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(B,fA)
@@ -117,13 +117,13 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fA)
     assertEquals(Set.empty,tmp.variables)
-    assertEquals(Map(Set.empty -> 1.0),tmp.ptable)
+    assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
     tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fAB)
     assertEquals(Set(B),tmp.variables)
-    assertEquals(1.2,tmp.ptable(Set((B,True))),0.001)
-    assertEquals(0.8,tmp.ptable(Set((B,False))),0.001)
+    assertEquals(1.2,tmp.ptable(Map((B,True))),0.001)
+    assertEquals(0.8,tmp.ptable(Map((B,False))),0.001)
   }
 
   def testEnumerationAskAimaExample() {
