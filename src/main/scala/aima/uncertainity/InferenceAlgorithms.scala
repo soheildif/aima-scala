@@ -50,9 +50,7 @@ object EnumerationAskWithVariableElimination {
       throw new RuntimeException("Variables in final factor " + factor.variables + " not matching with " + X)
     else {
       val q = factor.ptable.keySet.foldLeft(Map[String,Double]())(
-        (m,k) => {
-          val Some((r,s)) = k.find(_._1 == X)
-          m + (s -> factor.ptable(k))})
+        (m,k) => m + (k(X) -> factor.ptable(k)))
       //normalize
       val alpha = 1/q.values.reduceLeft(_ + _) //normalization constant
       q.transform((_,v) => alpha*v)
@@ -68,24 +66,19 @@ object EnumerationAskWithVariableElimination {
     val parentsX = bn.parents(x)
     val vars = parentsX + x
 
-    //for all variables in vars, make a set of (RandomVariable,String)
+    //for all variables in vars, make a map of [RandomVariable,String]
     //which exists in evidence e
-    val varsInE = vars.foldLeft(Set[(RandomVariable,String)]())(
-      (s,v) =>
-        e.get(v) match {
-          case None => s
-          case Some(str) => s + ((v,str))
-        })
+    val varsInE = e.filter((x:(RandomVariable,String)) => vars.contains(x._1))
 
     if(varsInE.isEmpty) new Factor(vars,bn.cpt(x))
     else {
       var cpt = bn.cpt(x)
       //whatever is in the evidence, remove it from cpt keys
       //keep the one that agrees with evidence
-      cpt = cpt.keySet.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+      cpt = cpt.keySet.foldLeft(Map[Map[RandomVariable,String],Double]())(
         (m,k) =>
-          if(varsInE.subsetOf(k))
-            m + ((k -- varsInE) -> cpt(k))
+          if(varsInE.forall(x => k(x._1) == x._2))
+            m + ((k -- varsInE.keySet) -> cpt(k))
           else m)
       new Factor(vars.filter(!e.contains(_)),cpt)
     }
@@ -99,13 +92,13 @@ object EnumerationAskWithVariableElimination {
     val ptbl1 = f1.ptable
     val ptbl2 = f2.ptable
 
-    val ptbl = ptbl1.keySet.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+    val ptbl = ptbl1.keySet.foldLeft(Map[Map[RandomVariable,String],Double]())(
       (m,pk1) => {
         ptbl2.keySet.foldLeft(m)(
           (m,pk2) => {
-            val k = pk1 ++ pk2
+            val k = Set(pk1.toSeq:_*) ++ Set(pk2.toSeq:_*)
             if(k.size == size)
-              m + (k -> ptbl1(pk1)*ptbl2(pk2))
+              m + ((pk1 ++ pk2) -> ptbl1(pk1)*ptbl2(pk2))
             else m
           })})
 
@@ -131,10 +124,10 @@ object EnumerationAskWithVariableElimination {
     
     val oldPtbl = factor.ptable
 
-    val newPtbl = allKeys.foldLeft(Map[Set[(RandomVariable,String)],Double]())(
+    val newPtbl = allKeys.foldLeft(Map[Map[RandomVariable,String],Double]())(
       (m,a) => m + (a -> oldPtbl.keySet.foldLeft(0.0)(
         (p,k) =>
-          if(a.subsetOf(k)) p+oldPtbl(k)
+          if(a.forall(x => k(x._1) == x._2)) p+oldPtbl(k)
           else p)))
 
     new Factor(otherVars,newPtbl)
@@ -148,25 +141,28 @@ object EnumerationAskWithVariableElimination {
   //               Set((A,false), (B,true)),
   //               Set((A,false), (B,false)))
   def allCombinations(variables: Set[RandomVariable]) = {
-    def loop(variables: List[RandomVariable], result: Set[Set[(RandomVariable,String)]]): Set[Set[(RandomVariable,String)]] =
+    def loop(variables: List[RandomVariable], result: Set[Map[RandomVariable,String]]): Set[Map[RandomVariable,String]] =
       variables match {
         case Nil => result
         case x :: rest =>
-          loop(rest,result.flatMap(s => x.domain.map((v:String) => s + ((x,v)))))
+          loop(rest,result.flatMap(s => x.domain.map((v:String) => s + (x -> v))))
       }
 
-    loop(variables.toList,Set(Set.empty))
+    loop(variables.toList,Set(Map.empty))
   } 
 }
 
 class Factor(val variables: Set[RandomVariable],
-             val ptable: Map[Set[(RandomVariable,String)],Double])
+             val ptable: Map[Map[RandomVariable,String],Double])
 
 
 
 
 
-//Fig 14.13
+/** PRIOR-SAMPLE, described in Fig 14.13
+ *
+ * @author Himanshu Gupta
+ */
 object PriorSample {
   def apply(bn: BayesNet): Map[RandomVariable,String] =
     bn.variables.foldLeft(Map[RandomVariable,String]())(
