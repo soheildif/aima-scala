@@ -26,11 +26,11 @@ object EnumerationAsk {
 }
 
 
-/** ENUMERATION-ASK with Variable elimination, described in Fig 14.11
+/** ELIMINATION-ASK, described in Fig 14.11
  *
  * @author Himanshu Gupta
  */
-object EnumerationAskWithVariableElimination {
+object EliminationAsk {
 
   def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet): Map[String,Double] = {
 
@@ -216,7 +216,7 @@ object RejectionSampling {
                  
   }
 
-  def isConsistent(event: Map[RandomVariable,String], evidence: Map[RandomVariable,String]) =
+  private def isConsistent(event: Map[RandomVariable,String], evidence: Map[RandomVariable,String]) =
     evidence.forall((x:(RandomVariable,String)) => event(x._1) == x._2)
 }
 

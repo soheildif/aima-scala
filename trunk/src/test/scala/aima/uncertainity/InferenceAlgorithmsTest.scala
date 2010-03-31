@@ -42,7 +42,7 @@ class EnumerationAskTest extends TestCase {
 }
 
 
-class EnumerationAskWithVariableEliminationTest extends TestCase {
+class EliminationAskTest extends TestCase {
   private val True = RandomVariable.True
   private val False = RandomVariable.False
 
@@ -66,24 +66,24 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
   
   def testPointwiseProduct() {
     
-    var tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,f0)
+    var tmp = EliminationAsk.pointwiseProduct(f0,f0)
     assertEquals(Set.empty,tmp.variables)
     assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
-    tmp = EnumerationAskWithVariableElimination.pointwiseProduct(f0,fA)
+    tmp = EliminationAsk.pointwiseProduct(f0,fA)
     assertEquals(Set(A),tmp.variables)
     assertEquals(Map(Map((A,True)) -> 0.6,
                      Map((A,False)) -> 0.4),tmp.ptable)
 
 
-    tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fA)
+    tmp = EliminationAsk.pointwiseProduct(fA,fA)
     assertEquals(Set(A),tmp.variables)
     assertEquals(0.36, tmp.ptable(Map((A,True))), 0.001)
     assertEquals(0.16, tmp.ptable(Map((A,False))), 0.001)
 
 
-    tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fA,fB)
+    tmp = EliminationAsk.pointwiseProduct(fA,fB)
     assertEquals(Set(A,B),tmp.variables)
     assertEquals(0.42,tmp.ptable(Map((A,True),(B,True))),0.001)
     assertEquals(0.18,tmp.ptable(Map((A,True),(B,False))),0.001)
@@ -92,7 +92,7 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
 
 
     //example given in Fig 14.10 in AIMA3e
-    tmp = EnumerationAskWithVariableElimination.pointwiseProduct(fAB,fBC)
+    tmp = EliminationAsk.pointwiseProduct(fAB,fBC)
     assertEquals(Set(A,B,C),tmp.variables)
     assertEquals(0.06,tmp.ptable(Map((A,True),(B,True),(C,True))),0.001)
     assertEquals(0.24,tmp.ptable(Map((A,True),(B,True),(C,False))),0.001)
@@ -105,33 +105,33 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
   }
 
   def testSumOutAFactor() {
-    var tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,f0)
+    var tmp = EliminationAsk.sumOutAFactor(A,f0)
     assertEquals(Set.empty,tmp.variables)
     assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
-    tmp = EnumerationAskWithVariableElimination.sumOutAFactor(B,fA)
+    tmp = EliminationAsk.sumOutAFactor(B,fA)
     assertEquals(fA.variables,tmp.variables)
     assertEquals(fA.ptable,tmp.ptable)
 
 
-    tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fA)
+    tmp = EliminationAsk.sumOutAFactor(A,fA)
     assertEquals(Set.empty,tmp.variables)
     assertEquals(Map(Map.empty -> 1.0),tmp.ptable)
 
 
-    tmp = EnumerationAskWithVariableElimination.sumOutAFactor(A,fAB)
+    tmp = EliminationAsk.sumOutAFactor(A,fAB)
     assertEquals(Set(B),tmp.variables)
     assertEquals(1.2,tmp.ptable(Map((B,True))),0.001)
     assertEquals(0.8,tmp.ptable(Map((B,False))),0.001)
   }
 
   def testEnumerationAskAimaExample() {
-    CommonAskTest.testEnumerationAskAimaExample(EnumerationAskWithVariableElimination.apply)
+    CommonAskTest.testEnumerationAskAimaExample(EliminationAsk.apply)
   }
   
   def testEnumerationAllVariablesExcludingQueryKnown() {
-    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EnumerationAskWithVariableElimination.apply)
+    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EliminationAsk.apply)
   }
 }
 
