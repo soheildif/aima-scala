@@ -134,3 +134,14 @@ class EnumerationAskWithVariableEliminationTest extends TestCase {
     CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EnumerationAskWithVariableElimination.apply)
   }
 }
+
+
+class PriorSampleTest extends TestCase {
+  def testIt() {
+    //we can't really write a unit test for it, as result will
+    //be random, we're doing this just to see that no exceptions
+    //are raised
+    println(PriorSample(ExampleBayesNet.burglaryNetwork))
+    assertTrue(true)
+  }
+}

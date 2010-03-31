@@ -17,13 +17,22 @@ class BayesNet {
       case None => throw new IllegalArgumentException(X + " has never been added to this bayes network")
     }
   
-  //Returns P(X=x|Parents(X))
-  def getProbability(X: RandomVariable, x: String, conditions: Set[(RandomVariable,String)]) =
+  //Returns P(X=x|Parents(X)) TODO: change conditions to a Map
+  def getProbability(X: RandomVariable, x: String, conditions: Set[(RandomVariable,String)]): Double =
     findNode(X).cpt.get(conditions + (X->x)) match {
       case Some(p) => p
       case None =>
         throw new IllegalArgumentException("Could not find posterior probability for " + X + " = " + x + " with conditions " + conditions)
     }
+
+  //Returns probability distribution of X, given that conditions/parents are fixed
+  def getProbabilityDistribution(X: RandomVariable, conditions: Map[RandomVariable,String]): Map[String,Double] = {
+    val nodeX = findNode(X)
+    val cpt = nodeX.cpt
+    val e = nodeX.parents.map(x => (x,conditions(x)))
+    X.domain.foldLeft(Map[String,Double]())(
+      (m,d) => m + (d -> cpt(e + (X->d))))
+  }
 
   //Returns CPT of a node
   def cpt(X: RandomVariable) = findNode(X).cpt
