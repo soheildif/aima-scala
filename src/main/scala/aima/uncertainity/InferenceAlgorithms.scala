@@ -136,10 +136,10 @@ object EnumerationAskWithVariableElimination {
   //Given a set of variables, it returns all possible combinations for probability
   //distribution
   //For example, if we give variables = Set(RandomVariable(A),RandomVariable(B))
-  //It returns Set(Set((A,true), (B,true)), 
-  //               Set((A,true), (B,false)),
-  //               Set((A,false), (B,true)),
-  //               Set((A,false), (B,false)))
+  //It returns Set(Map((A,true), (B,true)), 
+  //               Map((A,true), (B,false)),
+  //               Map((A,false), (B,true)),
+  //               Map((A,false), (B,false)))
   def allCombinations(variables: Set[RandomVariable]) = {
     def loop(variables: List[RandomVariable], result: Set[Map[RandomVariable,String]]): Set[Map[RandomVariable,String]] =
       variables match {
