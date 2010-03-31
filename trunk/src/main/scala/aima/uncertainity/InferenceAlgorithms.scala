@@ -19,9 +19,9 @@ object EnumerationAsk {
       case Nil => 1.0
       //Parents(y) will always be present in the evidence e
       case y :: rest if e.contains(y) =>
-        bn.getProbability(y,e(y),bn.parents(y).map(x => (x -> e(x)))) * enumerateAll(rest,e,bn)
+        bn.getProbability(y,e(y),e) * enumerateAll(rest,e,bn)
       case y :: rest =>
-        y.domain.map(v => bn.getProbability(y,v,bn.parents(y).map(x => (x -> e(x)))) * enumerateAll(rest,e + (y -> v),bn)).reduceLeft(_ + _)
+        y.domain.map(v => bn.getProbability(y,v,e) * enumerateAll(rest,e + (y -> v),bn)).reduceLeft(_ + _)
     }
 }
 

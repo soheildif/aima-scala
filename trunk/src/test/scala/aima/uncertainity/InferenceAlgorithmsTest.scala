@@ -141,7 +141,8 @@ class PriorSampleTest extends TestCase {
     //we can't really write a unit test for it, as result will
     //be random, we're doing this just to see that no exceptions
     //are raised
-    println(PriorSample(ExampleBayesNet.burglaryNetwork))
+    PriorSample(ExampleBayesNet.burglaryNetwork)
+    PriorSample(ExampleBayesNet.cloudyNetwork)
     assertTrue(true)
   }
 }
