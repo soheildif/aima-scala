@@ -18,18 +18,19 @@ class BayesNet {
     }
   
   //Returns P(X=x|Parents(X)) TODO: change conditions to a Map
-  def getProbability(X: RandomVariable, x: String, conditions: Set[(RandomVariable,String)]): Double =
-    findNode(X).cpt.get(conditions + (X->x)) match {
+  def getProbability(X: RandomVariable, x: String, conditions: Map[RandomVariable,String]): Double = {
+    val e = parents(X).map(x => (x,conditions(x)))
+    findNode(X).cpt.get(e + (X->x)) match {
       case Some(p) => p
       case None =>
         throw new IllegalArgumentException("Could not find posterior probability for " + X + " = " + x + " with conditions " + conditions)
     }
+  }
 
   //Returns probability distribution of X, given that conditions/parents are fixed
   def getProbabilityDistribution(X: RandomVariable, conditions: Map[RandomVariable,String]): Map[String,Double] = {
-    val nodeX = findNode(X)
-    val cpt = nodeX.cpt
-    val e = nodeX.parents.map(x => (x,conditions(x)))
+    val cpt = this.cpt(X)
+    val e = parents(X).map(x => (x,conditions(x)))
     X.domain.foldLeft(Map[String,Double]())(
       (m,d) => m + (d -> cpt(e + (X->d))))
   }
