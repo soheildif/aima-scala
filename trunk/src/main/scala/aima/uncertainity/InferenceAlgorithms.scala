@@ -220,3 +220,28 @@ object RejectionSampling {
     evidence.forall((x:(RandomVariable,String)) => event(x._1) == x._2)
 }
 
+
+/** LIKELIHOOD-WEIGHTING, described in Fig 14.15
+ *
+ * @author Himanshu Gupta
+ */
+object LikelihoodWeighting {
+
+  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
+
+    def loop(n: Int, samples: Map[String,Double]): Map[String,Double] =
+      if(n > 0) {
+        val (event,w) = weightedSample(bn,e)
+        val str = event(X)
+        loop(n-1,samples + (str -> samples(str) + w))
+      }
+      else samples
+
+    val q = loop(n,Map[String,Double]())
+    //normalize
+    val alpha = 1.0/q.values.reduceLeft(_ + _)
+    q.transform((_,v) => alpha*v)
+  }
+
+  def weightedSample(bn: BayesNet)
+}
