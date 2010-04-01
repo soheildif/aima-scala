@@ -47,7 +47,7 @@ object ExampleBayesNet {
              Map((alarm,False),(maryCalls,False)) -> 0.99))
   }
 
-  /** Bayes Net for the Cloudy network described in Fig 12.12 */
+  /** Bayes Net for the Cloudy network described in Fig 14.12 */
   def cloudyNetwork = {
     val cloudy = RandomVariable("Cloudy")
     val sprinkler = RandomVariable("Sprinkler")
