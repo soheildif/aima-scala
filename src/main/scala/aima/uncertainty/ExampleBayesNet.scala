@@ -1,4 +1,4 @@
-package aima.uncertainity
+package aima.uncertainty
 
 /** Some example Bayes Networks
  *

@@ -1,4 +1,4 @@
-package aima.uncertainity
+package aima.uncertainty
 
 /** Bayesian Network Representation, as described in Sec 14.1
  *

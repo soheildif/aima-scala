@@ -1,4 +1,4 @@
-package aima.uncertainity
+package aima.uncertainty
 
 /** RandomVariable, as described in Ch. 13
  *
