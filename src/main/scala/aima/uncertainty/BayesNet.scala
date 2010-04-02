@@ -37,9 +37,24 @@ class BayesNet {
       (m,d) => m + (d -> cpt(e + (X->d))))
   }
 
+  //P(X|markovBlanket(X)); Returns probability distribution of X given its markov blanket
+  def getMarkovBlanketProbabilityDistribution(X: RandomVariable, mbv: Map[RandomVariable,String]): Map[String,Double] = {
+    //algo is described in section-14.5.2, last paragraph
+    // P(xi|mb(Xi)) = alpha*P(xi|parents(Xi)) * P(y1|parents(Y1)) * P(y2|parents(Y2))...
+    //     where yj are children of Xi
+    X.domain.foldLeft(Map[String,Double]())(
+      (m,d) => {
+        val p = getProbability(X,d,mbv) * 
+          children(X).foldLeft(1.0)(
+            (p,y) => p * getProbability(y,mbv(y),mbv))
+        m + (d -> p)
+      })
+  }
+
   //Returns CPT of a node
   def cpt(X: RandomVariable) = findNode(X).cpt
  
+  def children(X: RandomVariable): Set[RandomVariable] = findNode(X).children.map(_.variable)
   def parents(X: RandomVariable): Set[RandomVariable] = findNode(X).parents.map(_.variable)
 
   //topologically sorted list of variables
