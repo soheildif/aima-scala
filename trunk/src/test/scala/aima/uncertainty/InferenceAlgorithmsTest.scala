@@ -163,3 +163,24 @@ class RejectionSamplingTest extends TestCase {
     assertTrue(true)
   }
 }
+
+
+class LikelihoodWeightingTest extends TestCase {
+
+  def testWeightedSample() {
+    val result = LikelihoodWeighting.weightedSample(ExampleBayesNet.cloudyNetwork,
+                                                    Map(RandomVariable("Cloudy") -> RandomVariable.True,
+                                                        RandomVariable("WetGrass") -> RandomVariable.True))
+    //println(result)
+    assertTrue(true)
+  }
+
+  def testLikelihoodWeighting() {
+    val result = LikelihoodWeighting(RandomVariable("Burglary"),
+                                     Map(RandomVariable("JohnCalls") -> RandomVariable.True,
+                                         RandomVariable("MaryCalls") -> RandomVariable.True),
+                                     ExampleBayesNet.burglaryNetwork,100000)
+    //println(result)
+    assertTrue(true)
+  }
+}

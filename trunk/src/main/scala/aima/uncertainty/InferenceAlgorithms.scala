@@ -9,9 +9,8 @@ object EnumerationAsk {
 
     val q = X.domain.map(x => (x -> enumerateAll(bn.variables, e + (X -> x),bn))).
       foldLeft(Map[String,Double]())(_ + _)
-    //normalize
-    val alpha = 1/q.values.reduceLeft(_ + _) //normalization constant
-    q.transform((_,v) => alpha*v)
+
+    Utils.normalize(q)
   }
 
   def enumerateAll(vars: List[RandomVariable], e: Map[RandomVariable,String], bn: BayesNet): Double =
@@ -51,9 +50,8 @@ object EliminationAsk {
     else {
       val q = factor.ptable.keySet.foldLeft(Map[String,Double]())(
         (m,k) => m + (k(X) -> factor.ptable(k)))
-      //normalize
-      val alpha = 1/q.values.reduceLeft(_ + _) //normalization constant
-      q.transform((_,v) => alpha*v)
+
+      Utils.normalize(q)
     }
   }
 
@@ -163,12 +161,79 @@ class Factor(val variables: Set[RandomVariable],
  *
  * @author Himanshu Gupta
  */
-object PriorSample {
+object PriorSample { //TODO: maybe move it as a def into RejectionSampling
   def apply(bn: BayesNet): Map[RandomVariable,String] =
     bn.variables.foldLeft(Map[RandomVariable,String]())(
-      (m,x) => m + (x -> randomSample(x,m,bn)))
+      (m,x) => m + (x -> Utils.randomSample(x,m,bn)))
+}
 
-  //Returns one value from domain of x, as per given probability
+
+/** REJECTION-SAMPLING, described in Fig 14.14
+ *
+ * @author Himanshu Gupta
+ */
+object RejectionSampling {
+  def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
+    
+    def loop(n: Int, samples: Map[String,Double]): Map[String,Double] =
+      if(n > 0) {
+        val event = PriorSample(bn)
+        if(isConsistent(event,e)){
+          //find value of query variable in it and add to sample
+          val str = event(x)
+          loop(n-1,samples + (str -> (samples(str)+1)))
+        }
+        else loop(n-1,samples)
+      }
+      else samples
+
+    val q = loop(n, x.domain.foldLeft(Map[String,Double]())(
+      (m,d) => m + (d -> 0.0)))
+    
+    Utils.normalize(q)             
+  }
+
+  private def isConsistent(event: Map[RandomVariable,String], evidence: Map[RandomVariable,String]) =
+    evidence.forall((x:(RandomVariable,String)) => event(x._1) == x._2)
+}
+
+
+/** LIKELIHOOD-WEIGHTING, described in Fig 14.15
+ *
+ * @author Himanshu Gupta
+ */
+object LikelihoodWeighting {
+
+  def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
+
+    def loop(n: Int, samples: Map[String,Double]): Map[String,Double] =
+      if(n > 0) {
+        val (event,w) = weightedSample(bn,e)
+        val str = event(x)
+        loop(n-1,samples + (str -> (samples(str) + w)))
+      }
+      else samples
+
+    val q = loop(n,x.domain.foldLeft(Map[String,Double]())(
+      (m,d) => m + (d -> 0.0)))
+
+    Utils.normalize(q)
+  }
+
+  def weightedSample(bn: BayesNet, e: Map[RandomVariable,String]): (Map[RandomVariable,String],Double) =
+    bn.variables.foldLeft((Map[RandomVariable,String](),1.0))(
+      (result,v) =>
+        e.get(v) match {
+          case Some(s) => (result._1 + (v -> s), result._2 * bn.getProbability(v,s,result._1))
+          case None => (result._1 + (v -> Utils.randomSample(v,result._1,bn)), result._2)
+        })
+}
+
+//Common functions
+object Utils {
+
+  //Returns one value from domain of x, as per given probability distribution of x, given
+  //that its parents are already fixed
   def randomSample(x: RandomVariable, parentX: Map[RandomVariable,String], bn: BayesNet) = {
     val pd = bn.getProbabilityDistribution(x,parentX)
     
@@ -186,62 +251,9 @@ object PriorSample {
     val index = intervals.findIndexOf(rand < _)
     if(index < 0) keys.last else keys(index)
   }
-}
 
-
-/** REJECTION-SAMPLING, described in Fig 14.14
- *
- * @author Himanshu Gupta
- */
-object RejectionSampling {
-  def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
-    
-    def loop(n: Int, samples: Map[String,Int]): Map[String,Int] =
-      if(n > 0) {
-        val event = PriorSample(bn)
-        if(isConsistent(event,e)){
-          //find value of query variable in it and add to sample
-          val str = event(x)
-          loop(n-1,samples + (str -> (samples(str)+1)))
-        }
-        else loop(n-1,samples)
-      }
-      else samples
-
-    val q = loop(n, x.domain.foldLeft(Map[String,Int]())(
-      (m,d) => m + (d -> 0)))
-    //normalize
-    val alpha = 1.0/q.values.reduceLeft(_ + _) //normalization constant
-    q.transform((_,v) => alpha*v)
-                 
-  }
-
-  private def isConsistent(event: Map[RandomVariable,String], evidence: Map[RandomVariable,String]) =
-    evidence.forall((x:(RandomVariable,String)) => event(x._1) == x._2)
-}
-
-
-/** LIKELIHOOD-WEIGHTING, described in Fig 14.15
- *
- * @author Himanshu Gupta
- */
-object LikelihoodWeighting {
-
-  def apply(X: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
-
-    def loop(n: Int, samples: Map[String,Double]): Map[String,Double] =
-      if(n > 0) {
-        val (event,w) = weightedSample(bn,e)
-        val str = event(X)
-        loop(n-1,samples + (str -> samples(str) + w))
-      }
-      else samples
-
-    val q = loop(n,Map[String,Double]())
-    //normalize
+  def normalize(q: Map[String,Double]) = {
     val alpha = 1.0/q.values.reduceLeft(_ + _)
     q.transform((_,v) => alpha*v)
   }
-
-  def weightedSample(bn: BayesNet)
 }
