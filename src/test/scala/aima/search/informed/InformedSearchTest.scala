@@ -1,41 +1,41 @@
 package aima.search.informed
 
-import org.scalatest.Suite
-import org.scalatest.ImpSuite
+import junit.framework._
+import Assert._
 
 import aima.search._
 
-class GreedyBestFirstSearchTest extends Suite {
+class GreedyBestFirstSearchTest extends TestCase {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     GreedyBestFirstSearch(p) match {
-      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.Fagaras), Go(RomaniaMapFactory.Bucharest)))
-      case CutOff() | Failure() => assert(false)
+      case Success(x) => assertEquals(x,List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.Fagaras), Go(RomaniaMapFactory.Bucharest)))
+      case CutOff() | Failure() => assertTrue(false)
     }
   }
 }
 
 // AStarSearch Test
-class AStarSearchTest extends Suite {
+class AStarSearchTest extends TestCase {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     AStarSearch(p) match {
-      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
-      case CutOff() | Failure() => assert(false)
+      case Success(x) => assertEquals(x,List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
+      case CutOff() | Failure() => assertTrue(false)
     }
   }
 }
 
 // RecursiveBestFirstSearch Test
-class RecursiveBestFirstSearchTest extends Suite {
+class RecursiveBestFirstSearchTest extends TestCase {
 
   def testRomaniaMap() {
     val p = new MapProblem(RomaniaMapFactory.createRomaniaMap(), In(RomaniaMapFactory.Arad), In(RomaniaMapFactory.Bucharest))
     RecursiveBestFirstSearch(p) match {
-      case Success(x) => assert(x == List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
-      case _ => assert(false)
+      case Success(x) => assertEquals(x,List(Go(RomaniaMapFactory.Sibiu), Go(RomaniaMapFactory.RimnicuVilcea), Go(RomaniaMapFactory.Pitesti), Go(RomaniaMapFactory.Bucharest)))
+      case _ => assertTrue(false)
     }
   } 
 }
