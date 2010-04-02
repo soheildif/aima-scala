@@ -192,7 +192,9 @@ class GibbsAskTest extends TestCase {
                                      Map(RandomVariable("JohnCalls") -> RandomVariable.True,
                                          RandomVariable("MaryCalls") -> RandomVariable.True),
                                      ExampleBayesNet.burglaryNetwork,100000)
-    println(result)
+    //TODO: NOT PERFORMING OK, check why? 
+    println("GibbsAsk P(Burglary | JohnCalls = true, MaryCalls = true) = " + result)
+    println("Above result is FAR from correct, it should be close to (true -> 0.284, false -> 0.715), CHECK why its happening")
     assertTrue(true)
   }
 }
