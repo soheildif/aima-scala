@@ -1,9 +1,9 @@
 package aima.search.online
 
-import org.scalatest.Suite
-import org.scalatest.ImpSuite
+import junit.framework._
+import Assert._
 
-class OnlineDFSTest extends Suite {
+class OnlineDFSTest extends TestCase {
 
   def testAIMA2eFig4_18() {
     var result:List[Go[String]] = List()
@@ -27,11 +27,11 @@ class OnlineDFSTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result.reverse == List(Go("2,1"), Go("1,1"), Go("1,2"), Go("1,1"), Go("1,2"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,1"), Go("3,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
+    assertEquals(result.reverse,List(Go("2,1"), Go("1,1"), Go("1,2"), Go("1,1"), Go("1,2"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,1"), Go("3,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
   }
 }
 
-class LRTAStarTest extends Suite {
+class LRTAStarTest extends TestCase {
 
   private def map = {
     val aMap = new LocationMap[String]()
@@ -63,7 +63,7 @@ class LRTAStarTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result == List())
+    assertEquals(result,List())
   }
 
   def testNormalSearch() {
@@ -79,7 +79,7 @@ class LRTAStarTest extends Suite {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assert(result.reverse == List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F")))
+    assertEquals(result.reverse,List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F")))
   }
 
   def testNoPath() {
@@ -105,6 +105,6 @@ class LRTAStarTest extends Suite {
     env.addAgent(agent)
     env.step(14) //or else it'll run forever
 
-    assert(result.reverse == List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F"), Go("E"), Go("D"), Go("C"), Go("B"), Go("C")))
+    assertEquals(result.reverse,List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F"), Go("E"), Go("D"), Go("C"), Go("B"), Go("C")))
   }
 }
