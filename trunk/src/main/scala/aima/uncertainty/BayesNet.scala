@@ -20,7 +20,8 @@ class BayesNet {
   //Returns P(X=x|Parents(X)) TODO: change conditions to a Map
   def getProbability(X: RandomVariable, x: String, conditions: Map[RandomVariable,String]): Double = {
     val parents = this.parents(X)
-    val e = conditions.filter((x:(RandomVariable,String)) => parents.contains(x._1))
+    val e = parents.foldLeft(Map[RandomVariable,String]())(
+      (m,v) => m + (v -> conditions(v)))
     findNode(X).cpt.get(e + (X->x)) match {
       case Some(p) => p
       case None =>
@@ -32,7 +33,8 @@ class BayesNet {
   def getProbabilityDistribution(X: RandomVariable, conditions: Map[RandomVariable,String]): Map[String,Double] = {
     val cpt = this.cpt(X)
     val parents = this.parents(X)
-    val e = conditions.filter((x:(RandomVariable,String)) => parents.contains(x._1))
+    val e = parents.foldLeft(Map[RandomVariable,String]())(
+      (m,v) => m + (v -> conditions(v)))
     X.domain.foldLeft(Map[String,Double]())(
       (m,d) => m + (d -> cpt(e + (X->d))))
   }
@@ -46,7 +48,7 @@ class BayesNet {
       (m,d) => {
         val p = getProbability(X,d,mbv) * 
           children(X).foldLeft(1.0)(
-            (p,y) => p * getProbability(y,mbv(y),mbv))
+            (p,y) => p * getProbability(y,mbv(y),mbv + (X -> d)))
         m + (d -> p)
       })
   }

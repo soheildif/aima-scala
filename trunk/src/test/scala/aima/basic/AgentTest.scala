@@ -1,6 +1,8 @@
 package aima.basic
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
+
 import VacuumWorld._
 
 /* This file contains tests for basic agents from the
@@ -10,7 +12,7 @@ import VacuumWorld._
  */
 
 //TableDrivenVacuumAgent test
-class TableDrivenVacuumAgentTest extends Suite {
+class TableDrivenVacuumAgentTest extends TestCase {
 
   def testCleanClean() {
     template("Clean", "Clean","RightLeft")
@@ -37,12 +39,12 @@ class TableDrivenVacuumAgentTest extends Suite {
                           case None => ; //nothing
                           case Some(x) => result += x })
     tve.stepUntilNoOp()
-    assert(expectedResult == result)
+    assertEquals(expectedResult,result)
   }
 }
 
 //ReflexVacuumAgent test
-class ReflexVacuumAgentTest extends Suite {
+class ReflexVacuumAgentTest extends TestCase {
 
   def testCleanClean() {
     template("Clean", "Clean","RightLeftRightLeftRightLeftRightLeft", 8)
@@ -69,12 +71,12 @@ class ReflexVacuumAgentTest extends Suite {
                           case None => ; //nothing
                           case Some(x) => result += x })
     tve.step(steps)
-    assert(expectedResult == result)
+    assertEquals(expectedResult,result)
   }
 }
 
 //SimpleReflexVacuumAgent test
-class SimpleReflexVacuumAgentTest extends Suite {
+class SimpleReflexVacuumAgentTest extends TestCase {
 
   def testCleanClean() {
     template("Clean", "Clean","RightLeftRightLeftRightLeftRightLeft", 8)
@@ -101,12 +103,12 @@ class SimpleReflexVacuumAgentTest extends Suite {
                           case None => ; //nothing
                           case Some(x) => result += x })    
     tve.step(steps)
-    assert(expectedResult == result)
+    assertEquals(expectedResult,result)
   }
 }
 
 //ModelBasedVacuumAgent test
-class ModelBasedVacuumAgentTest extends Suite {
+class ModelBasedVacuumAgentTest extends TestCase {
 
   def testCleanClean() {
     template("Clean", "Clean","Right")
@@ -133,6 +135,6 @@ class ModelBasedVacuumAgentTest extends Suite {
                           case None => ; //nothing
                           case Some(x) => result += x })
     tve.stepUntilNoOp()
-    assert(expectedResult == result, result)
+    assertEquals(expectedResult,result)
   }
 }
