@@ -4,9 +4,9 @@ import junit.framework._
 import Assert._
 
 //common enumeration ask algorithms tests
-object CommonAskTest {
+trait CommonAskTest {
 
-  def testEnumerationAskAimaExample(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
+  def enumerationAskAimaExample(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
     val result = ask(RandomVariable("Burglary"),
                      Map(RandomVariable("JohnCalls") -> RandomVariable.True,
                          RandomVariable("MaryCalls") -> RandomVariable.True),
@@ -16,7 +16,7 @@ object CommonAskTest {
     assertEquals(0.715,result(RandomVariable.False),0.001)
   }
 
-  def testEnumerationAllVariablesExcludingQueryKnown(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
+  def enumerationAllVariablesExcludingQueryKnown(ask: (RandomVariable,Map[RandomVariable,String],BayesNet)=>Map[String,Double]) {
     val result = ask(RandomVariable("Alarm"),
                      Map(RandomVariable("Burglary") -> RandomVariable.False,
                          RandomVariable("EarthQuake") -> RandomVariable.False,
@@ -30,19 +30,19 @@ object CommonAskTest {
   }
 }
 
-class EnumerationAskTest extends TestCase {
+class EnumerationAskTest extends TestCase with CommonAskTest {
 
   def testEnumerationAskAimaExample() {
-    CommonAskTest.testEnumerationAskAimaExample(EnumerationAsk.apply)
+    enumerationAskAimaExample(EnumerationAsk.apply)
   }
   
   def testEnumerationAllVariablesExcludingQueryKnown() {
-    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EnumerationAsk.apply)
+    enumerationAllVariablesExcludingQueryKnown(EnumerationAsk.apply)
   }
 }
 
 
-class EliminationAskTest extends TestCase {
+class EliminationAskTest extends TestCase with CommonAskTest {
   private val True = RandomVariable.True
   private val False = RandomVariable.False
 
@@ -127,11 +127,11 @@ class EliminationAskTest extends TestCase {
   }
 
   def testEnumerationAskAimaExample() {
-    CommonAskTest.testEnumerationAskAimaExample(EliminationAsk.apply)
+    enumerationAskAimaExample(EliminationAsk.apply)
   }
   
   def testEnumerationAllVariablesExcludingQueryKnown() {
-    CommonAskTest.testEnumerationAllVariablesExcludingQueryKnown(EliminationAsk.apply)
+    enumerationAllVariablesExcludingQueryKnown(EliminationAsk.apply)
   }
 }
 
@@ -196,3 +196,4 @@ class GibbsAskTest extends TestCase {
     assertTrue(true)
   }
 }
+

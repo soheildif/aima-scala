@@ -62,7 +62,7 @@ class FOLFCAskTest extends TestCase {
  *
  * @author Himanshu Gupta
  */
-class FOLBCAskTest extends Suite {
+class FOLBCAskTest extends TestCase {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
@@ -116,7 +116,7 @@ class FOLBCAskTest extends Suite {
  *
  * @author Himanshu Gupta
  */
-class FOLResolutionTest extends Suite {
+class FOLResolutionTest extends TestCase {
 
   def testCuriosityKillsTunaSucceeds() {
     assertTrue(FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Curiosity,Tuna)")))

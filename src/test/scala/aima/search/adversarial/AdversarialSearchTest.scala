@@ -82,7 +82,7 @@ class MinimaxDecisionTest extends TestCase {
   }
 }
 
-class AlphaBetaSearchTest extends Suite {
+class AlphaBetaSearchTest extends TestCase {
 
   private val game = new TicTacToeGame()
   private val initState = game.initialState
