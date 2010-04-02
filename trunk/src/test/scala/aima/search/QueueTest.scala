@@ -1,40 +1,41 @@
 package aima.search
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
 
-class FifoQueueTest {
+class FifoQueueTest TestCase {
   def testIt() {
     val f = new FifoQueue[Int]
-    assert(f.isEmpty)
+    assertTrue(f.isEmpty)
     f.insert(1)
     f.insertAll(List(2,3))
     f.insertAll(List(4,5))
-    assert(f.removeFirst == Some(1))
-    assert(f.removeFirst == Some(2))
-    assert(f.removeFirst == Some(3))
-    assert(f.removeFirst == Some(4))
-    assert(f.removeFirst == Some(5))
-    assert(f.isEmpty)
+    assertEquals(f.removeFirst,Some(1))
+    assertEquals(f.removeFirst,Some(2))
+    assertEquals(f.removeFirst,Some(3))
+    assertEquals(f.removeFirst,Some(4))
+    assertEquals(f.removeFirst,Some(5))
+    assertTrue(f.isEmpty)
   }
 }
 
-class LifoQueueTest {
+class LifoQueueTest extends TestCase {
   def testIt() {
     val f = new LifoQueue[Int]
     assert(f.isEmpty)
     f.insert(1)
     f.insertAll(List(2,3))
     f.insertAll(List(4,5))
-    assert(f.removeFirst == Some(5))
-    assert(f.removeFirst == Some(4))
-    assert(f.removeFirst == Some(3))
-    assert(f.removeFirst == Some(2))
-    assert(f.removeFirst == Some(1))
+    assertEquals(f.removeFirst,Some(5))
+    assertEquals(f.removeFirst,Some(4))
+    assertEquals(f.removeFirst,Some(3))
+    assertEquals(f.removeFirst,Some(2))
+    assertEquals(f.removeFirst,Some(1))
     assert(f.isEmpty)
   }
 }
 
-class PriorityQueueTest {
+class PriorityQueueTest extends TestCase {
   def testIt() {
     val f = new PriorityQueue[Int](
       (a) => new Ordered[Int] {
@@ -44,11 +45,11 @@ class PriorityQueueTest {
     f.insert(1)
     f.insertAll(List(2,3))
     f.insertAll(List(4,5))
-    assert(f.removeFirst == Some(1))
-    assert(f.removeFirst == Some(2))
-    assert(f.removeFirst == Some(3))
-    assert(f.removeFirst == Some(4))
-    assert(f.removeFirst == Some(5))
+    assertEquals(f.removeFirst,Some(1))
+    assertEquals(f.removeFirst,Some(2))
+    assertEquals(f.removeFirst,Some(3))
+    assertEquals(f.removeFirst,Some(4))
+    assertEquals(f.removeFirst,Some(5))
     assert(f.isEmpty)
   }
 }
