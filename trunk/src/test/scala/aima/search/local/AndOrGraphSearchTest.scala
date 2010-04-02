@@ -1,15 +1,15 @@
 package aima.search.local
 
-import org.scalatest.Suite
-import org.scalatest.ImpSuite
+import junit.framework._
+import Assert._
 
 //AndOrSearch Tests
-class AndOrGraphSearchTest extends Suite {
+class AndOrGraphSearchTest extends TestCase {
   def testIt() {
     val problem = new VacuumWorldNonDeterministicProblem("A")
     AndOrGraphSearch(problem) match {
-      case Success(x) => assert(x.toString() == "Suck IF (A,false,false) THEN [NoOp] ELSE  IF (A,false,true) THEN [Right Suck NoOp]")
-      case _ => assert(false)
+      case Success(x) => assertEquals(x.toString(),"Suck IF (A,false,false) THEN [NoOp] ELSE  IF (A,false,true) THEN [Right Suck NoOp]")
+      case _ => assertTrue(false)
     }
   }
 }
