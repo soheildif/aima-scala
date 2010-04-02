@@ -1,7 +1,7 @@
 package aima.logic.propositional
 
-import org.scalatest.Suite
-import scala.collection.immutable.{Set,Map}
+import junit.framework._
+import Assert._
 
 /* This file contains tests for entailment algorithms
  * described in chapter 7.
@@ -10,36 +10,36 @@ import scala.collection.immutable.{Set,Map}
  */
 
 // ---------- TT-ENTAILS Tests -------------    
-class TTEntailsTest extends Suite {
+class TTEntailsTest extends TestCase {
 
   def test1() {
     val KB = new TTEntailsBasedKB("A&B")
-    assert(KB.ask("A"))
+    assertTrue(KB.ask("A"))
   }
 
   def test2() {
     val KB = new TTEntailsBasedKB("A|B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test3() {
     val KB = new TTEntailsBasedKB("(A => B) & B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test4() {
     val KB = new TTEntailsBasedKB("A")
-    assert(!KB.ask("~ A"))
+    assertTrue(!KB.ask("~ A"))
   }
 
   def test5() {
     val KB = new TTEntailsBasedKB("(A => B) & B")
-    assert(!KB.ask("X"))
+    assertTrue(!KB.ask("X"))
   }
 
   def test6() {
     val KB = new TTEntailsBasedKB("~A")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test7() {
@@ -52,8 +52,8 @@ class TTEntailsTest extends Suite {
     KB.tell("(~B12)")
     KB.tell("(B10)")
     KB.tell("(B01)")
-    assert(KB.ask("P00"))
-    assert(!KB.ask("~P00"))
+    assertTrue(KB.ask("P00"))
+    assertTrue(!KB.ask("~P00"))
   }
 
   /** A test based on example described in Fig 7.13 */
@@ -63,7 +63,7 @@ class TTEntailsTest extends Suite {
     KB.tell("~B11 | P12 | P21")
     KB.tell("~P12 | B11")
     KB.tell("~B11")
-    assert(KB.ask("~ P12"))
+    assertTrue(KB.ask("~ P12"))
   }
 
   /**
@@ -78,41 +78,41 @@ class TTEntailsTest extends Suite {
 
     val alpha = "~P12"
 
-    assert(new TTEntailsBasedKB(R1,R2,R3,R4,R5).ask(alpha))
+    assertTrue(new TTEntailsBasedKB(R1,R2,R3,R4,R5).ask(alpha))
   } 
 }
 
 // ---------- PL-RESOLUTION Tests -------------    
-class PLResolutionTest extends Suite {
+class PLResolutionTest extends TestCase {
 
   def test1() {
     val KB = new PLResolutionBasedKB("A&B")
-    assert(KB.ask("A"))
+    assertTrue(KB.ask("A"))
   }
 
   def test2() {
     val KB = new PLResolutionBasedKB("A|B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test3() {
     val KB = new PLResolutionBasedKB("(A => B) & B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test4() {
     val KB = new PLResolutionBasedKB("A")
-    assert(!KB.ask("~ A"))
+    assertTrue(!KB.ask("~ A"))
   }
 
   def test5() {
     val KB = new PLResolutionBasedKB("(A => B) & B")
-    assert(!KB.ask("X"))
+    assertTrue(!KB.ask("X"))
   }
 
   def test6() {
     val KB = new PLResolutionBasedKB("~A")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   /** This problem starts with 23 clauses, which result in 253
@@ -131,8 +131,8 @@ class PLResolutionTest extends Suite {
     KB.tell("(~B12)")
     KB.tell("(B10)")
     KB.tell("(B01)")
-    assert(KB.ask("P00"))
-    assert(!KB.ask("~P00"))
+    assertTrue(KB.ask("P00"))
+    assertTrue(!KB.ask("~P00"))
   }*/
 
   //Testing resoution function
@@ -140,7 +140,7 @@ class PLResolutionTest extends Suite {
     val c1 = SentenceToCNF(PropositionalLogicParser.parse("~P12 | B11")).clauses.toList(0)
     val c2 = SentenceToCNF(PropositionalLogicParser.parse("~B11 | P12 | P21")).clauses.toList(0)
     val resolvents = PLResolution.plResolve(c1,c2)
-    assert(resolvents.size == 0)
+    assertTrue(resolvents.size == 0)
   }
 
   /** A test based on example described in Fig 7.13 */
@@ -150,7 +150,7 @@ class PLResolutionTest extends Suite {
     KB.tell("~B11 | P12 | P21")
     KB.tell("~P12 | B11")
     KB.tell("~B11")
-    assert(KB.ask("~ P12"))
+    assertTrue(KB.ask("~ P12"))
   }
 
   /**
@@ -165,12 +165,12 @@ class PLResolutionTest extends Suite {
 
     val alpha = "~P12"
 
-    assert(new PLResolutionBasedKB(R1,R2,R3,R4,R5).ask(alpha))
+    assertTrue(new PLResolutionBasedKB(R1,R2,R3,R4,R5).ask(alpha))
   }
 }
 
 //---------- PLFC-ENTAILS ------------------
-class PLFCEntailsTest extends Suite {
+class PLFCEntailsTest extends TestCase {
 
   /** This test is based on the problem shown
    * in Fig 7.16
@@ -189,12 +189,12 @@ class PLFCEntailsTest extends Suite {
                      new DefiniteClause(Set(A,P),L), // A/\P => L
                      new DefiniteClause(Set(A,B),L)) // A/\B => L
 
-    assert(PLFCEntails(KB,Q,List(A,B)))
+    assertTrue(PLFCEntails(KB,Q,List(A,B)))
   }
 }
 
 //---------- DPLL-SATISFIABLE Tests ------------------
-class DPLLSatisfiableTest extends Suite {
+class DPLLSatisfiableTest extends TestCase {
 
   def testDPLLReturnsTrueWhenAllClausesTrueInModel() {
     val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A & B) & (A & B)")).clauses
@@ -203,7 +203,7 @@ class DPLLSatisfiableTest extends Suite {
     val A = PropositionSymbol("A")
     val B = PropositionSymbol("B")
     val model = Map(A -> true, B -> true)
-    assert(DPLLSatisfiable.DPLL(clauses,symbols,model))
+    assertTrue(DPLLSatisfiable.DPLL(clauses,symbols,model))
   }
 
   def testDPLLReturnsFalseWhenOneClauseFalseInModel() {
@@ -213,7 +213,7 @@ class DPLLSatisfiableTest extends Suite {
     val A = PropositionSymbol("A")
     val B = PropositionSymbol("B")
     val model = Map(A -> true, B -> false)
-    assert(!DPLLSatisfiable.DPLL(clauses,symbols,model))
+    assertTrue(!DPLLSatisfiable.DPLL(clauses,symbols,model))
   }
 
   def testDPLLFindsPurePositiveLiteralsWhenTheyExist() {
@@ -223,10 +223,10 @@ class DPLLSatisfiableTest extends Suite {
     val B = PropositionSymbol("B")
     val C = PropositionSymbol("C")
     
-    assert(DPLLSatisfiable.FindPureSymbol(Set(A),clauses,Map()) == Some(A,true))
-    assert(DPLLSatisfiable.FindPureSymbol(Set(B),clauses,Map()) == Some(B,true))
-    assert(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map()) == None)
-    assert(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map(A -> true)) == Some(C,true))
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(A),clauses,Map()) == Some(A,true))
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(B),clauses,Map()) == Some(B,true))
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map()) == None)
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map(A -> true)) == Some(C,true))
   }
 
   def testDPLLFindsPureNegativeLiteralsWhenTheyExist() {
@@ -235,8 +235,8 @@ class DPLLSatisfiableTest extends Suite {
     val A = PropositionSymbol("A")
     val C = PropositionSymbol("C")
 
-    assert(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map()) == None)
-    assert(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map(A -> true)) == Some(C,false))
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map()) == None)
+    assertTrue(DPLLSatisfiable.FindPureSymbol(Set(C),clauses,Map(A -> true)) == Some(C,false))
   }
 
   def testFindUnitClause() {
@@ -246,39 +246,39 @@ class DPLLSatisfiableTest extends Suite {
     val B = PropositionSymbol("B")
     val C = PropositionSymbol("C")
     
-    assert(DPLLSatisfiable.FindUnitClause(clauses,Map()) == None)
-    assert(DPLLSatisfiable.FindUnitClause(clauses,Map(A -> false,C -> true)) == Some(B,true))
-    assert(DPLLSatisfiable.FindUnitClause(clauses,Map(A -> false,B -> false)) == Some(C,false))
+    assertTrue(DPLLSatisfiable.FindUnitClause(clauses,Map()) == None)
+    assertTrue(DPLLSatisfiable.FindUnitClause(clauses,Map(A -> false,C -> true)) == Some(B,true))
+    assertTrue(DPLLSatisfiable.FindUnitClause(clauses,Map(A -> false,B -> false)) == Some(C,false))
   }
 
   def test1() {
     val KB = new DPLLBasedKB("A&B")
-    assert(KB.ask("A"))
+    assertTrue(KB.ask("A"))
   }
 
   def test2() {
     val KB = new DPLLBasedKB("A|B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test3() {
     val KB = new DPLLBasedKB("(A => B) & B")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test4() {
     val KB = new DPLLBasedKB("A")
-    assert(!KB.ask("~ A"))
+    assertTrue(!KB.ask("~ A"))
   }
 
   def test5() {
     val KB = new DPLLBasedKB("(A => B) & B")
-    assert(!KB.ask("X"))
+    assertTrue(!KB.ask("X"))
   }
 
   def test6() {
     val KB = new DPLLBasedKB("~A")
-    assert(!KB.ask("A"))
+    assertTrue(!KB.ask("A"))
   }
 
   def test7() {
@@ -291,12 +291,12 @@ class DPLLSatisfiableTest extends Suite {
     KB.tell("(~B12)")
     KB.tell("(B10)")
     KB.tell("(B01)")
-    assert(KB.ask("P00"))
-    assert(!KB.ask("~P00"))
+    assertTrue(KB.ask("P00"))
+    assertTrue(!KB.ask("~P00"))
   }
 
   def test8() {
-    assert(DPLLSatisfiable(PropositionalLogicParser.parse("((A | ~A) & (A | B))")))
+    assertTrue(DPLLSatisfiable(PropositionalLogicParser.parse("((A | ~A) & (A | B))")))
   }
 
   /**
@@ -311,18 +311,18 @@ class DPLLSatisfiableTest extends Suite {
 
     val alpha = "~P12"
 
-    assert(new DPLLBasedKB(R1,R2,R3,R4,R5).ask(alpha))
+    assertTrue(new DPLLBasedKB(R1,R2,R3,R4,R5).ask(alpha))
   }
 }
 
 //---------- WALKSAT Tests ------------------
-class WalkSatTest extends Suite {
+class WalkSatTest extends TestCase {
 
   def testIt(){
     val clauses = SentenceToCNF(PropositionalLogicParser.parse("(A <=> (B | (C | (D | E))))")).clauses
     //clauses are
     //Set((E \/ ~A \/ B \/ C \/ D), (A \/ ~B), (A \/ ~D), (A \/ ~E), (A \/ ~C))
     WalkSat(clauses,0.5,10000) //result will change from one run to another
-    assert(true)
+    assertTrue(true)
   }
 }

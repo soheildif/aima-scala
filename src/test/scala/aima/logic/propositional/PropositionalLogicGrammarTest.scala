@@ -1,13 +1,13 @@
 package aima.logic.propositional
 
-import org.scalatest.Suite
-import scala.collection.immutable.{Set}
+import junit.framework._
+import Assert._
 
 /** Tests for Propositional Logic Grammar Parser
  *
  * @ Himanshu Gupta
  */
-class PropositionalLogicParserTest extends Suite {
+class PropositionalLogicParserTest extends TestCase {
 
   private val PLP = PropositionalLogicParser
 
@@ -27,39 +27,39 @@ class PropositionalLogicParserTest extends Suite {
 
   def testParser() {
 
-    expect(A)(PLP.parse("A"))
-    expect(PropositionSymbol("True"))(PLP.parse("True"))
-    expect(PropositionSymbol("False"))(PLP.parse("False"))
-    expect(new Negation(PropositionSymbol("A12")))(PLP.parse("~ A12"))
-    expect(new Disjunction(A,B))(PLP.parse("A|B"))
-    expect(new Conjunction(A,B,C))(PLP.parse("A & B & C"))
-    expect(new Disjunction(A,B,C))(PLP.parse("A | B | C"))
-    expect(new Disjunction(A,new Conjunction(B,C)))(PLP.parse("A | B & C"))
-    expect(new Disjunction(A,new Conjunction(new Negation(B),C)))(PLP.parse("A | ~ B & C"))
-    expect(new Conditional(new Conjunction(A,B),C))(PLP.parse("A & B => C"))
-    expect(new BiConditional(new Negation(A),new Conjunction(B,C)))(PLP.parse("~A <=> (B & C)"))
+    assertEquals(A,PLP.parse("A"))
+    assertEquals(PropositionSymbol("True"),PLP.parse("True"))
+    assertEquals(PropositionSymbol("False"),PLP.parse("False"))
+    assertEquals(new Negation(PropositionSymbol("A12")),PLP.parse("~ A12"))
+    assertEquals(new Disjunction(A,B),PLP.parse("A|B"))
+    assertEquals(new Conjunction(A,B,C),PLP.parse("A & B & C"))
+    assertEquals(new Disjunction(A,B,C),PLP.parse("A | B | C"))
+    assertEquals(new Disjunction(A,new Conjunction(B,C)),PLP.parse("A | B & C"))
+    assertEquals(new Disjunction(A,new Conjunction(new Negation(B),C)),PLP.parse("A | ~ B & C"))
+    assertEquals(new Conditional(new Conjunction(A,B),C),PLP.parse("A & B => C"))
+    assertEquals(new BiConditional(new Negation(A),new Conjunction(B,C)),PLP.parse("~A <=> (B & C)"))
     
-    expect(
+    assertEquals(
       new Conditional(
         new Conjunction(new Negation(A),B),
-        new Conjunction(S,T))
-      )(PLP.parse("~ A & B => S & T"))
+        new Conjunction(S,T)),
+      PLP.parse("~ A & B => S & T"))
     
-    expect(
+    assertEquals(
       new Conditional(
         new Disjunction(new Negation(A),B),
-        new Conjunction(S,T))
-      )(PLP.parse("~ A | B => S & T"))
+        new Conjunction(S,T)),
+      PLP.parse("~ A | B => S & T"))
     
-    expect(
+    assertEquals(
       new Disjunction(new Negation(A),
-                      new Conjunction(new Conditional(B,C),D))
-    )(PLP.parse("~ A | (B => C) & D"))
+                      new Conjunction(new Conditional(B,C),D)),
+      PLP.parse("~ A | (B => C) & D"))
     
-    expect(
+    assertEquals(
       new Conjunction(
         new Disjunction(norvig,aima,lisp),
-        new Conditional(lisp,cool))
-    )(PLP.parse("( norvig | aima | lisp ) & (lisp => cool)"))
+        new Conditional(lisp,cool)),
+    PLP.parse("( norvig | aima | lisp ) & (lisp => cool)"))
   }
 }
