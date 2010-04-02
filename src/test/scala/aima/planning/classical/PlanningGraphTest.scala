@@ -1,8 +1,9 @@
 package aima.planning.classical
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
 
-class PlanningGraphTest extends Suite {
+class PlanningGraphTest extends TestCase {
 
   //tests based on planning graph of "have cake and ear too" problem
   def testIt() {
@@ -22,65 +23,65 @@ class PlanningGraphTest extends Suite {
     
     //Planning Graph
     var pGraph = new PlanningGraph(ClassicalPlanningProblems.haveCakeAndEatCakeToo)
-    assert(!pGraph.isLeveledOff)
+    assertTrue(!pGraph.isLeveledOff)
     
     val s0 = pGraph.stateLevel(0)
-    expect(Set(haveCakeP,eatenCakeN))(s0.items)
-    expect(Set.empty)(s0.mutexes)
+    assertEquals(Set(haveCakeP,eatenCakeN),s0.items)
+    assertEquals(Set.empty,s0.mutexes)
 
 
     pGraph = pGraph.expandGraph //A0 and S1 generated
-    assert(!pGraph.isLeveledOff)
+    assertTrue(!pGraph.isLeveledOff)
     val a0 = pGraph.actionLevel(0)
-    expect(Set(eatCakeA,
-               Action.noOp(haveCakeP),
-               Action.noOp(eatenCakeN))
-         )(a0.items)
-    assert(matchUnorderedPairs(a0.mutexes,
+    assertEquals(Set(eatCakeA,
+                     Action.noOp(haveCakeP),
+                     Action.noOp(eatenCakeN)),
+                 a0.items)
+    assertTrue(matchUnorderedPairs(a0.mutexes,
                                Set((Action.noOp(haveCakeP),eatCakeA),
                                    (Action.noOp(eatenCakeN),eatCakeA))))
 
     val s1 = pGraph.stateLevel(1)
-    expect(Set(haveCakeP,haveCakeN,eatenCakeP,eatenCakeN))(s1.items)
+    assertEquals(Set(haveCakeP,haveCakeN,eatenCakeP,eatenCakeN),s1.items)
 
-    assert(matchUnorderedPairs(s1.mutexes,
-                               Set((eatenCakeN,eatenCakeP),
-                                   (haveCakeN,haveCakeP),
-                                   (haveCakeP,eatenCakeP),
-                                   (haveCakeN,eatenCakeN))))
+    assertTrue(matchUnorderedPairs(s1.mutexes,
+                                   Set((eatenCakeN,eatenCakeP),
+                                       (haveCakeN,haveCakeP),
+                                       (haveCakeP,eatenCakeP),
+                                       (haveCakeN,eatenCakeN))))
 
     pGraph = pGraph.expandGraph //A1 and S2 generated
-    assert(pGraph.isLeveledOff)
+    assertTrue(pGraph.isLeveledOff)
     val a1 = pGraph.actionLevel(1)
-    expect(Set(eatCakeA,bakeCakeA,
-               Action.noOp(haveCakeP),
-               Action.noOp(haveCakeN),
-               Action.noOp(eatenCakeP),
-               Action.noOp(eatenCakeN))
-         )(a1.items)
-    assert(matchUnorderedPairs(a1.mutexes,
-                               Set((Action.noOp(haveCakeN),bakeCakeA),
-                                   (Action.noOp(haveCakeP),bakeCakeA),
-                                   (Action.noOp(eatenCakeN),bakeCakeA),
-                                   (bakeCakeA,eatCakeA),
-                                   (Action.noOp(haveCakeP),Action.noOp(haveCakeN)),
-                                   (Action.noOp(eatenCakeP),Action.noOp(eatenCakeN)),
-                                   (Action.noOp(haveCakeN),Action.noOp(eatenCakeN)),
-                                   (Action.noOp(haveCakeP),Action.noOp(eatenCakeP)),
-                                   (Action.noOp(haveCakeP),eatCakeA),
-                                   (Action.noOp(haveCakeN),eatCakeA),
-                                   (Action.noOp(eatenCakeP),eatCakeA),
-                                   (Action.noOp(eatenCakeN),eatCakeA))))
+    assertEquals(Set(eatCakeA,bakeCakeA,
+                     Action.noOp(haveCakeP),
+                     Action.noOp(haveCakeN),
+                     Action.noOp(eatenCakeP),
+                     Action.noOp(eatenCakeN)),
+                 a1.items)
+    assertTrue(matchUnorderedPairs(a1.mutexes,
+                                   Set((Action.noOp(haveCakeN),bakeCakeA),
+                                       (Action.noOp(haveCakeP),bakeCakeA),
+                                       (Action.noOp(eatenCakeN),bakeCakeA),
+                                       (bakeCakeA,eatCakeA),
+                                       (Action.noOp(haveCakeP),Action.noOp(haveCakeN)),
+                                       (Action.noOp(eatenCakeP),Action.noOp(eatenCakeN)),
+                                       (Action.noOp(haveCakeN),Action.noOp(eatenCakeN)),
+                                       (Action.noOp(haveCakeP),Action.noOp(eatenCakeP)),
+                                       (Action.noOp(haveCakeP),eatCakeA),
+                                       (Action.noOp(haveCakeN),eatCakeA),
+                                       (Action.noOp(eatenCakeP),eatCakeA),
+                                       (Action.noOp(eatenCakeN),eatCakeA))))
     val s2 = pGraph.stateLevel(2)
-    expect(Set(haveCakeP,
-               haveCakeN,
-               eatenCakeP,
-               eatenCakeN)
-         )(s2.items)
-    assert(matchUnorderedPairs(s2.mutexes,
-                               Set((eatenCakeN,eatenCakeP),
-                                   (haveCakeN,haveCakeP),
-                                   (eatenCakeN,haveCakeN))))
+    assertEquals(Set(haveCakeP,
+                     haveCakeN,
+                     eatenCakeP,
+                     eatenCakeN),
+                 s2.items)
+    assertTrue(matchUnorderedPairs(s2.mutexes,
+                                   Set((eatenCakeN,eatenCakeP),
+                                       (haveCakeN,haveCakeP),
+                                       (eatenCakeN,haveCakeN))))
   }
 
   private def matchUnorderedPairs[A](p1: Set[(A,A)],p2: Set[(A,A)]): Boolean = {

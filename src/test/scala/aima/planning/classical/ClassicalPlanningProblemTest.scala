@@ -1,8 +1,9 @@
 package aima.planning.classical
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
 
-class ClassicalPlanningProblemTest extends Suite {
+class ClassicalPlanningProblemTest extends TestCase {
 
   //testing the "have cake and eat cake too" problem
   def testIt() {
@@ -22,8 +23,8 @@ class ClassicalPlanningProblemTest extends Suite {
 
     val p = ClassicalPlanningProblems.haveCakeAndEatCakeToo
 
-    expect(Set(haveCakeP))(p.initState)
-    expect(Set(haveCakeP,eatenCakeP))(p.goals)
-    expect(Set(eatCakeA,bakeCakeA))(p.actions)
+    assertEquals(Set(haveCakeP),p.initState)
+    assertEquals(Set(haveCakeP,eatenCakeP),p.goals)
+    assertEquals(Set(eatCakeA,bakeCakeA),p.actions)
   }
 }
