@@ -1,9 +1,9 @@
 package aima.search.adversarial
 
-import org.scalatest.Suite
-import org.scalatest.ImpSuite
+import junit.framework._
+import Assert._
 
-class MinimaxDecisionTest extends Suite {
+class MinimaxDecisionTest extends TestCase {
 
   private val game = new TicTacToeGame()
   private val initState = game.initialState
@@ -20,7 +20,7 @@ class MinimaxDecisionTest extends Suite {
     val allPairs = (for(x <- 0 to 2; y <- 0 to 2) yield (x,y)).toList
     //all the states, where there is just one X and all other boxes are empty,
     //have MinValue = 0.5... so all moves are OK to begin with
-    assert(allPairs.exists(_ == action))
+    assertTrue(allPairs.exists(_ == action))
   }
 
   /* Testing the best action at following state,
@@ -36,7 +36,7 @@ class MinimaxDecisionTest extends Suite {
     
     val action = MinimaxDecision(state,game)
     val bestActions = List((1,0),(2,0),(0,1),(2,1),(0,2),(1,2),(0,0))
-    assert(bestActions.exists(_ == action))
+    assertTrue(bestActions.exists(_ == action))
   }
 
   /* Testing the best action at following state,
@@ -56,7 +56,7 @@ class MinimaxDecisionTest extends Suite {
     val state = (ZeroSumGame.Max,board)
     
     val action = MinimaxDecision(state,game)
-    assert(action == (1,0))
+    assertEquals(action,(1,0))
   }
 
   /* Testing the best action at following state,
@@ -78,7 +78,7 @@ class MinimaxDecisionTest extends Suite {
     val state = (ZeroSumGame.Max,board)
     
     val action = MinimaxDecision(state,game)
-    assert(action == (1,2))
+    assertEquals(action,(1,2))
   }
 }
 
