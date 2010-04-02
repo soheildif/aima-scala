@@ -1,13 +1,13 @@
 package aima.logic.fol
 
-import org.scalatest.Suite
-import scala.collection.immutable.{Set}
+import junit.framework._
+import Assert._
 
 /** Tests for SentenceToCNF Converter Test
  *
  * @author Himanshu Gupta
  */
-class SentenceToCNFTest extends Suite {
+class SentenceToCNFTest extends TestCase {
 
   //These tests are based on the "loves animal KB" described in Section 9.5.3
   def testLovesAnimalA() {
@@ -23,8 +23,8 @@ class SentenceToCNFTest extends Suite {
       PositiveLiteral(new Predicate("Loves",new Function("F$$1", Variable("x$$2")),Variable("x$$2"))))
 
 
-    expect(Set(clause1,clause2)
-         )(SentenceToCNF(FOLParser.parse("4L x (4L y Animal(y) => Loves(x,y)) => (3E y Loves(y,x))"),new FOLKnowledgeBase))
+    assertEquals(Set(clause1,clause2),
+                 SentenceToCNF(FOLParser.parse("4L x (4L y Animal(y) => Loves(x,y)) => (3E y Loves(y,x))"),new FOLKnowledgeBase))
   }
 
   def testLovesAnimalB() {
@@ -37,8 +37,8 @@ class SentenceToCNFTest extends Suite {
         new Predicate("Loves",Variable("y$$3"),Variable("x$$2"))))
 
     val clausesB = new FOLKnowledgeBase().tell("4L x (3E z Animal(z) & Kills(x,z)) => (4L y ~Loves(y,x))").clauses
-    expect(Set(clause)
-           )(SentenceToCNF(FOLParser.parse("4L x (3E z Animal(z) & Kills(x,z)) => (4L y ~Loves(y,x))"),new FOLKnowledgeBase))
+    assertEquals(Set(clause),
+                 SentenceToCNF(FOLParser.parse("4L x (3E z Animal(z) & Kills(x,z)) => (4L y ~Loves(y,x))"),new FOLKnowledgeBase))
   }
 
   def testLovesAnimalC() {
@@ -46,8 +46,8 @@ class SentenceToCNFTest extends Suite {
       NegativeLiteral(new Predicate("Animal",Variable("x$$1"))),
       PositiveLiteral(new Predicate("Loves",Constant("Jack"),Variable("x$$1"))))
 
-    expect(Set(clause)
-           )(SentenceToCNF(FOLParser.parse("4L x Animal(x) => Loves(Jack,x)"),new FOLKnowledgeBase))
+    assertEquals(Set(clause),
+                 SentenceToCNF(FOLParser.parse("4L x Animal(x) => Loves(Jack,x)"),new FOLKnowledgeBase))
   }
 
   def testLovesAnimalD() {
@@ -55,15 +55,15 @@ class SentenceToCNFTest extends Suite {
       PositiveLiteral(new Predicate("Kills", Constant("Jack"),Constant("Tuna"))),
       PositiveLiteral(new Predicate("Kills", Constant("Curiosity"),Constant("Tuna"))))
 
-    expect(Set(clause)
-           )(SentenceToCNF(FOLParser.parse("Kills(Jack,Tuna) | Kills(Curiosity,Tuna)"),new FOLKnowledgeBase))
+    assertEquals(Set(clause),
+                 SentenceToCNF(FOLParser.parse("Kills(Jack,Tuna) | Kills(Curiosity,Tuna)"),new FOLKnowledgeBase))
   }
 
   def testLovesAnimalE() {
     val clause = new Clause(
       PositiveLiteral(new Predicate("Cat", Constant("Tuna"))))
-    expect(Set(clause)
-           )(SentenceToCNF(FOLParser.parse("Cat(Tuna)"),new FOLKnowledgeBase))
+    assertEquals(Set(clause),
+                 SentenceToCNF(FOLParser.parse("Cat(Tuna)"),new FOLKnowledgeBase))
   }
 
   def testLovesAnimalF() {
@@ -71,7 +71,7 @@ class SentenceToCNFTest extends Suite {
       NegativeLiteral(new Predicate("Cat",Variable("x$$1"))),
       PositiveLiteral(new Predicate("Animal",Variable("x$$1"))))
 
-    expect(Set(clause),
-           )(SentenceToCNF(FOLParser.parse("4L x Cat(x) => Animal(x)"),new FOLKnowledgeBase))
+    assertEquals(Set(clause),
+                 SentenceToCNF(FOLParser.parse("4L x Cat(x) => Animal(x)"),new FOLKnowledgeBase))
   }
 }
