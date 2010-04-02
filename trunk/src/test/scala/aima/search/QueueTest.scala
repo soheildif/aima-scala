@@ -3,7 +3,7 @@ package aima.search
 import junit.framework._
 import Assert._
 
-class FifoQueueTest TestCase {
+class FifoQueueTest extends TestCase {
   def testIt() {
     val f = new FifoQueue[Int]
     assertTrue(f.isEmpty)
