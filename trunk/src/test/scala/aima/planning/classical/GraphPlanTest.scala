@@ -1,30 +1,31 @@
 package aima.planning.classical
 
-import org.scalatest.Suite
+import junit.framework._
+import Assert._
 
-class GraphPlanTest extends Suite {
+class GraphPlanTest extends TestCase {
 
 
   def testHaveCakeAndEatCakeToo() {
     //the unsolvable goal -- Destroy(Cake)
-    assert(GraphPlan(ClassicalPlanningProblems.haveCakeAndEatCakeToo("Destroy(Cake)")) == None)
+    assertEquals(None,GraphPlan(ClassicalPlanningProblems.haveCakeAndEatCakeToo("Destroy(Cake)")))
 
     //solvable standard problem
-    expect(List(Set(Action("Eat(Cake)","","")),
-                Set(Action("Bake(Cake)","",""),
-                    Action.noOp(PositiveLiteral(new Atom("Eaten",List("Cake"))))))
-         )(GraphPlan(ClassicalPlanningProblems.haveCakeAndEatCakeToo).get)
+    assertEquals(List(Set(Action("Eat(Cake)","","")),
+                      Set(Action("Bake(Cake)","",""),
+                          Action.noOp(PositiveLiteral(new Atom("Eaten",List("Cake")))))),
+                 GraphPlan(ClassicalPlanningProblems.haveCakeAndEatCakeToo).get)
   }
 
   def testSpareTire() {
     //the unsolvable goal -- At(Spare,Axle) & At(Flat,Axle)
-    assert(GraphPlan(ClassicalPlanningProblems.spareTire("At(Spare,Axle) & At(Flat,Axle)")) == None)
+    assertEquals(None,GraphPlan(ClassicalPlanningProblems.spareTire("At(Spare,Axle) & At(Flat,Axle)")))
     
     //solvable standard problem
-    expect(List(Set(Action("Remove(Flat,Axle)","",""),
-                    Action("Remove(Spare,Trunk)","",""),
-                    Action.noOp(NegativeLiteral(new Atom("At",List("Spare","Axle"))))),
-                Set(Action("PutOn(Spare,Axle)","","")))
-         )(GraphPlan(ClassicalPlanningProblems.spareTire).get)
+    assertEquals(List(Set(Action("Remove(Flat,Axle)","",""),
+                          Action("Remove(Spare,Trunk)","",""),
+                          Action.noOp(NegativeLiteral(new Atom("At",List("Spare","Axle"))))),
+                      Set(Action("PutOn(Spare,Axle)","",""))),
+                 GraphPlan(ClassicalPlanningProblems.spareTire).get)
   }
 }
