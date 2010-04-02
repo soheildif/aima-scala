@@ -1,59 +1,59 @@
 package aima.logic.fol
 
-import org.scalatest.Suite
-import scala.collection.immutable.{Set}
+import junit.framework._
+import Assert._
 
 /** Tests for FOL-FC-ASK
  *
  * @author Himanshu Gupta
  */
-class FOLFCAskTest extends Suite {
+class FOLFCAskTest extends TestCase {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
-    assert(FOLFCAsk(KBFactory.weaponsKB,query).size == 1)
+    assertEquals(1,FOLFCAsk(KBFactory.weaponsKB,query).size)
   }
 
   def testWeaponsKBCriminalXReturnsWest() {
     val query = FOLParser.parse("Criminal(x)").asInstanceOf[AtomicSentence]
     val result = FOLFCAsk(KBFactory.weaponsKB,query)
-    assert(result.size == 1)
+    assertEquals(1,result.size)
     
     val expectedPair = Variable("x") -> Constant("West")
-    assert(result.exists( _.exists(_ == expectedPair)))
+    assertTrue(result.exists( _.exists(_ == expectedPair)))
   }
 
   def testKingsKBRichardEvilFalse() {
     val query = FOLParser.parse("Evil(Richard)").asInstanceOf[AtomicSentence]
-    assert(FOLFCAsk(KBFactory.kingsKB,query).isEmpty)
+    assertTrue(FOLFCAsk(KBFactory.kingsKB,query).isEmpty)
   }
 
   def testKingsKBJohnEvilSuccess() {
     val query = FOLParser.parse("Evil(John)").asInstanceOf[AtomicSentence]
-    assert(FOLFCAsk(KBFactory.kingsKB,query).size == 1)
+    assertEquals(1,FOLFCAsk(KBFactory.kingsKB,query).size)
   }
 
   def testKingsKBEvilXReturnsJohn() {
     val query = FOLParser.parse("Evil(x)").asInstanceOf[AtomicSentence]
 
     val result = FOLFCAsk(KBFactory.kingsKB,query)
-    assert(result.size == 1)
+    assertEquals(1,result.size)
 
     val expectedPair = Variable("x")->Constant("John")
-    assert(result.exists(_.exists(_ == expectedPair)))
+    assertTrue(result.exists(_.exists(_ == expectedPair)))
   }
 
   def testKingsKBKingXReturnsJohnAndRichard() {
     val query = FOLParser.parse("King(x)").asInstanceOf[AtomicSentence]
 
     val result = FOLFCAsk(KBFactory.kingsKB,query)
-    assert(result.size == 2)
+    assertEquals(2,result.size)
 
     val ep1 = Variable("x")->Constant("John")
     val ep2 = Variable("x")->Constant("Richard")
 
-    assert(result.exists(_.exists(_ == ep1)))
-    assert(result.exists(_.exists(_ == ep2)))
+    assertTrue(result.exists(_.exists(_ == ep1)))
+    assertTrue(result.exists(_.exists(_ == ep2)))
   }
 }
 
@@ -66,49 +66,49 @@ class FOLBCAskTest extends Suite {
 
   def testWeaponsKBCriminalWestSuccess() {
     val query = FOLParser.parse("Criminal(West)").asInstanceOf[AtomicSentence]
-    assert(FOLBCAsk(KBFactory.weaponsKB,query).size == 1)
+    assertEquals(1,FOLBCAsk(KBFactory.weaponsKB,query).size)
   }
 
   def testWeaponsKBCriminalXReturnsWest() {
     val query = FOLParser.parse("Criminal(x)").asInstanceOf[AtomicSentence]
     val result = FOLBCAsk(KBFactory.weaponsKB,query)
-    assert(result.size == 1)
+    assertEquals(1,result.size)
     
     val expectedPair = Variable("x") -> Constant("West")
-    assert(result.exists( _.exists(_ == expectedPair)))
+    assertTrue(result.exists( _.exists(_ == expectedPair)))
   }
 
   def testKingsKBRichardEvilFalse() {
     val query = FOLParser.parse("Evil(Richard)").asInstanceOf[AtomicSentence]
-    assert(FOLBCAsk(KBFactory.kingsKB,query).isEmpty)
+    assertTrue(FOLBCAsk(KBFactory.kingsKB,query).isEmpty)
   }
 
   def testKingsKBJohnEvilSuccess() {
     val query = FOLParser.parse("Evil(John)").asInstanceOf[AtomicSentence]
-    assert(FOLBCAsk(KBFactory.kingsKB,query).size == 1)
+    assertEquals(1,FOLBCAsk(KBFactory.kingsKB,query).size)
   }
 
   def testKingsKBEvilXReturnsJohn() {
     val query = FOLParser.parse("Evil(x)").asInstanceOf[AtomicSentence]
 
     val result = FOLBCAsk(KBFactory.kingsKB,query)
-    assert(result.size == 1)
+    assertEquals(1,result.size)
 
     val expectedPair = Variable("x")->Constant("John")
-    assert(result.exists(_.exists(_ == expectedPair)))
+    assertTrue(result.exists(_.exists(_ == expectedPair)))
   }
 
   def testKingsKBKingXReturnsJohnAndRichard() {
     val query = FOLParser.parse("King(x)").asInstanceOf[AtomicSentence]
 
     val result = FOLBCAsk(KBFactory.kingsKB,query)
-    assert(result.size == 2)
+    assertEquals(2,result.size)
 
     val ep1 = Variable("x")->Constant("John")
     val ep2 = Variable("x")->Constant("Richard")
 
-    assert(result.exists(_.exists(_ == ep1)))
-    assert(result.exists(_.exists(_ == ep2)))
+    assertTrue(result.exists(_.exists(_ == ep1)))
+    assertTrue(result.exists(_.exists(_ == ep2)))
   }
 }
 
@@ -119,18 +119,18 @@ class FOLBCAskTest extends Suite {
 class FOLResolutionTest extends Suite {
 
   def testCuriosityKillsTunaSucceeds() {
-    assert(FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Curiosity,Tuna)")))
+    assertTrue(FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Curiosity,Tuna)")))
   }
 /* TODO: work on it
   def testJackKillsTunaFails() {
-    assert(!FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Jack,Tuna)")))
+    assertTrue(!FOLResolution(KBFactory.lovesAnimalKB, FOLParser.parse("Kills(Jack,Tuna)")))
   }
 */
   def testEqualityAxiomsKBabcAEqualsCSucceeds() {
-    assert(FOLResolution(KBFactory.aBCEqualityKB(true),FOLParser.parse("A = C")))
+    assertTrue(FOLResolution(KBFactory.aBCEqualityKB(true),FOLParser.parse("A = C")))
   }
 
   def testEqualityNoAxiomsKBabcAEqualsCFails() {
-    assert(!FOLResolution(KBFactory.aBCEqualityKB(false),FOLParser.parse("A = C")))
+    assertTrue(!FOLResolution(KBFactory.aBCEqualityKB(false),FOLParser.parse("A = C")))
   }
 }
