@@ -239,17 +239,24 @@ object GibbsAsk {
   def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
 
     val zs = bn.variables.filter(!e.contains(_)) //non-evidence variables
+    println("zs " + zs) 
     
     val initState = zs.foldLeft(e)((m,v) => m + (v -> Utils.chooseRandomly(v.domain)))
+    println("initState " + initState)
         
     def loop(n: Int, currState: Map[RandomVariable,String], samples: Map[String,Double]): Map[String,Double] =
       if(n > 0) {
-        val (newCurrState,newSamples) = zs.foldLeft((currState,samples))(
+        val newCurrState = zs.foldLeft(currState)(
+          (state,v) => state + (v -> gibbsSample(v,state,bn)))
+        /*val (newCurrState,newSamples) = zs.foldLeft((currState,samples))(
           (t,v) => {
             val tmpState = t._1 + (v -> gibbsSample(v,t._1,bn))
             val xVal = tmpState(x)
             (tmpState,t._2 + (xVal -> (t._2(xVal) + 1)))
-          })
+          })*/
+        val xVal = newCurrState(x)
+        val newSamples = samples + (xVal -> (samples(xVal) + 1))
+        println("currState " + newCurrState)
         loop(n-1,newCurrState,newSamples)
       }
       else samples
