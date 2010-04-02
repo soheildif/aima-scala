@@ -184,3 +184,15 @@ class LikelihoodWeightingTest extends TestCase {
     assertTrue(true)
   }
 }
+
+
+class GibbsAskTest extends TestCase {
+  def testIt() {
+    val result = GibbsAsk(RandomVariable("Burglary"),
+                                     Map(RandomVariable("JohnCalls") -> RandomVariable.True,
+                                         RandomVariable("MaryCalls") -> RandomVariable.True),
+                                     ExampleBayesNet.burglaryNetwork,100000)
+    println(result)
+    assertTrue(true)
+  }
+}

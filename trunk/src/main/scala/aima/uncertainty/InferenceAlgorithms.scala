@@ -229,14 +229,56 @@ object LikelihoodWeighting {
         })
 }
 
+
+/** GIBBS-ASK, described in Fig 14.16
+ *
+ * @author Himanshu Gupta
+ */
+object GibbsAsk {
+
+  def apply(x: RandomVariable, e: Map[RandomVariable,String], bn: BayesNet, n: Int) = {
+
+    val zs = bn.variables.filter(!e.contains(_)) //non-evidence variables
+    
+    val initState = zs.foldLeft(e)((m,v) => m + (v -> Utils.chooseRandomly(v.domain)))
+        
+    def loop(n: Int, currState: Map[RandomVariable,String], samples: Map[String,Double]): Map[String,Double] =
+      if(n > 0) {
+        val (newCurrState,newSamples) = zs.foldLeft((currState,samples))(
+          (t,v) => {
+            val tmpState = t._1 + (v -> gibbsSample(v,t._1,bn))
+            val xVal = tmpState(x)
+            (tmpState,t._2 + (xVal -> (t._2(xVal) + 1)))
+          })
+        loop(n-1,newCurrState,newSamples)
+      }
+      else samples
+
+    val q = loop(n,initState, x.domain.foldLeft(Map[String,Double]())(
+      (m,d) => m + (d -> 0.0)))
+
+    Utils.normalize(q)
+  }
+
+  //Returns a value for x conditioned on the current values of the variables
+  //in the Markov blanket of x
+  private def gibbsSample(x: RandomVariable, mbv: Map[RandomVariable,String], bn: BayesNet): String = {
+    Utils.randomSample(x,bn.getMarkovBlanketProbabilityDistribution(x,mbv))
+  }
+}
+
+
 //Common functions
 object Utils {
 
   //Returns one value from domain of x, as per given probability distribution of x, given
   //that its parents are already fixed
-  def randomSample(x: RandomVariable, parentX: Map[RandomVariable,String], bn: BayesNet) = {
-    val pd = bn.getProbabilityDistribution(x,parentX)
-    
+  def randomSample(x: RandomVariable, parentX: Map[RandomVariable,String], bn: BayesNet): String = {
+    randomSample(x,bn.getProbabilityDistribution(x,parentX))
+  }
+
+  //Returns one value from domain of x, as per the given probability distribution
+  def randomSample(x: RandomVariable, pd: Map[String,Double]): String = {
     val keys = pd.keySet.toList                                   //e.g. (true,false)
     val values = keys.map(pd(_))                                  //e.g. (0.7,0.3)
     val intervals = values.foldLeft(List[Double]())(
@@ -255,5 +297,10 @@ object Utils {
   def normalize(q: Map[String,Double]) = {
     val alpha = 1.0/q.values.reduceLeft(_ + _)
     q.transform((_,v) => alpha*v)
+  }
+
+  def chooseRandomly[T](ss: Set[T]): T = {
+    val list = ss.toList
+    list(new scala.util.Random().nextInt(list.length))
   }
 }
