@@ -1,9 +1,9 @@
 package aima.search.csp
 
-import org.scalatest.Suite
-import org.scalatest.ImpSuite
+import junit.framework._
+import Assert._
 
-class AC3Test extends Suite {
+class AC3Test extends TestCase {
 
   /* This tests the AC3 algorithm with problem described
    * in section 6.2.2
@@ -36,19 +36,19 @@ class AC3Test extends Suite {
         val domainX = csp.domain(X)
         val domainY = csp.domain(Y)
 
-        assert(domainX.length == 4)
-        assert(domainY.length == 4)
+        assertEquals(domainX.length,4)
+        assertEquals(domainY.length,4)
         
         val testDomainX = List(0,1,2,3)
         val testDomainY = List(0,1,4,9)
 
-        assert(domainX.forall( x => testDomainX.exists(_ == x)))
-        assert(domainY.forall( y => testDomainY.exists(_ == y)))
+        assertTrue(domainX.forall( x => testDomainX.exists(_ == x)))
+        assertTrue(domainY.forall( y => testDomainY.exists(_ == y)))
     }
   }
 }
 
-class BacktrackingSearchTest extends Suite {
+class BacktrackingSearchTest extends TestCase {
 
   /*******************************************************/
   /**** Backtracking-Search Tests with NO Inferencing ****/
@@ -60,15 +60,15 @@ class BacktrackingSearchTest extends Suite {
     BacktrackingSearch(csp) match {
       case None => assert(false)
       case Some(assignment) => {
-        assert(assignment.getOrElse(Wa,-1) == Blue)
-        assert(assignment.getOrElse(Nt,-1) == Red)
-        assert(assignment.getOrElse(Q,-1) == Blue)
-        assert(assignment.getOrElse(Sa,-1) == Green)
-        assert(assignment.getOrElse(Nsw,-1) == Red)
-        assert(assignment.getOrElse(V,-1) == Blue)
-        assert(assignment.getOrElse(T,-1) == Red ||
-               assignment.getOrElse(T,-1) == Blue ||
-               assignment.getOrElse(T,-1) == Green)
+        assertEquals(assignment.getOrElse(Wa,-1),Blue)
+        assertEquals(assignment.getOrElse(Nt,-1),Red)
+        assertEquals(assignment.getOrElse(Q,-1),Blue)
+        assertEquals(assignment.getOrElse(Sa,-1),Green)
+        assertEquals(assignment.getOrElse(Nsw,-1),Red)
+        assertEquals(assignment.getOrElse(V,-1),Blue)
+        assertTrue(assignment.getOrElse(T,-1) == Red ||
+                   assignment.getOrElse(T,-1) == Blue ||
+                   assignment.getOrElse(T,-1) == Green)
       }
     }
   }
@@ -77,10 +77,10 @@ class BacktrackingSearchTest extends Suite {
     
     val csp = NQueensCSP.csp(8)
     BacktrackingSearch(csp) match {
-      case None => assert(false)
+      case None => assertTrue(false)
       case Some(assignment) =>
         //println("Nqueeens solution found: " + csp.toString(assignment))        
-        assert(true)
+        assertTrue(true)
     }
   }
 
@@ -102,13 +102,13 @@ class BacktrackingSearchTest extends Suite {
     BacktrackingSearch(csp,mac) match {
       case None => assert(false)
       case Some(assignment) => {
-        assert(assignment.getOrElse(Wa,-1) == Blue)
-        assert(assignment.getOrElse(Nt,-1) == Red)
-        assert(assignment.getOrElse(Q,-1) == Blue)
-        assert(assignment.getOrElse(Sa,-1) == Green)
-        assert(assignment.getOrElse(Nsw,-1) == Red)
-        assert(assignment.getOrElse(V,-1) == Blue)
-        assert(assignment.getOrElse(T,-1) == Red ||
+        assertEquals(assignment.getOrElse(Wa,-1),Blue)
+        assertEquals(assignment.getOrElse(Nt,-1),Red)
+        assertEquals(assignment.getOrElse(Q,-1),Blue)
+        assertEquals(assignment.getOrElse(Sa,-1),Green)
+        assertEquals(assignment.getOrElse(Nsw,-1),Red)
+        assertEquals(assignment.getOrElse(V,-1),Blue)
+        assertTrue(assignment.getOrElse(T,-1) == Red ||
                assignment.getOrElse(T,-1) == Blue ||
                assignment.getOrElse(T,-1) == Green)
       }
@@ -116,14 +116,14 @@ class BacktrackingSearchTest extends Suite {
   }
 }
 
-class MinConflictsTest extends Suite {
+class MinConflictsTest extends TestCase {
   
   def testIt() {
     MinConflicts(AustraliaMapColorCSP.csp,100) 
   }
 }
 
-class TreeCspSolverTest {
+class TreeCspSolverTest extends TestCase {
 
   /** Test the tree csp described in Fig 6.10
    * A
@@ -153,9 +153,9 @@ class TreeCspSolverTest {
     csp.addChild(d, "F", domain, new AllDiffConstraint[String,Int]("D","F"))
 
     TreeCspSolver(csp) match {
-      case None => assert(false)
+      case None => assertTrue(false)
       case Some(sol) =>
-        assert((sol("A") == Red && sol("B") == Blue && sol("C") == Red && sol("D") == Red && sol("E") == Blue && sol("F") == Blue) ||
+        assertTrue((sol("A") == Red && sol("B") == Blue && sol("C") == Red && sol("D") == Red && sol("E") == Blue && sol("F") == Blue) ||
                (sol("A") == Blue && sol("B") == Red && sol("C") == Blue && sol("D") == Blue && sol("E") == Red && sol("F") == Red))
     }
   }
