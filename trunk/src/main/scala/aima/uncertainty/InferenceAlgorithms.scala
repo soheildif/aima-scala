@@ -1,4 +1,4 @@
-package aima.uncertainity
+package aima.uncertainty
 
 /** ENUMERATION-ASK, described in Fig 14.9
  *

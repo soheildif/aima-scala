@@ -1,4 +1,4 @@
-package aima.uncertainity
+package aima.uncertainty
 
 import junit.framework._
 import Assert._
