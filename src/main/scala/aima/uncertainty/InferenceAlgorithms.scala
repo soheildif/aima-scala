@@ -147,7 +147,7 @@ object EliminationAsk {
       }
 
     loop(variables.toList,Set(Map.empty))
-  } 
+  }
 }
 
 class Factor(val variables: Set[RandomVariable],
