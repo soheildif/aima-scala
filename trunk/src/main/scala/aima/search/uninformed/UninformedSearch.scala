@@ -95,9 +95,9 @@ object DepthFirstGraphSearch {
 object UniformCostSearch {
   def apply[S, A](problem: Problem[S,A]) =
     GraphSearch(problem, new PriorityQueue[Node[S,A]](
-      (node) => new Ordered[Node[S,A]] {
-                    def compare(that: Node[S,A]) =
-                      that.pathCost.compare(node.pathCost)
+      new Ordering[Node[S,A]] {
+        def compare(x: Node[S,A], y: Node[S,A]) =
+          y.pathCost.compare(x.pathCost)
       }))
 }
 

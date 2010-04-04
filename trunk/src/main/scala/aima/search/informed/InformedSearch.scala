@@ -10,9 +10,9 @@ import aima.search.uninformed.{GraphSearch, TreeSearch}
 object GreedyBestFirstSearch {
   def apply[S,A](problem: Problem[S,A]) =
     GraphSearch(problem, new PriorityQueue[Node[S,A]](
-      (node) => new Ordered[Node[S,A]] {
-                    def compare(that: Node[S,A]) =
-                      GreedyBestFirstHeuristic(that,problem).compare(GreedyBestFirstHeuristic(node,problem))
+      new Ordering[Node[S,A]] {
+        def compare(x: Node[S,A], y: Node[S,A]) =
+          GreedyBestFirstHeuristic(y,problem).compare(GreedyBestFirstHeuristic(x,problem))
       }))
 
   private def GreedyBestFirstHeuristic[S,A](node: Node[S,A],problem: Problem[S,A]) =
@@ -26,9 +26,9 @@ object GreedyBestFirstSearch {
 object AStarSearch {
   def apply[S, A](problem: Problem[S,A]) =
     GraphSearch(problem, new PriorityQueue[Node[S,A]](
-      (node) => new Ordered[Node[S,A]] {
-                    def compare(that: Node[S,A]) =
-                      AStarHeuristic(that,problem).compare(AStarHeuristic(node,problem))
+      new Ordering[Node[S,A]] {
+        def compare(x: Node[S,A], y: Node[S,A]) =
+          AStarHeuristic(y,problem).compare(AStarHeuristic(x,problem))
       }))
 
   private def AStarHeuristic[S,A](node: Node[S,A],problem: Problem[S,A]) =
@@ -83,8 +83,8 @@ object RecursiveBestFirstSearch {
         //storing the nodes in a PriorityQueue in increasing order
         //of fVal for easy access of best and next best nodes
         val successorsPq = new PriorityQueue[RBFSNode[S,A]](
-          (arg) => {
-            new Ordered[RBFSNode[S,A]] { def compare(that: RBFSNode[S,A]) = that.fVal.compare(arg.fVal) }
+          new Ordering[RBFSNode[S,A]] {
+            def compare(x: RBFSNode[S,A], y: RBFSNode[S,A]) = y.fVal.compare(x.fVal)
           })
         successorsPq.insertAll(successors)
 

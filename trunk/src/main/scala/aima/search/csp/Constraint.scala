@@ -44,7 +44,7 @@ object AllDiffConstraint {
     def loop(xs: List[K], result: List[AllDiffConstraint[K,V]]): List[AllDiffConstraint[K,V]] =
       xs match {
         case x :: rest =>
-          loop(rest, result ++ rest.map(new AllDiffConstraint(x,_)))
+          loop(rest, result ++ rest.map(new AllDiffConstraint[K,V](x,_)))
         case Nil => result
       }
 

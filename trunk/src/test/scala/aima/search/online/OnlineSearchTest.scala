@@ -3,6 +3,8 @@ package aima.search.online
 import junit.framework._
 import Assert._
 
+import aima.search.{In,Go,LocationMap}
+
 class OnlineDFSTest extends TestCase {
 
   def testAIMA2eFig4_18() {

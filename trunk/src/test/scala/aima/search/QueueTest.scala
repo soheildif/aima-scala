@@ -38,8 +38,8 @@ class LifoQueueTest extends TestCase {
 class PriorityQueueTest extends TestCase {
   def testIt() {
     val f = new PriorityQueue[Int](
-      (a) => new Ordered[Int] {
-                def compare(that: Int) = that - a })
+      new Ordering[Int] {
+        def compare(a: Int, b: Int) = b-a })
                     
     assert(f.isEmpty)
     f.insert(1)

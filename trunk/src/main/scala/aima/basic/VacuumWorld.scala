@@ -1,5 +1,7 @@
 package aima.basic
 
+import scala.util.Random
+
 /* This file containts code for Vacuum World environment as described in *
  * in Fig 2.2 and various agents in it.
  *
@@ -16,8 +18,6 @@ object VacuumWorld {
                                                         private var statusB:String) 
   extends Environment[T , Percept, Action] {
     
-    import scala.util.Random
-
     def this() = {
       this( if(new Random().nextBoolean) "Clean" else "Dirty",
            if(new Random().nextBoolean) "Clean" else "Dirty")
@@ -150,9 +150,9 @@ object VacuumWorld {
         List(new Rule(eqCondGen(key,value),Some(action)))
 
       var tmpRules: List[Rule[State,Option[Action]]] = Nil
-      tmpRules ++= List(new Rule(new AndCondition
-                                           (eqCondGen("statusA","Clean"),
-                                            eqCondGen("statusB","Clean")),None))
+      tmpRules ++= List[Rule[State,Option[Action]]](new Rule(new AndCondition
+                                                             (eqCondGen("statusA","Clean"),
+                                                              eqCondGen("statusB","Clean")),None))
       tmpRules ++= ruleGen("status", "Dirty", "Suck")
       tmpRules ++= ruleGen("location", "A", "Right")
       tmpRules ++= ruleGen("location", "B", "Left")
