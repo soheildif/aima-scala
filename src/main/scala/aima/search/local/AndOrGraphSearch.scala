@@ -1,5 +1,7 @@
 package aima.search.local
 
+import aima.search.{SearchResult,Success,Failure,NonDeterministicProblem}
+
 /* NOTE: Though AndOrGraphSearch belongs to package local, but it is *NOT* a
  * local search algorithm. I just could not think of a better place to
  * put it yet.
@@ -75,10 +77,10 @@ object AndOrGraphSearch {
  *
  */
 class Plan[S,A](s: S, a: Option[A]) {
-  private val children = new scala.collection.jcl.ArrayList[Plan[S,A]](new java.util.ArrayList[Plan[S,A]]())
+  private val children = new scala.collection.mutable.Queue[Plan[S,A]]()
 
-  def addChild(plan: Plan[S,A]) { children.add(plan) }
-  def isLeaf = children.length == 0
+  def addChild(plan: Plan[S,A]) { children.enqueue(plan) }
+  def isLeaf = children.isEmpty
 
   def state = s
   def action = a

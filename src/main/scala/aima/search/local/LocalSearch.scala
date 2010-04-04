@@ -1,5 +1,7 @@
 package aima.search.local
 
+import aima.search.{Problem}
+
 /** Hill-Climbing-Search, described in Fig 4.2
  *
  * @author Himanshu Gupta

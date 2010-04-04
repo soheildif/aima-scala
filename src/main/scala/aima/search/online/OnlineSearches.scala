@@ -1,5 +1,7 @@
 package aima.search.online
 
+import aima.search.{OnlineSearchProblem,LocationMap,In,Go}
+
 /** A generic trait, implementing the algorithm for Online-DFS-Agent
  * described in Fig 4.21
  *

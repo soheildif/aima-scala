@@ -81,7 +81,7 @@ class Conjunction(val conjuncts: Set[Sentence]) extends Sentence
 sealed class Literal(val sentence: Atom) {
 
   def isPositive =
-    this match {
+    (this: @unchecked) match { //case _:Literal is missing, so @unchecked
       case _: PositiveLiteral => true
       case _: NegativeLiteral => false
     }

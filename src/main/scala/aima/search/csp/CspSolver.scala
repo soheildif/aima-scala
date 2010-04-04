@@ -102,7 +102,7 @@ object Inference {
 object BacktrackingSearch {
   //BacktrackingSearch without any inferencing
   def apply[K,V](csp: CSP[K,V]) =
-    backtrack(Map[K,V](),csp,identityInference)
+    backtrack(Map[K,V](),csp,identityInference[K,V])
 
 
   //BacktrackingSearch with given inference algorithm
@@ -145,7 +145,7 @@ object BacktrackingSearch {
     csp.domain(variable)
 
   //An inference that does no inferencing
-  private def identityInference[K,V](x: K, assignment: Map[K,V], csp: CSP[K,V]) = Some(csp)
+  private def identityInference[K,V](x: K, assignment: Map[K,V], csp: CSP[K,V]): Option[CSP[K,V]] = Some(csp)
 }
 
 

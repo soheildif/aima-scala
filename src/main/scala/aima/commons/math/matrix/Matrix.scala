@@ -1,5 +1,5 @@
 package aima.commons.math.matrix
-
+/*
 //Rep for m X n immutable matrix
 class Matrix(in: Array[Array[Double]]) {
 
@@ -38,3 +38,4 @@ class Matrix(in: Array[Array[Double]]) {
   //equal upto given delta
   def equals(delta: Double): Boolean
 }
+*/

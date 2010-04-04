@@ -3,6 +3,8 @@ package aima.search.local
 import junit.framework._
 import Assert._
 
+import aima.search.{Success,VacuumWorldNonDeterministicProblem}
+
 //AndOrSearch Tests
 class AndOrGraphSearchTest extends TestCase {
   def testIt() {

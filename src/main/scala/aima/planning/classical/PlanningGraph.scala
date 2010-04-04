@@ -115,7 +115,7 @@ class PlanningGraph(problem: ClassicalPlanningProblem) {
       a.preconditions.filter(_.isPositive) ++ a.effects.filter(_.isPositive))
 
   private def makeNegative(l: Literal): NegativeLiteral =
-    l match {
+    (l: @unchecked) match {
       case x: PositiveLiteral => NegativeLiteral(x.sentence)
       case x: NegativeLiteral => x
     }

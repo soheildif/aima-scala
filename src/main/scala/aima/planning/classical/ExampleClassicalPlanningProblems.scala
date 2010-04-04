@@ -42,22 +42,22 @@ object ClassicalPlanningProblems {
       Action(
         "Remove(Flat,Axle)",
         "At(Flat,Axle)",
-        "~At(Flat,Axle) & At(Flat,Ground)",
+        "~At(Flat,Axle) & At(Flat,Ground)"
       ),
       Action(
         "Remove(Spare,Axle)",
         "At(Spare,Axle)",
-        "~At(Spare,Axle) & At(Spare,Ground)",
+        "~At(Spare,Axle) & At(Spare,Ground)"
       ),
       Action(
         "Remove(Flat,Trunk)",
         "At(Flat,Trunk)",
-        "~At(Flat,Trunk) & At(Flat,Ground)",
+        "~At(Flat,Trunk) & At(Flat,Ground)"
       ),
       Action(
         "Remove(Spare,Trunk)",
         "At(Spare,Trunk)",
-        "~At(Spare,Trunk) & At(Spare,Ground)",
+        "~At(Spare,Trunk) & At(Spare,Ground)"
       ),
       Action(
         "PutOn(Flat,Axle)",

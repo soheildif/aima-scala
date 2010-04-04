@@ -51,9 +51,9 @@ class FifoQueue[A] extends Queue[A] {
     if (isEmpty) None else Some(fifoQ.dequeue)
 }
 
-class PriorityQueue[A](orderer: (A)=>Ordered[A]) extends Queue[A] {
+class PriorityQueue[A](ordering: Ordering[A]) extends Queue[A] {
 
-  private val pq = new scala.collection.mutable.PriorityQueue[A]()(orderer)
+  private val pq = new scala.collection.mutable.PriorityQueue[A]()(ordering)
 
   def isEmpty = pq.isEmpty
 
