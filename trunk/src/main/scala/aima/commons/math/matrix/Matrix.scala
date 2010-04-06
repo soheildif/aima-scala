@@ -1,41 +1,42 @@
 package aima.commons.math.matrix
-/*
-//Rep for m X n immutable matrix
-class Matrix(in: Array[Array[Double]]) {
 
-  val elems = in.readOnly
+class Matrix[T: ClassManifest] private (private val elems: Array[Array[T]])(n: Numeric[T]) {
+
+  import n.mkNumericOps
+
+  val rows = elems.size        //Returns # of rows
+  val cols = elems(0).size     //Returns # of cols
 
   //Returns jth elem in ith row
-  // 0 <= i < m And 0 <= j < n
-  def apply(i: Int, j: Int): Double = elems(i)(j)
+  // 0 <= i < rows And 0 <= j < cols
+  def apply(i: Int, j: Int): T = elems(i)(j)
 
-  //Returns # of rows
-  def m: Int = elems.length
+  //Returns ith row, 0 <= i < rows
+  def row(i: Int): Array[T] = elems(i).clone
 
-  //Returns # of cols
-  def n: Int = elems(0).length
+  //Returns ith col, 0 <= i < cols
+  def col(i: Int): Array[T] = elems.map(_(i))
 
-  def *(that: Matrix): Matrix = {
-    if(this.n != that.m)
+  def *(that: Matrix[T]): Matrix[T] = {
+    if(this.cols != that.rows)
       throw new IllegalArgumentException("Can't be multiplied")
     else {
-      val newArr = new Array[Array[Double]](this.m, that.n)
-      val thatElems = that.elems
-      val indices = elems(0).indices.readOnly
+      val newArr = Array.ofDim[T](this.rows, that.cols)
 
-      for(i <- 0 to this.m-1) {
-        val row = newArr(i)
-        val rowThis = elems(i)
-        for(j <- 0 to that.n-1) {
-          row(j) = indices.foldLeft(0.0)((sum,k) => sum + rowThis(k) * thatElems(k)(j))
+      for(i <- 0 to this.rows-1) {
+        for(j <- 0 to that.cols-1) {
+          newArr(i)(j) = this.row(i).zip(that.col(j)).map(a => a._1 * a._2).sum(n)
         }
       }
-      new Matrix(newArr)
+      new Matrix(newArr)(n)
     }
   }
-
-  //check if corresponding elements in given arrays are
-  //equal upto given delta
-  def equals(delta: Double): Boolean
 }
-*/
+
+object Matrix {
+
+  def apply[T](elems: Array[Array[T]])(implicit n: Numeric[T],m: ClassManifest[T]): Matrix[T] =
+    new Matrix[T](clone(elems))(n)
+
+  private def clone[T: ClassManifest](arr: Array[Array[T]]): Array[Array[T]] = arr.map(_.clone)
+}
