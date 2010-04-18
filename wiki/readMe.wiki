@@ -23,6 +23,7 @@ aima-scala
           logic          //Code for Chapter 7-9
           planning       //Code for Chapter 10-11
           search         //Code for Chapter 3-6
+          uncertainty    //Code for Chapter 13-
     test                 //Tests for above code
       scala
         aima
@@ -30,6 +31,7 @@ aima-scala
           logic
           planning
           search
+          uncertainty
 }}}
 Best place to start to understand the code is to start with reading the tests for same.
 
