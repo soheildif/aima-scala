@@ -8,13 +8,15 @@ abstract class KnowledgeBase(ss: String *) {
   protected val _sentences = Set[Sentence](ss.map(PropositionalLogicParser.parse(_)):_*)
 
   def tell(ss: String *) = {
-    _sentences ++ ss.map(PropositionalLogicParser.parse(_))
+    _sentences ++= ss.map(PropositionalLogicParser.parse(_))
     this
   }
 
   //Returns the KB as conjunction of all the sentences tell'ed
   //to the KB so far
-  def sentence: Conjunction = new Conjunction(_sentences.toList:_*)
+  def sentence: Conjunction =  {
+	  new Conjunction(_sentences.toList:_*)
+  }
 
   def ask(s: String): Boolean
 }

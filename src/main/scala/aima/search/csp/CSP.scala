@@ -10,7 +10,7 @@ class CSP[K,V] {
   private var _constraints = List[Constraint[K,V]]()
 
   def constraints = _constraints
-  def variables = List.fromIterator(_variableMap.keys)
+  def variables = _variableMap.keys.toList
   def domain(variable: K) =
     _variableMap.get(variable) match {
       case Some(x) => x

@@ -147,6 +147,8 @@ object PLFCEntails {
  *
  * @author Himanshu Gupta
  */
+//TODO: not working after upgrading from scala 2.8.1 to 2.9.1
+//needs to be fixed
 object DPLLSatisfiable {
   def apply(s: Sentence): Boolean =
     DPLL(SentenceToCNF(s).clauses,s.symbols,Map[PropositionSymbol,Boolean]())
