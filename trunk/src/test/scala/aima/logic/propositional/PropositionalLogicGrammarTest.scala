@@ -28,6 +28,8 @@ class PropositionalLogicParserTest extends TestCase {
   def testParser() {
 
     assertEquals(A,PLP.parse("A"))
+    assertEquals(new Negation(A), PLP.parse("~ A"))
+    assertEquals(new Negation(new Negation(A)), PLP.parse("~~A"))
     assertEquals(PropositionSymbol("True"),PLP.parse("True"))
     assertEquals(PropositionSymbol("False"),PLP.parse("False"))
     assertEquals(new Negation(PropositionSymbol("A12")),PLP.parse("~ A12"))

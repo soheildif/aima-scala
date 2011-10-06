@@ -29,7 +29,9 @@ class OnlineDFSTest extends TestCase {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assertEquals(result.reverse,List(Go("2,1"), Go("1,1"), Go("1,2"), Go("1,1"), Go("1,2"), Go("1,1"), Go("2,1"), Go("2,2"), Go("2,1"), Go("3,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")))
+    
+    assertEquals(result.reverse,List(Go("2,1"), Go("2,2"), Go("2,1"), Go("3,1"), Go("2,1"), Go("1,1"), 
+    		Go("1,2"), Go("1,1"), Go("1,2"), Go("1,1"), Go("2,1"), Go("3,1"), Go("3,2"), Go("3,3")));
   }
 }
 
@@ -81,7 +83,8 @@ class LRTAStarTest extends TestCase {
                           case None => ;})
     env.addAgent(agent)
     env.stepUntilNoOp()
-    assertEquals(result.reverse,List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F")))
+    assertEquals(result.reverse,List(Go("B"), Go("A"), Go("B"), Go("C"), Go("B"), Go("C"), 
+    		Go("D"), Go("E"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F")))
   }
 
   def testNoPath() {
@@ -107,6 +110,7 @@ class LRTAStarTest extends TestCase {
     env.addAgent(agent)
     env.step(14) //or else it'll run forever
 
-    assertEquals(result.reverse,List(Go("B"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C"), Go("D"), Go("E"), Go("F"), Go("E"), Go("D"), Go("C"), Go("B"), Go("C")))
+    assertEquals(result.reverse,List(Go("B"), Go("A"), Go("B"), Go("C"), Go("B"), Go("C"), Go("D"),
+    		Go("E"), Go("D"), Go("C"), Go("B"), Go("A"), Go("B"), Go("C")))
   }
 }

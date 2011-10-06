@@ -60,15 +60,15 @@ class BacktrackingSearchTest extends TestCase {
     BacktrackingSearch(csp) match {
       case None => assert(false)
       case Some(assignment) => {
-        assertEquals(assignment.getOrElse(Wa,-1),Blue)
-        assertEquals(assignment.getOrElse(Nt,-1),Red)
-        assertEquals(assignment.getOrElse(Q,-1),Blue)
+        assertEquals(assignment.getOrElse(Wa,-1),Red)
+        assertEquals(assignment.getOrElse(Nt,-1),Blue)
+        assertEquals(assignment.getOrElse(Q,-1),Red)
         assertEquals(assignment.getOrElse(Sa,-1),Green)
-        assertEquals(assignment.getOrElse(Nsw,-1),Red)
-        assertEquals(assignment.getOrElse(V,-1),Blue)
+        assertEquals(assignment.getOrElse(Nsw,-1),Blue)
+        assertEquals(assignment.getOrElse(V,-1),Red)
         assertTrue(assignment.getOrElse(T,-1) == Red ||
-                   assignment.getOrElse(T,-1) == Blue ||
-                   assignment.getOrElse(T,-1) == Green)
+               assignment.getOrElse(T,-1) == Blue ||
+               assignment.getOrElse(T,-1) == Green)
       }
     }
   }
@@ -102,12 +102,12 @@ class BacktrackingSearchTest extends TestCase {
     BacktrackingSearch(csp,mac) match {
       case None => assert(false)
       case Some(assignment) => {
-        assertEquals(assignment.getOrElse(Wa,-1),Blue)
-        assertEquals(assignment.getOrElse(Nt,-1),Red)
-        assertEquals(assignment.getOrElse(Q,-1),Blue)
+        assertEquals(assignment.getOrElse(Wa,-1),Red)
+        assertEquals(assignment.getOrElse(Nt,-1),Blue)
+        assertEquals(assignment.getOrElse(Q,-1),Red)
         assertEquals(assignment.getOrElse(Sa,-1),Green)
-        assertEquals(assignment.getOrElse(Nsw,-1),Red)
-        assertEquals(assignment.getOrElse(V,-1),Blue)
+        assertEquals(assignment.getOrElse(Nsw,-1),Blue)
+        assertEquals(assignment.getOrElse(V,-1),Red)
         assertTrue(assignment.getOrElse(T,-1) == Red ||
                assignment.getOrElse(T,-1) == Blue ||
                assignment.getOrElse(T,-1) == Green)
