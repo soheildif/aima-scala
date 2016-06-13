@@ -47,7 +47,7 @@ abstract class Sentence {
   //the model
   def isTrue(model: Map[PropositionSymbol,Boolean]): Option[Boolean]
 
-  //Returns the set of Symbols refered in this sentence
+  //Returns the set of Symbols referred in this sentence
   def symbols: Set[PropositionSymbol]
 }
 object Sentence {

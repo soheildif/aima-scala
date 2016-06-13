@@ -9,7 +9,7 @@ package aima.logic.fol
 object SentenceToCNF {
   def apply(s: Sentence, KB: FOLKnowledgeBase) : Set[Clause] = {
 
-    //Implications out, eliminate all the occurences of
+    //Implications out, eliminate all the occurrences of
     //=> and <=> ops
     var result = removeImplications(s)
 
