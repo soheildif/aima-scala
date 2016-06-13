@@ -96,7 +96,7 @@ object SentenceToCNF {
     new CNFSentence(convert(s,false))
 
   def convert(s: Sentence, isNegated: Boolean): Set[Clause] = {
-        //Implications out, eliminate all the occurences of
+        //Implications out, eliminate all the occurrences of
     //=> and <=> ops
     var result = removeImplications(s)
 
